@@ -1,2 +1,2 @@
 @echo off
-"%~dp0bin\node.exe" "%~dp0app\ADCUtil.js" %*
+node "%~dp0app\ADCUtil.js" %*

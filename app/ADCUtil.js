@@ -2,7 +2,7 @@ var Command = require('../node_modules/commander').Command;
 var program = new Command();
 
 program
-    .version('0.0.1')
+    .version('1.1.0')
     .option('-o, --output <name>', 'name of the output to display or path to the output directory for the generation')
     .option('-f, --fixture <name>', 'name of the fixture to use for the `show` command')
     // .option('-f, --force', 'overwrite the output directory when it exist')
