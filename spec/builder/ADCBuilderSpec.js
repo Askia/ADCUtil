@@ -176,17 +176,21 @@ describe('ADCBuilder', function () {
 
 
                 newZip = {
-                    addFile : function () {},
-                    writeZip : function () {}
+                    file : function () {},
+                    folder : function () {},
+                    generate : function () {}
                 };
 
                 spies.getNewZip.andReturn(newZip);
 
                 files = [];
-                spyOn(newZip, 'addFile').andCallFake(function (zipPath) {
-                    files.push(zipPath);
+                spyOn(newZip, 'file').andCallFake(function (filePath) {
+                    files.push(filePath);
                 });
-                spyOn(newZip, 'writeZip');
+                spyOn(newZip, 'folder').andCallFake(function (folderName) {
+                    files.push(folderName);
+                });
+                spyOn(newZip, 'generate');
             });
 
             it("should add files and directories recursively in the zip", function () {
@@ -296,7 +300,9 @@ describe('ADCBuilder', function () {
 
             it("should write the adc file in the `bin` directory", function () {
                 adcBuilder.build(null, 'adc/path/dir');
-                expect(newZip.writeZip).toHaveBeenCalledWith('adc\\path\\dir\\bin\\myadc.adc');
+                spies.fs.writeFile.andCallFake(function (path) {
+                    expect(path).toEqual('adc\\path\\dir\\bin\\myadc.adc');
+                });
             });
 
         });
@@ -347,8 +353,9 @@ describe('ADCBuilder', function () {
                 });
 
                 spies.getNewZip.andReturn({
-                    addFile : function () {},
-                    writeZip : function () {}
+                    file : function () {},
+                    folder: function () {},
+                    generate : function () {}
                 });
             });
 

@@ -136,7 +136,7 @@ function compressADC() {
                 if (zipDirLower === 'resources/') return; // Exclude extra files
                 if (zipDirLower === '' && !/^(config\.xml|readme|changelog)/i.test(file)) return; // Exclude extra files
                 if (common.isIgnoreFile(file)) return; // Ignore files
-                zip.addFile(zipDir + file, fs.readFileSync(exports.adcDirectoryPath + zipDir + file), "", 0);
+                zip.file(zipDir + file, fs.readFileSync(exports.adcDirectoryPath + zipDir + file));
             } else { // Directory
                 if (!file.sub || !file.sub.length) return;        // Exclude empty folder
 
@@ -149,13 +149,20 @@ function compressADC() {
 
                 prevDir = zipDir;
                 zipDir += file.name + '/';
-                zip.addFile(zipDir, new Buffer(0));
+                zip.folder(zipDir);
                 file.sub.forEach(appendInZip);
                 zipDir = prevDir;
             }
         });
 
-        zip.writeZip(pathHelper.join(exports.binPath, exports.adcName + '.adc'));
+        var buffer = zip.generate({type:"nodebuffer"});
+
+        fs.writeFile(pathHelper.join(exports.binPath, exports.adcName + '.adc'), buffer, function writeZipFile(err) {
+            if (err) {
+                throw err;
+            }
+        });
+
         sequence.resume();
     });
 }

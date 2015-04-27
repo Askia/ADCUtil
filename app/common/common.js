@@ -7,7 +7,7 @@ var fs = require('fs'),
     // cli-color
     clc      = require('cli-color'),
     // Zip lib
-    Zip    = require('adm-zip');
+    Zip    = require('JSZip');
 
 exports = module.exports;
 

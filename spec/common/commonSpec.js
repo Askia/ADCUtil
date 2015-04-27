@@ -182,7 +182,7 @@ describe('common', function () {
     describe('#getNewZip', function () {
         it("should return a new zip object", function () {
             var zip = common.getNewZip();
-            expect(typeof zip.addFile).toBe('function');
+            expect(typeof zip.file).toBe('function');
         });
     });
 
