@@ -1,4 +1,4 @@
-﻿<div id="adc_{%= CurrentQuestion.Id %}" class="adc-default">
+﻿<div id="adc_{%= CurrentADC.InstanceId %}" class="adc-default">
 {% If CurrentQuestion.Type = "single" Then %}
     {%:= CurrentADC.GetContent("dynamic/single.html").ToText() %}
 {% ElseIf CurrentQuestion.Type = "multiple" Then %}
