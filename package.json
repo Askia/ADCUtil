@@ -1,7 +1,7 @@
 {
-  "name": "ADCUtil",
-  "version": "1.1.0-alpha.1",
-  "description": "Utilities tools for Askia Design Control edition",
+  "name": "adcutil",
+  "version": "1.1.0-alpha.4",
+  "description": "Utilities tools for Askia Design Control",
   "main": "./app/ADCUtil.js",
   "dependencies": {
     "commander": "^1.1.1",
@@ -23,6 +23,7 @@
     "jasmine-node" : "^1.14.5"
   },
   "scripts": {
+    "postinstall" : "regsvr32 /s .\\lib\\adxshell\\ADCEngineTester.ocx",
     "test": "jasmine-node spec/"
   },
   "keywords": [

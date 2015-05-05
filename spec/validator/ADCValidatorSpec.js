@@ -1941,12 +1941,12 @@ describe('ADCValidator', function () {
         });
 
 
-        it('should run the ADCUnit process with the path of the ADC directory in arguments and the flag --auto', function () {
+        it('should run the ADXShell process with the path of the ADC directory in arguments and the flag --auto', function () {
             spies.fs.stat.andCallFake(function (path, callback) {
                 callback(null);
             });
             spyExec.andCallFake(function (file, args) {
-                expect(file).toBe('.\\ADCUnit.exe');
+                expect(file).toBe('.\\ADXShell.exe');
                 expect(args).toEqual(['--auto', '/adc/path/dir/']);
             });
             adcValidator.validate(null, '/adc/path/dir');
@@ -1954,7 +1954,7 @@ describe('ADCValidator', function () {
             expect(childProc.execFile).toHaveBeenCalled();
         });
 
-        it('should output a warning when the ADCUnit process failed', function () {
+        it('should output a warning when the ADXShell process failed', function () {
             spies.fs.stat.andCallFake(function (path, callback) {
                 callback(null);
             });
@@ -1966,7 +1966,7 @@ describe('ADCValidator', function () {
             expect(common.writeWarning).toHaveBeenCalledWith('\r\nFake validation error');
         });
 
-        it('should output the stdout of the ADCUnit process', function () {
+        it('should output the stdout of the ADXShell process', function () {
             spies.fs.stat.andCallFake(function (path, callback) {
                 callback(null);
             });
@@ -1978,7 +1978,7 @@ describe('ADCValidator', function () {
             expect(common.writeMessage).toHaveBeenCalledWith('Fake stdout');
         });
 
-        it("should output a success when the ADCUnit process doesn't failed", function () {
+        it("should output a success when the ADXShell process doesn't failed", function () {
             spies.fs.stat.andCallFake(function (path, callback) {
                 callback(null);
             });
@@ -2038,12 +2038,12 @@ describe('ADCValidator', function () {
             expect(common.writeWarning).not.toHaveBeenCalled();
         });
 
-        it('should run the ADCUnit process with the path of the ADC directory in arguments', function () {
+        it('should run the ADXShell process with the path of the ADC directory in arguments', function () {
             spies.fs.stat.andCallFake(function (path, callback) {
                 callback(null);
             });
             spyExec.andCallFake(function (file, args) {
-                expect(file).toBe('.\\ADCUnit.exe');
+                expect(file).toBe('.\\ADXShell.exe');
                 expect(args).toEqual(['/adc/path/dir/']);
             });
             adcValidator.validate(null, '/adc/path/dir');
@@ -2051,7 +2051,7 @@ describe('ADCValidator', function () {
             expect(childProc.execFile).toHaveBeenCalled();
         });
 
-        it('should output a warning when the ADCUnit process failed', function () {
+        it('should output a warning when the ADXShell process failed', function () {
             spies.fs.stat.andCallFake(function (path, callback) {
                 callback(null);
             });
@@ -2063,7 +2063,7 @@ describe('ADCValidator', function () {
             expect(common.writeWarning).toHaveBeenCalledWith('\r\nFake validation error');
         });
 
-        it('should output the stdout of the ADCUnit process', function () {
+        it('should output the stdout of the ADXShell process', function () {
             spies.fs.stat.andCallFake(function (path, callback) {
                 callback(null);
             });
@@ -2075,7 +2075,7 @@ describe('ADCValidator', function () {
             expect(common.writeMessage).toHaveBeenCalledWith('Fake stdout');
         });
 
-        it("should output a success when the ADCUnit process doesn't failed", function () {
+        it("should output a success when the ADXShell process doesn't failed", function () {
             spies.fs.stat.andCallFake(function (path, callback) {
                 callback(null);
             });

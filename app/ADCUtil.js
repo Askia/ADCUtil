@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 var Command = require('../node_modules/commander').Command;
 var program = new Command();
 

@@ -42,14 +42,14 @@ describe('ADCShow', function () {
             expect(common.writeError).toHaveBeenCalledWith(errMsg.noFixtureDefinedForShow);
         });
 
-        it("should call the program `ADCUnit.exe` with the correct arguments", function () {
+        it("should call the program `ADXShell.exe` with the correct arguments", function () {
             var childProc = require('child_process'),
                 spyExec   = spyOn(childProc, 'execFile');
 
             spyOn(process, 'cwd').andReturn('');
 
             spyExec.andCallFake(function (file, args) {
-                expect(file).toBe('.\\ADCUnit.exe');
+                expect(file).toBe('.\\ADXShell.exe');
                 expect(args).toEqual(['show', '-output:something', '-fixture:single.xml', '/adc/path/dir']);
             });
             adcShow.show({

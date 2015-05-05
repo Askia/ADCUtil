@@ -6,16 +6,17 @@
 
 Install NodeJs: https://nodejs.org/download/
 
-Then install the ADCUtil (TODO::CREATE NPM PACKAGE)
+Then install the npm package adcutil:
+ 
+    npm install -g adcutil
 
-TODO:Description
+## Run unit tests of ADCUtil
 
-## Dev Setup
+Install jasmine-node for unit tests
 
-* Install jasmine-node for unit tests
     npm install jasmine-node -g
-
-## Run unit tests
+    
+Then run
 
     jasmine-node spec/
 
