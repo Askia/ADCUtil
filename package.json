@@ -1,6 +1,6 @@
 {
   "name": "adcutil",
-  "version": "1.1.0-beta.1",
+  "version": "1.1.0-beta.2",
   "description": "Utilities tools for Askia Design Control",
   "main": "./app/ADCUtil.js",
   "dependencies": {
@@ -15,7 +15,7 @@
     "ADCUtil" : "./app/ADCUtil.js"
   },
   "repository" : {
-    "type" : "gut",
+    "type" : "git",
      "url" : "https://github.com/Askia/ADCUtil.git"
   },
   "preferGlobal" : true,
