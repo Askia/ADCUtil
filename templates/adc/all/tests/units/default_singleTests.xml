@@ -5,7 +5,7 @@
 
   <units>
 
-    <test id="contains_radio" description="Should contains a well formatted input radio per response" cases="fallback_single">
+    <test id="contains_radio" description="Should contains a well formatted input radio per response" cases="default_single">
       <asserts>
         <placeholder>
           <select_nodes xPath="//input">
@@ -20,9 +20,9 @@
       </asserts>
     </test>
 
-    <test id="contains_select_options" description="When useList=true, should contains &lt;select&gt; with one &lt;option&gt; per response plus a blank one" cases="fallback_single">
+    <test id="contains_select_options" description="When useList=true, should contains &lt;select&gt; with one &lt;option&gt; per response plus a blank one" cases="default_single">
       <arrange>
-        <output id="fallback"/>
+        <output id="default"/>
         <properties>
           <property id="useList">
             <value>true</value>

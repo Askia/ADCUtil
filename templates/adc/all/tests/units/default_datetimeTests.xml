@@ -5,7 +5,7 @@
 
   <units>
     
-    <test id="datetime_contains_input_date_and_input_time" description="Should contains an input date and an input time" cases="fallback_datetime">
+    <test id="datetime_contains_input_date_and_input_time" description="Should contains an input date and an input time" cases="default_datetime">
       <asserts>
         <placeholder>
           <select_nodes xPath="//input[@type='date']">
@@ -20,7 +20,7 @@
       </asserts>
     </test>
 
-    <test id="date_contains_input_date" description="Should only contains an input date" cases="fallback_date">
+    <test id="date_contains_input_date" description="Should only contains an input date" cases="default_date">
       <asserts>
         <placeholder>
           <select_nodes xPath="//input[@type='date']">
@@ -34,7 +34,7 @@
       </asserts>
     </test>
 
-    <test id="time_contains_input_time" description="Should only contains an input date" cases="fallback_time">
+    <test id="time_contains_input_time" description="Should only contains an input date" cases="default_time">
       <asserts>
         <placeholder>
           <select_nodes xPath="//input[@type='time']">
@@ -48,7 +48,7 @@
       </asserts>
     </test>
 
-    <test id="use_placeholder_attr" description="Should add a `placeholder` attribute in the input date when the `placeholder` property is not empty" cases="fallback_datetime, fallback_date">
+    <test id="use_placeholder_attr" description="Should add a `placeholder` attribute in the input date when the `placeholder` property is not empty" cases="default_datetime, default_date">
       <arrange>
         <properties>
           <property id="placeholder">
@@ -66,7 +66,7 @@
       </asserts>
     </test>
   
-    <test id="time_use_placeholder_attr" description="Should add a `placeholder` attribute in the input time when the `placeholder` property is not empty" cases="fallback_time">
+    <test id="time_use_placeholder_attr" description="Should add a `placeholder` attribute in the input time when the `placeholder` property is not empty" cases="default_time">
       <arrange>
         <properties>
           <property id="placeholder">

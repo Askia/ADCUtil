@@ -5,7 +5,7 @@
 
   <units>
 
-    <test id="contains_checkboxes" description="Should contains a well formatted input checkbox per response" cases="fallback_multiple">
+    <test id="contains_checkboxes" description="Should contains a well formatted input checkbox per response" cases="default_multiple">
       <asserts>
         <placeholder>
           <select_nodes xPath="//input">
@@ -19,7 +19,7 @@
       </asserts>
     </test>
 
-    <test id="contains_select_options" description="When useList=true, should contains &lt;select&gt; with one &lt;option&gt; per response" cases="fallback_multiple">
+    <test id="contains_select_options" description="When useList=true, should contains &lt;select&gt; with one &lt;option&gt; per response" cases="default_multiple">
       <arrange>
         <properties>
           <property id="useList">

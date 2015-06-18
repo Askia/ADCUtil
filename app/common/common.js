@@ -14,6 +14,8 @@ exports = module.exports;
 // Common
 // File name of the config.xml
 exports.CONFIG_FILE_NAME = 'config.xml';
+// File name of the readme.md
+exports.README_FILE_NAME = 'readme.md';
 // Path of the unit tests directory
 exports.UNIT_TEST_DIR_PATH = "tests/units";
 // Path of the fixtures directory
@@ -51,7 +53,7 @@ exports.adcIgnoreFilesRules = undefined;
 // Generator
 // Path of the templates directory
 exports.TEMPLATES_PATH = '/templates/adc/';
-exports.DEFAULT_TEMPLATE_NAME = 'default';
+exports.DEFAULT_TEMPLATE_NAME = 'blank';
 
 // Builder
 // Path to the bin directory of an ADC
@@ -111,8 +113,7 @@ exports.messages = {
         javascriptUseWithoutBrowserCheck : "Output: `%s`. It's recommended to test the `Browser.Support(\"Javascript\") in the condition node, before to use `javascript` content.",
         flashUseWithoutBrowserCheck : "Output: `%s`. It's recommended to test the `Browser.Support(\"Flash\") in the condition node, before to use `flash` content.",
         noHTMLFallBack              : "It's recommended to have at least one fallback with HTML only",
-        noProperties                : "It's recommended to define at least one properties",
-        noUnitTests                 : "It's recommended to unit test your ADC project"
+        noProperties                : "It's recommended to define at least one properties"
     },
     success : {
         // Validator

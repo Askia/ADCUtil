@@ -58,7 +58,7 @@ var sequence = new common.Sequence([
     verifyOutputDirExist,
     verifyADCDirNotalreadyExist,
     copyFromTemplate,
-    updateConfigFile
+    updateFiles
 ], done);
 
 
@@ -184,25 +184,34 @@ function copyFromTemplate() {
 }
 
 /**
- * Update the config file with the name of the ADC, the GUID and the creation date
+ * Update the config.xml and the readme files with the name of the ADC, the GUID and the creation date
  */
-function updateConfigFile() {
-    var configFilePath = exports.outputDirectory + common.CONFIG_FILE_NAME;
-    fs.readFile(configFilePath, 'utf8', function readConfigXMLFile(err, data) {
-        if (err) {
-            sequence.resume(err);
-            return;
-        }
+function updateFiles() {
+    var files  = [
+        exports.outputDirectory + common.CONFIG_FILE_NAME,
+        exports.outputDirectory + common.README_FILE_NAME
+    ], treat = 0;
+    files.forEach(function (file) {
+        fs.readFile(file, 'utf8', function readFile(err, data) {
+            if (err) {
+                treat++;
+                sequence.resume(err);
+                return;
+            }
 
-        var result = data;
+            var result = data;
 
-        result = result.replace(/\{\{ADCName\}\}/gi, exports.adcName);
-        result = result.replace(/\{\{ADCGuid\}\}/gi, uuid.v4());
-        result = result.replace(/2000-01-01/, common.formatXmlDate());
-        result = result.replace('\ufeff', ''); // Remove the BOM characters (Marker of the UTF-8 in the string)
+            result = result.replace(/\{\{ADCName\}\}/gi, exports.adcName);
+            result = result.replace(/\{\{ADCGuid\}\}/gi, uuid.v4());
+            result = result.replace(/2000-01-01/, common.formatXmlDate());
+            result = result.replace('\ufeff', ''); // Remove the BOM characters (Marker of the UTF-8 in the string)
 
-        fs.writeFile(configFilePath, result, function writeFileCallback(err) {
-            return sequence.resume(err);
+            fs.writeFile(file, result, function writeFileCallback(err) {
+                treat++;
+                if (treat === files.length) {
+                    return sequence.resume(err);
+                }
+            });
         });
     });
 }

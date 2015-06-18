@@ -154,11 +154,17 @@ Executable
  .vob	DVD Video Object File
  .wmv	Windows Media Video File
 
+Markdown
+ md
+
+
+
 white
 xml|rss|atom|svg|js|xhtml|htm|html|swf|css|hss|sass|less|ccss|pcss|txt|csv|json|
 gif|jpeg|jpg|tif|tiff|png|bmp|pdf|ico|cur|
 aif|iff|m4a|mid|mp3|mpa|ra|wav|wma|ogg|oga|webma|
 3g2|3gp|avi|flv|mov|mp4|mpg|rm|wmv|webm
+md|
 
 
 black
@@ -248,7 +254,7 @@ zip|rar|sql|ini|dmg|iso|vcd|class|java|htaccess
          */
         fileExt         = {
             blacklist : /\.(cgi|dll|erb|rjs|rhtml|rb|py|phtml|php3|php4|php|pl|action|do|wss|jspx|jsp|jhtml|yaws|cfm|aspx|axd|asx|asmx|ashx|axd|ascx|asp|config|action|apk|app|bat|bin|cmd|com|command|cpl|csh|exe|gadget|inf1|ins|inx|ipa|isu|job|jse|ksh|lnk|msc|msi|msp|mst|ocx|osx|out|paf|pif|prg|ps1|reg|rgs|run|sct|shb|shs|u3p|vb|vbe|vbs|vbscript|workflow|ws|wsf|cs|cpp|zip|rar|sql|ini|dmg|iso|vcd|class|java|htaccess)$/gi,
-            whitelist : /\.(xml|rss|atom|svg|js|xhtml|htm|html|swf|css|hss|sass|less|ccss|pcss|txt|csv|json|gif|jpeg|jpg|tif|tiff|png|bmp|pdf|ico|cur|aif|iff|m4a|mid|mp3|mpa|ra|wav|wma|ogg|oga|webma|3g2|3gp|avi|flv|mov|mp4|mpg|rm|wmv|ogv|webm)$/gi
+            whitelist : /\.(xml|rss|atom|svg|js|xhtml|htm|html|swf|css|hss|sass|less|ccss|pcss|txt|csv|json|gif|jpeg|jpg|tif|tiff|png|bmp|pdf|ico|cur|aif|iff|m4a|mid|mp3|mpa|ra|wav|wma|ogg|oga|webma|3g2|3gp|avi|flv|mov|mp4|mpg|rm|wmv|ogv|webm|md)$/gi
         },
 
         /**
@@ -1021,8 +1027,6 @@ zip|rar|sql|ini|dmg|iso|vcd|class|java|htaccess
         // Validate the existence of the specify unit test directory
         common.dirExists(exports.adcDirectoryPath + common.UNIT_TEST_DIR_PATH, function verifyUnitTestDirectory(err, exists) {
             if (!exists) {
-                exports.report.warnings++;
-                common.writeWarning(warnMsg.noUnitTests);
                 resume(null);
                 return ;
             }

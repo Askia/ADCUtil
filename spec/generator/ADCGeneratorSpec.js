@@ -84,7 +84,7 @@ describe('ADCGenerator', function () {
             expect(adcGenerator.template).toBe('test');
         });
 
-        it("should use the `default` template when the `program` has no template property", function () {
+        it("should use the `blank` template when the `program` has no template property", function () {
             adcGenerator.generate({
             }, 'adcname');
             expect(adcGenerator.template).toBe(common.DEFAULT_TEMPLATE_NAME);
@@ -194,7 +194,7 @@ describe('ADCGenerator', function () {
             });
         });
 
-        describe("#updateConfigFile", function () {
+        describe("#updateFiles", function () {
             beforeEach(function () {
                 spies.dirExists.andCallFake(function (path, callback) {
                     if (path === 'adc/path/dir/adcname/') {
@@ -208,14 +208,19 @@ describe('ADCGenerator', function () {
                 });
             });
 
-            it("should read the config.xml file", function () {
+            it("should read the config.xml and the readme.md files", function () {
+                var paths = [];
+                spies.fs.readFile.andCallFake(function (path, option, callback) {
+                    paths.push(path);
+                    callback(null, "");
+                });
                 adcGenerator.generate({
                    output : 'adc/path/dir'
                 }, 'adcname');
-                expect(fs.readFile).toHaveBeenCalled();
+                expect(paths).toEqual(['adc/path/dir/adcname/config.xml', 'adc/path/dir/adcname/readme.md']);
             });
 
-            it("should output an error when an error occurred during the read of the config.xml", function () {
+            it("should output an error when an error occurred while reading the file", function () {
                 spies.fs.readFile.andCallFake(function (path, option, callback) {
                     callback(new Error('fake error'));
                 });
@@ -225,7 +230,7 @@ describe('ADCGenerator', function () {
                 expect(common.writeError).toHaveBeenCalledWith('fake error');
             });
 
-            it("should not output an error when the read of the config.xml succeed", function () {
+            it("should not output an error while reading the file succeed", function () {
                 spies.fs.readFile.andCallFake(function (path, option, callback) {
                     callback(null, "");
                 });
@@ -268,26 +273,26 @@ describe('ADCGenerator', function () {
             ];
             replacement.forEach(testReplacement);
 
-            it("should output an error when failing to rewrite the config file", function () {
+            it("should output an error when failing to rewrite the file", function () {
                 spies.fs.readFile.andCallFake(function (path, option, callback) {
                     callback(null, "");
                 });
                 spies.fs.writeFile.andCallFake(function (path, content, callback) {
                     callback(new Error('fake error'));
-                })
+                });
                 adcGenerator.generate({
                     output : 'adc/path/dir'
                 }, 'adcname');
                 expect(common.writeError).toHaveBeenCalledWith('fake error');
             });
 
-            it("should not output an error when rewrite the config file succeed", function () {
+            it("should not output an error when rewrite the file succeed", function () {
                 spies.fs.readFile.andCallFake(function (path, option, callback) {
                     callback(null, "");
                 });
                 spies.fs.writeFile.andCallFake(function (path, content, callback) {
                     callback(null);
-                })
+                });
                 adcGenerator.generate({
                     output : 'adc/path/dir'
                 }, 'adcname');

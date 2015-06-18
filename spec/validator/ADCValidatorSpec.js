@@ -2018,23 +2018,12 @@ describe('ADCValidator', function () {
             expect(searchUnitsTests).toBe(true);
         });
 
-        it("should output a warning when the `tests/units` directory doesn't exists", function () {
+        it("should not output a warning when the `tests/units` directory doesn't exists", function () {
             spies.fs.stat.andCallFake(function (path, callback) {
                 callback(new Error("No such file or directory"));
             });
 
             adcValidator.validate(null, '/adc/path/dir');
-
-            expect(common.writeWarning).toHaveBeenCalledWith(warnMsg.noUnitTests);
-        });
-
-        it("should not output a warning when the `tests/units` directory exists", function () {
-            spies.fs.stat.andCallFake(function (path, callback) {
-                callback(null);
-            });
-
-            adcValidator.validate(null, '/adc/path/dir');
-
             expect(common.writeWarning).not.toHaveBeenCalled();
         });
 
