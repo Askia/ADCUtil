@@ -7,6 +7,7 @@ program
     .version('1.1.0')
     .option('-o, --output <name>', 'name of the output to display or path to the output directory for the generation')
     .option('-f, --fixture <name>', 'name of the fixture to use for the `show` command')
+    .option('-p, --masterPage <path>', 'path of the master page to use for the `show` command')
     // .option('-f, --force', 'overwrite the output directory when it exist')
     .option('-T, --no-test', 'skip the execution of ADC unit tests')
     .option('-X, --no-xml', 'skip the validation of the config.xml file')
@@ -41,7 +42,7 @@ program
 program
     .command('show [<path>]')
     .description('show the output of the ADC')
-    .action(function showADC(output, fixture, path) {
+    .action(function showADC(path) {
         var adcShow = require('./show/ADCShow.js');
         adcShow.show(program, path);
     });
