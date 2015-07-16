@@ -2,6 +2,8 @@
 
 var Command = require('../node_modules/commander').Command;
 var program = new Command();
+var adcValidator = require('./validator/ADCValidator.js');
+var adcShow = require('./show/ADCShow.js');
 
 program
     .version('1.1.0')
@@ -27,7 +29,6 @@ program
     .command('validate [<path>]')
     .description('validate the uncompressed ADC structure')
     .action(function validateADC(path) {
-        var adcValidator = require('./validator/ADCValidator.js');
         adcValidator.validate(program, path);
     });
 
@@ -43,8 +44,10 @@ program
     .command('show [<path>]')
     .description('show the output of the ADC')
     .action(function showADC(path) {
-        var adcShow = require('./show/ADCShow.js');
         adcShow.show(program, path);
     });
 
 program.parse(process.argv);
+
+module.exports.validate = adcValidator.validate;
+module.exports.show = adcShow.show;

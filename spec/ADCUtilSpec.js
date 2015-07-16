@@ -7,7 +7,7 @@ describe('ADCUtil', function () {
         }
     });
 
-    describe('#validate', function () {
+    describe('cmd `validate`', function () {
         it ('should call ADCValidator#validate when the program args contains `validate`', function () {
             process.argv = [
                 'node',
@@ -104,7 +104,18 @@ describe('ADCUtil', function () {
 
     });
 
-    describe('#generate', function () {
+    describe("#validate", function () {
+        beforeEach(function () {
+            process.argv = [];
+        });
+        it("should be a function", function () {
+            var adcutil = require("../app/ADCUtil.js");
+            expect(typeof adcutil.validate).toBe('function');
+        });
+    });
+
+
+    describe('cmd `generate`', function () {
         it ('should call the ADCGenerator#generate when the program args contains `generate`', function () {
             process.argv = [
                 'node',
@@ -166,7 +177,7 @@ describe('ADCUtil', function () {
         });
     });
 
-    describe('#build', function () {
+    describe('cmd `build`', function () {
         it ('should call ADCBuilder#build when the program args contains `build`', function () {
             process.argv = [
                 'node',
@@ -184,7 +195,7 @@ describe('ADCUtil', function () {
         });
     });
 
-    describe('#show', function () {
+    describe('cmd `show`', function () {
         it ('should call ADCShow#show when the program args contains `show`', function () {
             process.argv = [
                 'node',
@@ -204,4 +215,17 @@ describe('ADCUtil', function () {
             expect(adcShow.show).toHaveBeenCalled();
         });
     });
+
+    describe("#show", function () {
+        beforeEach(function () {
+            process.argv = [];
+        });
+        it("should be a function", function () {
+            var adcutil = require("../app/ADCUtil.js");
+            expect(typeof adcutil.show).toBe('function');
+        });
+    });
+
+
+
 });
