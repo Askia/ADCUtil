@@ -104,17 +104,6 @@ describe('ADCUtil', function () {
 
     });
 
-    describe("#validate", function () {
-        beforeEach(function () {
-            process.argv = [];
-        });
-        it("should be a function", function () {
-            var adcutil = require("../app/ADCUtil.js");
-            expect(typeof adcutil.validate).toBe('function');
-        });
-    });
-
-
     describe('cmd `generate`', function () {
         it ('should call the ADCGenerator#generate when the program args contains `generate`', function () {
             process.argv = [
@@ -215,17 +204,5 @@ describe('ADCUtil', function () {
             expect(adcShow.show).toHaveBeenCalled();
         });
     });
-
-    describe("#show", function () {
-        beforeEach(function () {
-            process.argv = [];
-        });
-        it("should be a function", function () {
-            var adcutil = require("../app/ADCUtil.js");
-            expect(typeof adcutil.show).toBe('function');
-        });
-    });
-
-
 
 });
