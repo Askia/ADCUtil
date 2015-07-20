@@ -4,26 +4,27 @@
   "description": "Utilities tools for Askia Design Control",
   "main": "./app/ADCUtilAPI.js",
   "dependencies": {
-    "commander": "^1.1.1",
-    "jszip": "^2.2.2",
-    "wrench": "^1.5.1",
-    "node-uuid": "^1.4.0",
     "cli-color": "^0.2.2",
+    "commander": "^1.1.1",
+    "elementtree": "^0.1.6",
+    "jszip": "^2.2.2",
+    "node-uuid": "^1.4.0",
+    "wrench": "^1.5.1",
     "xml2js": "^0.2.7"
   },
-  "bin" : {
-    "ADCUtil" : "./app/ADCUtil.js"
+  "bin": {
+    "ADCUtil": "./app/ADCUtil.js"
   },
-  "repository" : {
-    "type" : "git",
-     "url" : "https://github.com/Askia/ADCUtil.git"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Askia/ADCUtil.git"
   },
-  "preferGlobal" : true,
+  "preferGlobal": true,
   "devDependencies": {
-    "jasmine-node" : "^1.14.5"
+    "jasmine-node": "^1.14.5"
   },
   "scripts": {
-    "postinstall" : "regsvr32 /s .\\lib\\adxshell\\ADCEngineTester.ocx",
+    "postinstall": "regsvr32 /s .\\lib\\adxshell\\ADCEngineTester.ocx",
     "test": "jasmine-node spec/"
   },
   "keywords": [

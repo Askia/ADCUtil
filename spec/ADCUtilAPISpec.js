@@ -8,17 +8,20 @@ describe('ADCUtilAPI', function () {
     });
 
     describe("#validate", function () {
-        it("should be a function", function () {
+        it("should be the ADCValidator#validator function", function () {
             var adcUtilApi = require("../app/ADCUtilAPI.js");
-            expect(typeof adcUtilApi.validate).toBe('function');
+            var adcValidator = require('../app/validator/ADCValidator.js');
+            expect(adcUtilApi.validate).toBe(adcValidator.validate);
         });
+
     });
 
 
     describe("#show", function () {
-        it("should be a function", function () {
+        it("should be ADCShow#show function", function () {
             var adcUtilApi = require("../app/ADCUtilAPI.js");
-            expect(typeof adcUtilApi.show).toBe('function');
+            var adcShow = require('../app/show/ADCShow.js');
+            expect(adcUtilApi.show).toBe(adcShow.show);
         });
     });
 

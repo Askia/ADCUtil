@@ -101,7 +101,10 @@ exports.messages = {
 
         // Show
         noOutputDefinedForShow  : "Please specify the name of the output you want to show, using the option -o or --output.",
-        noFixtureDefinedForShow : "Please specify the name of the fixture you want to use, using the option -f or --fixture."
+        noFixtureDefinedForShow : "Please specify the name of the fixture you want to use, using the option -f or --fixture.",
+
+        // Configurator
+        invalidPathArg          : "Invalid `path` argument"
     },
     warning : {
         // Validator
