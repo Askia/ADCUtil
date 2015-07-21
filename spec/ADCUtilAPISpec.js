@@ -25,4 +25,12 @@ describe('ADCUtilAPI', function () {
         });
     });
 
+    describe('#Configurator', function () {
+        it("should be ADCConfigurator#Configurator function", function () {
+            var adcUtilApi = require("../app/ADCUtilAPI.js");
+            var adcConf = require('../app/configurator/ADCConfigurator.js');
+            expect(adcUtilApi.Configurator).toBe(adcConf.Configurator);
+        });
+    });
+
 });
