@@ -66,8 +66,28 @@ Configurator.prototype.load = function load(callback) {
  * @return {String}
  */
 Configurator.prototype.toXml = function toXml() {
-    var xml = this.xmldoc.write();
-    return xml;
+    var xml = [];
+
+    xml.push('<?xml version="1.0" encoding="utf-8"?>');
+    xml.push('<control  xmlns="http://www.askia.com/ADCSchema"' +
+            '\n          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"' +
+            '\n          xsi:schemaLocation="http://www.askia.com/ADCSchema http://www.askia.com/Downloads/dev/schemas/adc2.0/Config.xsd"' +
+            '\n          version="2.0.0"' +
+            '\n          askiaCompat="5.3.3">');
+    xml.push(this.info.toXml());
+    xml.push('</control>');
+
+    return xml.join('\n');
+};
+
+/**
+ * Re-init the configurator using the xml string
+ *
+ * @return {String}
+ */
+Configurator.prototype.fromXml = function fromXml(xml) {
+    this.xmldoc = et.parse(xml);
+    this.info = new ADCInfo(this);
 };
 
 /**
@@ -106,7 +126,7 @@ ADCInfo.prototype.set = function set(data) {
     var self = this;
 
     if (!data) {
-        return self.get();
+        return;
     }
 
 
@@ -116,8 +136,6 @@ ADCInfo.prototype.set = function set(data) {
                 self[methodName](data[methodName]);
             }
         });
-
-    return self.get();
 };
 
 (["name", "guid", "version", "date", "description", "company", "author", "site", "helpURL"].forEach(function (propName) {
@@ -241,7 +259,6 @@ ADCInfo.prototype.constraints = function constraints(data) {
     return result;
 };
 
-
 /**
  * Get or set the constraint
  *
@@ -287,6 +304,62 @@ ADCInfo.prototype.constraint = function constraint(where, attName, attValue) {
     return (result !== "false" && result !== "0");
 };
 
+/**
+ * Return the info as xml string
+ *
+ * @return {String}
+ */
+ADCInfo.prototype.toXml = function toXml() {
+    var xml = [],
+        self = this,
+        style,
+        constraints,
+        constraintsKeys = ['questions', 'controls', 'responses'];
+
+    xml.push('  <info>');
+
+
+
+    ["name", "guid", "version", "date", "description", "company", "author", "site",
+        "helpURL"].forEach(function (methodName) {
+            var data = self[methodName]();
+            if (methodName === 'description' || methodName === 'author') {
+                data = '<![CDATA[' + data + ']]>';
+            }
+            xml.push('    <' + methodName + '>' + data + '</' + methodName + '>');
+    });
+
+    xml.push('    <categories>');
+    self.categories().forEach(function (cat) {
+        xml.push('      <category>' + cat + '</category>');
+    });
+    xml.push('    </categories>');
+
+    style = self.style();
+    xml.push('    <style width="' + style.width + '" height="' + style.height + '" />' );
+
+    constraints = self.constraints();
+    xml.push('    <constraints>');
+
+    constraintsKeys.forEach(function (on) {
+        if (!constraints[on]) {
+            return;
+        }
+        var str = '      <constraint on="' + on + '"',
+            constraint = constraints[on];
+        for(var key in constraint) {
+            if (constraint.hasOwnProperty(key)) {
+                str += ' ' + key + '="' + constraint[key].toString() + '"';
+            }
+        }
+        str += ' />';
+        xml.push(str);
+    });
+    xml.push('    </constraints>');
+
+    xml.push('  </info>');
+    return xml.join('\n');
+};
 
 // Make it public
 exports.Configurator = Configurator;

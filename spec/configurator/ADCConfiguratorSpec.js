@@ -153,7 +153,8 @@ describe('ADCConfigurator', function () {
         });
     });
 
-    describe("#toXml", function () {
+
+    describe("#fromXml", function () {
         beforeEach(function () {
             spies.dirExists.andCallFake(function (p, cb) {
                 cb(null, true);
@@ -173,22 +174,110 @@ describe('ADCConfigurator', function () {
             });
         });
 
+        it("should reset the configuration with XML", function () {
+            runSync(function (done) {
+                var configurator = new ADCConfigurator("an/valid/path");
+                configurator.load(function () {
+                    configurator.fromXml('<control>\n  <info>\n  <name>new-name</name>\n  <guid>new-guid</guid>\n  ' +
+                        '<version>new-version</version>\n  <date>new-date</date>\n  <description><![CDATA[new-description]]></description>\n  ' +
+                        '<company>new-company</company>\n  <author>new-author</author>\n  <site>new-site</site>\n  ' +
+                        '<helpURL>new-helpURL</helpURL>\n  ' +
+                        '<categories>\n    <category>new-cat-1</category>\n    <category>new-cat-2</category>\n    <category>new-cat-3</category>\n  </categories>' +
+                        '\n  <style width="300" height="500" />' +
+                        '\n  <constraints>\n    <constraint on="questions" single="false" multiple="true" open="false" numeric="true" />' +
+                        '\n    <constraint on="controls" label="false" responseblock="true" checkbox="true" />' +
+                        '\n    <constraint on="responses" min="10" max="*" />' +
+                        '\n  </constraints>' +
+                        '\n  </info></control>');
+                    var result = configurator.toXml();
+                    expect(result ).toEqual('<?xml version="1.0" encoding="utf-8"?>'+
+                        '\n<control  xmlns="http://www.askia.com/ADCSchema"' +
+                        '\n          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"' +
+                        '\n          xsi:schemaLocation="http://www.askia.com/ADCSchema http://www.askia.com/Downloads/dev/schemas/adc2.0/Config.xsd"' +
+                        '\n          version="2.0.0"' +
+                        '\n          askiaCompat="5.3.3">' +
+                        '\n  <info>' +
+                        '\n    <name>new-name</name>' +
+                        '\n    <guid>new-guid</guid>' +
+                        '\n    <version>new-version</version>' +
+                        '\n    <date>new-date</date>' +
+                        '\n    <description><![CDATA[new-description]]></description>' +
+                        '\n    <company>new-company</company>' +
+                        '\n    <author><![CDATA[new-author]]></author>' +
+                        '\n    <site>new-site</site>' +
+                        '\n    <helpURL>new-helpURL</helpURL>' +
+                        '\n    <categories>' +
+                        '\n      <category>new-cat-1</category>' +
+                        '\n      <category>new-cat-2</category>' +
+                        '\n      <category>new-cat-3</category>' +
+                        '\n    </categories>' +
+                        '\n    <style width="300" height="500" />' +
+                        '\n    <constraints>' +
+                        '\n      <constraint on="questions" single="false" multiple="true" open="false" numeric="true" />' +
+                        '\n      <constraint on="controls" label="false" responseblock="true" checkbox="true" />' +
+                        '\n      <constraint on="responses" min="10" max="*" />' +
+                        '\n    </constraints>' +
+                        '\n  </info>' +
+                        '\n</control>');
+                    done();
+                });
+            });
+        });
+    });
+
+    describe("#toXml", function () {
+        beforeEach(function () {
+            spies.dirExists.andCallFake(function (p, cb) {
+                cb(null, true);
+            });
+            spies.fs.readFile.andCallFake(function (p, cb) {
+                cb(null, '<control><info><name>the-name</name><guid>the-guid</guid>' +
+                '<version>the-version</version><date>the-date</date><description><![CDATA[the-description]]></description>' +
+                '<company>the-company</company><author>the-author</author><site>the-site</site>' +
+                '<helpURL>the-helpURL</helpURL>' +
+                '<categories><category>cat-1</category><category>cat-2</category></categories>' +
+                '<style width="200" height="400" />' +
+                '<constraints><constraint on="questions" single="true" multiple="true" open="false" />' +
+                '<constraint on="controls" label="true" responseblock="true" />' +
+                '<constraint on="responses" min="2" max="*" />' +
+                '</constraints>' +
+                '</info></control>');
+            });
+        });
+
         it("should return the configuration as XML", function () {
             runSync(function (done) {
                 var configurator = new ADCConfigurator("an/valid/path");
                 configurator.load(function () {
                     var result = configurator.toXml();
-                    expect(result ).toEqual('<control>\n  <info>\n  <name>the-name</name>\n  <guid>the-guid</guid>\n  ' +
-                        '<version>the-version</version>\n  <date>the-date</date>\n  <description><![CDATA[the-description]]></description>\n  ' +
-                        '<company>the-company</company>\n  <author>the-author</author>\n  <site>the-site</site>\n  ' +
-                        '<helpURL>the-helpURL</helpURL>\n  ' +
-                        '<categories>\n    <category>cat-1</category>\n    <category>cat-2</category>\n  </categories>' +
-                        '\n  <style width="200" height="400" />' +
-                        '\n  <constraints>\n    <constraint on="questions" single="true" multiple="true" open="false" />' +
-                        '\n    <constraint on="controls" label="true" responseblock="true" />' +
-                        '\n    <constraint on="responses" min="2" max="*" />' +
-                        '\n  </constraints>' +
-                        '\n  </info></control>');
+                    expect(result ).toEqual('<?xml version="1.0" encoding="utf-8"?>'+
+                        '\n<control  xmlns="http://www.askia.com/ADCSchema"' +
+                        '\n          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"' +
+                        '\n          xsi:schemaLocation="http://www.askia.com/ADCSchema http://www.askia.com/Downloads/dev/schemas/adc2.0/Config.xsd"' +
+                        '\n          version="2.0.0"' +
+                        '\n          askiaCompat="5.3.3">' +
+                        '\n  <info>' +
+                        '\n    <name>the-name</name>' +
+                        '\n    <guid>the-guid</guid>' +
+                        '\n    <version>the-version</version>' +
+                        '\n    <date>the-date</date>' +
+                        '\n    <description><![CDATA[the-description]]></description>' +
+                        '\n    <company>the-company</company>' +
+                        '\n    <author><![CDATA[the-author]]></author>' +
+                        '\n    <site>the-site</site>' +
+                        '\n    <helpURL>the-helpURL</helpURL>' +
+                        '\n    <categories>' +
+                        '\n      <category>cat-1</category>' +
+                        '\n      <category>cat-2</category>' +
+                        '\n    </categories>' +
+                        '\n    <style width="200" height="400" />' +
+                        '\n    <constraints>' +
+                        '\n      <constraint on="questions" single="true" multiple="true" open="false" />' +
+                        '\n      <constraint on="controls" label="true" responseblock="true" />' +
+                        '\n      <constraint on="responses" min="2" max="*" />' +
+                        '\n    </constraints>' +
+                        '\n  </info>' +
+                        '\n</control>');
                     done();
                 });
             });
@@ -333,77 +422,6 @@ describe('ADCConfigurator', function () {
                     });
                 });
             });
-
-            it("should return the new ADC information", function () {
-                runSync(function (done) {
-                    var configurator = new ADCConfigurator("an/valid/path");
-                    configurator.load(function () {
-                        var result = configurator.info.set({
-                            name : "new-name",
-                            guid : "new-guid",
-                            version : "new-version",
-                            date : "new-date",
-                            description : "new-description",
-                            company : "new-company",
-                            author : "new-author",
-                            site : "new-site",
-                            helpURL : "new-helpURL",
-                            categories : ["new-cat-1", "new-cat-2", "new-cat-3"],
-                            style : {
-                                width : 300,
-                                height : 500
-                            },
-                            constraints : {
-                                questions : {
-                                    single : false,
-                                    numeric : true
-                                },
-                                controls : {
-                                    label :false,
-                                    checkbox : true
-                                },
-                                responses : {
-                                    min : 10
-                                }
-                            }
-                        });
-                        expect(result).toEqual({
-                            name : "new-name",
-                            guid : "new-guid",
-                            version : "new-version",
-                            date : "new-date",
-                            description : "new-description",
-                            company : "new-company",
-                            author : "new-author",
-                            site : "new-site",
-                            helpURL : "new-helpURL",
-                            categories : ["new-cat-1", "new-cat-2", "new-cat-3"],
-                            style : {
-                                width : 300,
-                                height : 500
-                            },
-                            constraints : {
-                                questions : {
-                                    single : false,
-                                    multiple : true,
-                                    open : false,
-                                    numeric : true
-                                },
-                                controls : {
-                                    label : false,
-                                    responseblock : true,
-                                    checkbox : true
-                                },
-                                responses : {
-                                    min : 10,
-                                    max : '*'
-                                }
-                            }
-                        });
-                        done();
-                    });
-                });
-            })
         });
 
         ["name", "guid", "version", "date", "description", "company", "author", "site", "helpURL"].forEach(function (propName) {
@@ -656,6 +674,39 @@ describe('ADCConfigurator', function () {
 
         });
 
+        describe("#toXml", function () {
+            it("should return the ADC information as plain object", function () {
+
+                runSync(function (done) {
+                    var configurator = new ADCConfigurator("an/valid/path");
+                    configurator.load(function () {
+                        var result = configurator.info.toXml();
+                        expect(result ).toEqual('  <info>' +
+                            '\n    <name>the-name</name>' +
+                            '\n    <guid>the-guid</guid>' +
+                            '\n    <version>the-version</version>' +
+                            '\n    <date>the-date</date>' +
+                            '\n    <description><![CDATA[the-description]]></description>' +
+                            '\n    <company>the-company</company>' +
+                            '\n    <author><![CDATA[the-author]]></author>' +
+                            '\n    <site>the-site</site>' +
+                            '\n    <helpURL>the-helpURL</helpURL>' +
+                            '\n    <categories>' +
+                            '\n      <category>cat-1</category>' +
+                            '\n      <category>cat-2</category>' +
+                            '\n    </categories>' +
+                            '\n    <style width="200" height="400" />' +
+                            '\n    <constraints>' +
+                            '\n      <constraint on="questions" single="true" multiple="true" open="false" />' +
+                            '\n      <constraint on="controls" label="true" responseblock="true" />' +
+                            '\n      <constraint on="responses" min="2" max="*" />' +
+                            '\n    </constraints>' +
+                            '\n  </info>');
+                        done();
+                    });
+                });
+            });
+        });
     });
 
 
