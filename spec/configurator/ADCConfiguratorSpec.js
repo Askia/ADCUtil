@@ -153,6 +153,48 @@ describe('ADCConfigurator', function () {
         });
     });
 
+    describe("#toXml", function () {
+        beforeEach(function () {
+            spies.dirExists.andCallFake(function (p, cb) {
+                cb(null, true);
+            });
+            spies.fs.readFile.andCallFake(function (p, cb) {
+                cb(null, '<control>\n  <info>\n  <name>the-name</name>\n  <guid>the-guid</guid>\n  ' +
+                    '<version>the-version</version>\n  <date>the-date</date>\n  <description><![CDATA[the-description]]></description>\n  ' +
+                    '<company>the-company</company>\n  <author>the-author</author>\n  <site>the-site</site>\n  ' +
+                    '<helpURL>the-helpURL</helpURL>\n  ' +
+                    '<categories>\n    <category>cat-1</category>\n    <category>cat-2</category>\n  </categories>' +
+                    '\n  <style width="200" height="400" />' +
+                    '\n  <constraints>\n    <constraint on="questions" single="true" multiple="true" open="false" />' +
+                    '\n    <constraint on="controls" label="true" responseblock="true" />' +
+                    '\n    <constraint on="responses" min="2" max="*" />' +
+                    '\n  </constraints>' +
+                    '\n  </info></control>');
+            });
+        });
+
+        it("should return the configuration as XML", function () {
+            runSync(function (done) {
+                var configurator = new ADCConfigurator("an/valid/path");
+                configurator.load(function () {
+                    var result = configurator.toXml();
+                    expect(result ).toEqual('<control>\n  <info>\n  <name>the-name</name>\n  <guid>the-guid</guid>\n  ' +
+                        '<version>the-version</version>\n  <date>the-date</date>\n  <description><![CDATA[the-description]]></description>\n  ' +
+                        '<company>the-company</company>\n  <author>the-author</author>\n  <site>the-site</site>\n  ' +
+                        '<helpURL>the-helpURL</helpURL>\n  ' +
+                        '<categories>\n    <category>cat-1</category>\n    <category>cat-2</category>\n  </categories>' +
+                        '\n  <style width="200" height="400" />' +
+                        '\n  <constraints>\n    <constraint on="questions" single="true" multiple="true" open="false" />' +
+                        '\n    <constraint on="controls" label="true" responseblock="true" />' +
+                        '\n    <constraint on="responses" min="2" max="*" />' +
+                        '\n  </constraints>' +
+                        '\n  </info></control>');
+                    done();
+                });
+            });
+        });
+    });
+
     describe("#info", function () {
 
         beforeEach(function () {

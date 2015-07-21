@@ -61,6 +61,16 @@ Configurator.prototype.load = function load(callback) {
 
 
 /**
+ * Return the configuration as xml
+ *
+ * @return {String}
+ */
+Configurator.prototype.toXml = function toXml() {
+    var xml = this.xmldoc.write();
+    return xml;
+};
+
+/**
  * ADC Info
  * @constructor
  * @param {Configurator} configurator Instance of the configurator
