@@ -165,12 +165,203 @@ describe('ADCConfigurator', function () {
                         '<company>the-company</company><author>the-author</author><site>the-site</site>' +
                         '<helpURL>the-helpURL</helpURL>' +
                         '<categories><category>cat-1</category><category>cat-2</category></categories>' +
+                        '<style width="200" height="400" />' +
                         '<constraints><constraint on="questions" single="true" multiple="true" open="false" />' +
                         '<constraint on="controls" label="true" responseblock="true" />' +
                         '<constraint on="responses" min="2" max="*" />' +
                         '</constraints>' +
                         '</info></control>');
             });
+        });
+
+        describe("#get", function () {
+            it("should return the ADC information as plain object", function () {
+
+                runSync(function (done) {
+                    var configurator = new ADCConfigurator("an/valid/path");
+                    configurator.load(function () {
+                        var result = configurator.info.get();
+                        expect(result ).toEqual({
+                            name : "the-name",
+                            guid : "the-guid",
+                            version : "the-version",
+                            date : "the-date",
+                            description : "the-description",
+                            company : "the-company",
+                            author : "the-author",
+                            site : "the-site",
+                            helpURL : "the-helpURL",
+                            categories : ["cat-1", "cat-2"],
+                            style : {
+                                width : 200,
+                                height : 400
+                            },
+                            constraints : {
+                                questions : {
+                                    single : true,
+                                    multiple : true,
+                                    open : false
+                                },
+                                controls : {
+                                    label : true,
+                                    responseblock : true
+                                },
+                                responses : {
+                                    min : 2,
+                                    max : '*'
+                                }
+                            }
+                        });
+                        done();
+                    });
+                });
+            });
+        });
+
+        describe("#set", function () {
+            it("should set the ADC information with plain object", function () {
+
+                runSync(function (done) {
+                    var configurator = new ADCConfigurator("an/valid/path");
+                    configurator.load(function () {
+                        configurator.info.set({
+                            name : "new-name",
+                            guid : "new-guid",
+                            version : "new-version",
+                            date : "new-date",
+                            description : "new-description",
+                            company : "new-company",
+                            author : "new-author",
+                            site : "new-site",
+                            helpURL : "new-helpURL",
+                            categories : ["new-cat-1", "new-cat-2", "new-cat-3"],
+                            style : {
+                                width : 300,
+                                height : 500
+                            },
+                            constraints : {
+                                questions : {
+                                    single : false,
+                                    numeric : true
+                                },
+                                controls : {
+                                    label :false,
+                                    checkbox : true
+                                },
+                                responses : {
+                                    min : 10
+                                }
+                            }
+                        });
+                        var result = configurator.info.get();
+                        expect(result ).toEqual({
+                            name : "new-name",
+                            guid : "new-guid",
+                            version : "new-version",
+                            date : "new-date",
+                            description : "new-description",
+                            company : "new-company",
+                            author : "new-author",
+                            site : "new-site",
+                            helpURL : "new-helpURL",
+                            categories : ["new-cat-1", "new-cat-2", "new-cat-3"],
+                            style : {
+                                width : 300,
+                                height : 500
+                            },
+                            constraints : {
+                                questions : {
+                                    single : false,
+                                    multiple : true,
+                                    open : false,
+                                    numeric : true
+                                },
+                                controls : {
+                                    label : false,
+                                    responseblock : true,
+                                    checkbox : true
+                                },
+                                responses : {
+                                    min : 10,
+                                    max : '*'
+                                }
+                            }
+                        });
+                        done();
+                    });
+                });
+            });
+
+            it("should return the new ADC information", function () {
+                runSync(function (done) {
+                    var configurator = new ADCConfigurator("an/valid/path");
+                    configurator.load(function () {
+                        var result = configurator.info.set({
+                            name : "new-name",
+                            guid : "new-guid",
+                            version : "new-version",
+                            date : "new-date",
+                            description : "new-description",
+                            company : "new-company",
+                            author : "new-author",
+                            site : "new-site",
+                            helpURL : "new-helpURL",
+                            categories : ["new-cat-1", "new-cat-2", "new-cat-3"],
+                            style : {
+                                width : 300,
+                                height : 500
+                            },
+                            constraints : {
+                                questions : {
+                                    single : false,
+                                    numeric : true
+                                },
+                                controls : {
+                                    label :false,
+                                    checkbox : true
+                                },
+                                responses : {
+                                    min : 10
+                                }
+                            }
+                        });
+                        expect(result).toEqual({
+                            name : "new-name",
+                            guid : "new-guid",
+                            version : "new-version",
+                            date : "new-date",
+                            description : "new-description",
+                            company : "new-company",
+                            author : "new-author",
+                            site : "new-site",
+                            helpURL : "new-helpURL",
+                            categories : ["new-cat-1", "new-cat-2", "new-cat-3"],
+                            style : {
+                                width : 300,
+                                height : 500
+                            },
+                            constraints : {
+                                questions : {
+                                    single : false,
+                                    multiple : true,
+                                    open : false,
+                                    numeric : true
+                                },
+                                controls : {
+                                    label : false,
+                                    responseblock : true,
+                                    checkbox : true
+                                },
+                                responses : {
+                                    min : 10,
+                                    max : '*'
+                                }
+                            }
+                        });
+                        done();
+                    });
+                });
+            })
         });
 
         ["name", "guid", "version", "date", "description", "company", "author", "site", "helpURL"].forEach(function (propName) {
@@ -202,6 +393,33 @@ describe('ADCConfigurator', function () {
                 });
             });
 
+        });
+
+        describe("#style", function () {
+
+            it("should return the value from the xml node", function () {
+
+                runSync(function (done) {
+                    var configurator = new ADCConfigurator("an/valid/path");
+                    configurator.load(function () {
+                        var result = configurator.info.style();
+                        expect(result ).toEqual({ width : 200, height : 400});
+                        done();
+                    });
+                });
+            });
+
+            it("should set the value", function () {
+                runSync(function (done) {
+                    var configurator = new ADCConfigurator("an/valid/path");
+                    configurator.load(function () {
+                        configurator.info.style({width : 300, height : 500});
+                        var result = configurator.info.style();
+                        expect(result ).toEqual({width : 300, height : 500});
+                        done();
+                    });
+                });
+            });
         });
 
         describe("#categories", function () {
@@ -397,5 +615,6 @@ describe('ADCConfigurator', function () {
         });
 
     });
-    
+
+
 });

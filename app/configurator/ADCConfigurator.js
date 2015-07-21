@@ -69,6 +69,47 @@ function ADCInfo(configurator) {
     this.configurator = configurator;
 }
 
+/**
+ * Get the entire information as object
+ *
+ * @return {Object}
+ */
+ADCInfo.prototype.get = function get() {
+    var self = this,
+        result = {};
+
+    ["name", "guid", "version", "date", "description", "company", "author", "site",
+        "helpURL", "categories", "style", "constraints"].forEach(function (methodName) {
+            result[methodName] = self[methodName]();
+    });
+    return result;
+};
+
+
+/**
+ * Set the information using a plain object
+ *
+ * @param {Object} data Data to set
+ * @return {Object}
+ */
+ADCInfo.prototype.set = function set(data) {
+    var self = this;
+
+    if (!data) {
+        return self.get();
+    }
+
+
+    ["name", "guid", "version", "date", "description", "company", "author", "site",
+        "helpURL", "categories", "style", "constraints"].forEach(function (methodName) {
+            if (data.hasOwnProperty(methodName)) {
+                self[methodName](data[methodName]);
+            }
+        });
+
+    return self.get();
+};
+
 (["name", "guid", "version", "date", "description", "company", "author", "site", "helpURL"].forEach(function (propName) {
 
     ADCInfo.prototype[propName] = function (data) {
@@ -80,6 +121,35 @@ function ADCInfo(configurator) {
         return el.text;
     };
 }));
+
+/**
+ * Get or set the style
+ *
+ * @param {Object} [data] Style to set
+ * #param {Number} [data.width] Style width
+ * @param {Number} [data.height] Style height
+ * @returns {Object}
+ */
+ADCInfo.prototype.style = function style(data) {
+    var xmldoc = this.configurator.xmldoc;
+    var el = xmldoc.find("info/style");
+    var result = {}, w, h;
+    if (data !== undefined) {
+        if (data.width !== undefined) {
+            el.set("width", data.width);
+        }
+        if (data.height !== undefined) {
+            el.set("height", data.height);
+        }
+    }
+    w = el.get("width") || "0";
+    h = el.get("height") || "0";
+
+    result.width = parseInt(w, 10);
+    result.height = parseInt(h, 10);
+
+    return result;
+};
 
 /**
  * Get or set the categories
