@@ -48,7 +48,7 @@ Configurator.prototype.load = function load(callback) {
                 return;
             }
 
-            self.xmldoc = et.parse(data);
+            self.xmldoc = et.parse(data.toString());
 
             self.info = new ADCInfo(self);
             callback(null);
