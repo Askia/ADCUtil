@@ -337,12 +337,14 @@ exports.getDirStructure = function getDirStructure(path, callback) {
  * Create a new sequence of function to call
  * @param {Array} sequence Array of function to call one by one
  * @param {Function} callback Callback function to execute at the end of the sequence
+ * @param {Object} [scope] Scope of function to execute (this)
  * @constructor
  */
-function Sequence(sequence, callback) {
+function Sequence(sequence, callback, scope) {
     this.current  = -1;
     this.sequence = sequence;
     this.callback = callback;
+    this.scope    = scope;
 }
 
 /**
@@ -380,12 +382,12 @@ Sequence.prototype.resume = function resume(err) {
     var index = this.nextIndex();
     if (index === -1 || err) {
         if (typeof this.callback === 'function') {
-            this.callback(err);
+            this.callback.call(this.scope, err);
         }
         return;
     }
     this.current = index;
-    this.sequence[this.current]();
+    this.sequence[this.current].call(this.scope);
 };
 
 exports.Sequence = Sequence;

@@ -1,22 +1,243 @@
-// Filesystem
-var fs = require('fs'),
+var fs          = require('fs');
+var pathHelper  = require('path');
+var common      = require('../common/common.js');
+var errMsg      = common.messages.error;
+var successMsg  = common.messages.success;
+var Validator   = require('../validator/ADCValidator.js').Validator;
 
-// Util
-    format   = require('util').format,
 
-// Path helper
-    pathHelper = require('path'),
+/**
+ * Create a new instance of ADC Builder
+ *
+ * @constructor
+ * @param {String} adcDirPath Path of the ADC directory
+ */
+function Builder(adcDirPath) {
+    /**
+     * Root dir of the current ADCUtil
+     */
+    this.rootdir = pathHelper.resolve(__dirname, "../../");
 
-// Common
-    common = require('../common/common.js'),
+    /**
+     * Name of the ADC
+     * @type {string}
+     */
+    this.adcName = '';
 
-// Error messages
-    errMsg          = common.messages.error,
+    /**
+     * Path to the ADC directory
+     * @type {string}
+     */
+    this.adcDirectoryPath = adcDirPath ? pathHelper.normalize(adcDirPath) : process.cwd();
 
-// Regular messages
-    successMsg       = common.messages.success;
+    /**
+     * Bin path of the ADC
+     * @type {string}
+     */
+    this.binPath = '';
 
-exports = module.exports;
+    /**
+     * Path of the output file
+     * @type {string}
+     */
+    this.outputPath = '';
+
+    // Sequence of calls
+    this.sequence = new common.Sequence([
+        this.createBinDir,
+        this.compressADC
+    ], this.done, this);
+
+    // Validation report
+    this.validationReport = null;
+}
+
+/**
+ * Build the ADC
+ *
+ * @param {Object} [options] Options of validation
+ * @param {Boolean} [options.test=true] Run unit tests
+ * @param {Boolean} [options.autoTest=true] Run auto unit tests
+ * @param {Boolean} [options.xml=true] Validate the config.xml file
+ * @param {Function} [callback] Callback function
+ * @param {Error} [callback.err] Error
+ * @param {String} [callback.outputPath} Path of the output
+ * @param {Object} [callback.report] Validation report
+ */
+Builder.prototype.build = function build(options, callback) {
+
+    // Swap the options
+    if (typeof  options === 'function') {
+        callback = options;
+        options = null;
+    }
+
+    this.buildCallback = callback;
+
+    this.validator = new Validator(this.adcDirectoryPath);
+    var self = this;
+    options = options || {};
+    options.xml = true;
+    options.autoTest = true;
+
+    this.validator.validate(options, function validateCallback(err, report) {
+        if (err) {
+            return self.sequence.resume(new Error(errMsg.validationFailed));
+        }
+
+        self.adcName          = self.validator.adcName;
+        self.binPath          = pathHelper.join(self.adcDirectoryPath, common.ADC_BIN_PATH);
+        self.validationReport = report;
+
+        return self.sequence.resume();
+    });
+};
+
+/**
+ * Write an error output in the console
+ * @param {String} text Text to write in the console
+ */
+Builder.prototype.writeError = function writeError(text) {
+    common.writeError.apply(common, arguments);
+};
+
+/**
+ * Write a warning output in the console
+ * @param {String} text Text to write in the console
+ */
+Builder.prototype.writeWarning = function writeWarning(text) {
+    common.writeWarning.apply(common, arguments);
+};
+
+/**
+ * Write a success output in the console
+ * @param {String} text Text to write in the console
+ */
+Builder.prototype.writeSuccess = function writeSuccess(text) {
+    common.writeSuccess.apply(common, arguments);
+};
+
+/**
+ * Write an arbitrary message in the console without specific prefix
+ * @param {String} text Text to write in the console
+ */
+Builder.prototype.writeMessage = function writeMessage(text) {
+    common.writeMessage.apply(common, arguments);
+};
+
+
+/**
+ * End of the sequence chain
+ * @param {Error} err Error
+ */
+Builder.prototype.done = function done(err) {
+    if (err) {
+        this.writeError(err.message);
+        if (typeof this.buildCallback === 'function') {
+            this.buildCallback(err, this.outputPath, this.validationReport);
+        }
+        return;
+    }
+
+    var output = pathHelper.join(this.binPath, this.adcName + '.adc');
+
+    if (!this.validationReport.warnings) {
+        this.writeSuccess(successMsg.buildSucceed, output);
+    } else {
+        this.writeSuccess(successMsg.buildSucceedWithWarning, this.validationReport.warnings, output);
+    }
+    if (typeof this.buildCallback === 'function') {
+        this.buildCallback(err, this.outputPath, this.validationReport);
+    }
+};
+
+
+/**
+ * Create a bin directory
+ */
+Builder.prototype.createBinDir =  function createBinDir() {
+    var self = this;
+    common.dirExists(this.binPath, function binPathExist(err, exist) {
+        if (!exist || err) {
+            var er = fs.mkdirSync(self.binPath);
+            if (er) {
+                return self.sequence.resume(er);
+            }
+        }
+        return self.sequence.resume();
+    });
+};
+
+/**
+ * Compress the ADC directory
+ */
+Builder.prototype.compressADC =  function compressADC() {
+    var self = this;
+    common.getDirStructure(self.adcDirectoryPath, function callbackGetStructure(err, structure) {
+        if (err) {
+            return self.sequence.resume(err);
+        }
+
+        var zip     = common.getNewZip(),
+            zipDir = '';
+
+        structure.forEach(function appendInZip(file) {
+            var prevDir,
+                folderLower,
+                zipDirLower = zipDir.toLowerCase();
+
+            if (typeof file === 'string') {  // File
+                if (zipDirLower === 'resources/') return; // Exclude extra files
+                if (zipDirLower === '' && !/^(config\.xml|readme|changelog)/i.test(file)) return; // Exclude extra files
+                if (common.isIgnoreFile(file)) return; // Ignore files
+                zip.file(pathHelper.join(zipDir, file), fs.readFileSync(pathHelper.join(self.adcDirectoryPath, zipDir, file)));
+            } else { // Directory
+                if (!file.sub || !file.sub.length) return;        // Exclude empty folder
+
+                folderLower = file.name.toLowerCase();
+
+                if (folderLower === 'bin') return;   // Exclude the bin folder
+                if (folderLower === 'tests') return; // Exclude tests folder
+                if (zipDirLower === 'resources/' &&  !/^(dynamic|static|share)$/i.test(folderLower)) return; // Exclude extra directories
+                if (zipDirLower === '' && !/^(resources)$/.test(folderLower)) return; // Exclude extra directories
+
+                prevDir = zipDir;
+                zipDir += file.name + '/';
+                zip.folder(zipDir);
+                file.sub.forEach(appendInZip);
+                zipDir = prevDir;
+            }
+        });
+
+        var buffer = zip.generate({type:"nodebuffer"});
+
+        self.outputPath = pathHelper.join(self.binPath, self.adcName + '.adc');
+        fs.writeFile(self.outputPath, buffer, function writeZipFile(err) {
+            if (err) {
+                throw err;
+            }
+        });
+
+        self.sequence.resume();
+    });
+};
+
+
+// Export the Builder object
+exports.Builder = Builder;
+
+
+/**
+ * Build the ADC file
+ *
+ * @param {Command} program Commander object which hold the arguments pass to the program
+ * @param {String} path Path of the ADC to directory
+ */
+exports.build = function build(program, path) {
+    var builder = new Builder(path);
+    builder.build(program);
+};
+
 
 /**
  * Root directory of the program
@@ -62,7 +283,7 @@ var sequence = new common.Sequence([
  * @param {Command} program Commander object which hold the arguments pass to the program
  * @param {String} path Path of the ADC to directory
  */
-exports.build = function build(program, path) {
+exports.buildOLD = function build(program, path) {
     var validator = require('../validator/ADCValidator.js');
     program = program || {};
     program.xml = true;

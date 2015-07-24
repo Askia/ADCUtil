@@ -709,5 +709,4 @@ describe('ADCConfigurator', function () {
         });
     });
 
-
 });

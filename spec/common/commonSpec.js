@@ -286,6 +286,20 @@ describe('common', function () {
         });
 
         describe('#resume', function () {
+            it("should call the next function with the thisArg specified in the constructor", function () {
+                var calls = [];
+                function first() {
+                    this.push('first');
+                }
+                function second(){
+                    this.push('second');
+                }
+
+                var seq = new common.Sequence([first, second], null, calls);
+                seq.resume();
+                seq.resume();
+                expect(calls).toEqual(['first', 'second']);
+            });
             it("should call the next function to execute", function () {
               var calls = [];
               function first() {
@@ -308,6 +322,15 @@ describe('common', function () {
                 var seq = new common.Sequence(null, cb);
                 seq.resume();
                 expect(hasCalled).toBe(true);
+            });
+            it("should call the callback function with the thisArg specified in the constructor", function () {
+                var obj = {};
+                function cb() {
+                    this.hasCalled = true;
+                }
+                var seq = new common.Sequence(null, cb, obj);
+                seq.resume();
+                expect(obj.hasCalled).toBe(true);
             });
             it("should call the callback function with the error argument of the #resume", function () {
                 var error = new Error('fake error'),
@@ -345,6 +368,7 @@ describe('common', function () {
                 seq.resume();
                 expect(calls).toEqual(['first']);
             });
+
         });
     });
 });

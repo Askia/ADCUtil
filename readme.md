@@ -1,7 +1,12 @@
 # ADCUtil
 
+This utilities is use to facilitate the creation and the packaging of and ADC project.
 
-## Usage
+It contains validators and allow to display outputs of the ADC using the ADCEngine. 
+
+ADCUtil is a CLI tools (Command Line Interface) but it also provide an API for NodeJS project. 
+
+## CLI Usage
 
 This application works through Windows PowerShell
 
@@ -25,6 +30,34 @@ This application works through Windows PowerShell
     -X, --no-xml           skip the validation of the config.xml file
     -A, --no-autoTest      skip the execution of the auto-generated unit tests
     -t, --template <name>  name of the template to use to generate the ADC
+
+## API Usage
+
+    var ADC = require('adcutil').ADC;
+    
+    var myAdc = new ADC('path/to/adc/dir');
+    
+    // Generate an ADC
+    myAdc.generate(function (err) {
+        // Callback when the ADC structure has been generated
+    });
+    
+    // Validate an ADC
+    myAdc.validate(function (err, report) {
+        // Callback when the ADC structure has been validated
+    });
+    
+    // Show the output of an ADC
+    myAdc.show({ output : 'fallback', fixture : 'single.xml'  },  function (err, output) {
+        // Callback with the output of the ADC
+    });
+    
+    // Build the ADC (package it)
+    myAdc.build(function (err, path, report) {
+        // Callback when the ADC has been built 
+    });
+    
+
 
 ## Setup
 

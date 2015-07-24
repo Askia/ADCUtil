@@ -1,11 +1,10 @@
 describe('ADCBuilder', function () {
 
     var fs              = require('fs'),
-        format          = require('util').format,
-        pathHelper      = require('path'),
         spies           = {},
         common,
         adcValidator,
+        Validator,
         adcBuilder,
         errMsg,
         successMsg;
@@ -22,6 +21,15 @@ describe('ADCBuilder', function () {
         delete require.cache[adcValidatorKey];
         adcValidator = require('../../app/validator/ADCValidator.js');
 
+        Validator = adcValidator.Validator;
+        spies.validateHook = function () {};
+
+        Validator.prototype.validate = function () {
+            spies.validateHook.apply(this, arguments);
+        };
+
+
+
         delete require.cache[adcBuilderKey];
         adcBuilder = require('../../app/builder/ADCBuilder.js');
 
@@ -30,7 +38,7 @@ describe('ADCBuilder', function () {
         successMsg  = common.messages.success;
 
         // Court-circuit the validation
-        spies.validate    =  spyOn(adcValidator, 'validate');
+        spies.validate    =  spyOn(spies, 'validateHook');
 
         // Court-circuit the validation outputs
         spies.writeError   = spyOn(common, 'writeError');
@@ -60,13 +68,13 @@ describe('ADCBuilder', function () {
     describe('#build', function () {
         it("should run the validator", function () {
             adcBuilder.build();
-            expect(adcValidator.validate).toHaveBeenCalled();
+            expect(spies.validateHook).toHaveBeenCalled();
         });
 
         it("should run the validator with xml validation, even if the flag --no-xml is true", function () {
             var p;
-            adcValidator.validate.andCallFake(function (program, path, callback) {
-                p = program;
+            spies.validateHook.andCallFake(function (options) {
+                p = options;
             });
             adcBuilder.build({
                 xml : false
@@ -76,8 +84,8 @@ describe('ADCBuilder', function () {
 
         it("should run the validator with auto-test validation, even if the flag --no-test is true", function () {
             var p;
-            adcValidator.validate.andCallFake(function (program, path, callback) {
-                p = program;
+            spies.validateHook.andCallFake(function (options) {
+                p = options;
             });
             adcBuilder.build({
                 test : false
@@ -86,7 +94,7 @@ describe('ADCBuilder', function () {
         });
 
         it("should output an error when the validation failed", function () {
-            adcValidator.validate.andCallFake(function (program, path, callback) {
+            spies.validateHook.andCallFake(function (options, callback) {
                 callback(new Error("Fake error"));
             });
             adcBuilder.build();
@@ -95,8 +103,8 @@ describe('ADCBuilder', function () {
 
         describe("create `bin` directory", function () {
             beforeEach(function () {
-                adcValidator.validate.andCallFake(function (program, path, callback) {
-                    adcValidator.adcDirectoryPath = 'adc/path/dir/';
+                spies.validateHook.andCallFake(function (options, callback) {
+                    this.adcDirectoryPath = 'adc/path/dir/';
                     callback(null);
                 });
             });
@@ -130,10 +138,10 @@ describe('ADCBuilder', function () {
         describe("compress the ADC directory", function () {
             var struct, newZip, files;
             beforeEach(function () {
-                adcValidator.validate.andCallFake(function (program, path, callback) {
-                    adcValidator.adcName = 'myadc';
-                    adcValidator.adcDirectoryPath = 'adc/path/dir/';
-                    callback(null);
+                spies.validateHook.andCallFake(function (options, callback) {
+                    this.adcName = 'myadc';
+                    this.adcDirectoryPath = 'adc/path/dir/';
+                    callback(null, {});
                 });
 
                 spies.dirExists.andCallFake(function (path, callback) {
@@ -198,14 +206,14 @@ describe('ADCBuilder', function () {
                 expect(files).toEqual([
                     'resources/',
                     'resources/dynamic/',
-                    'resources/dynamic/default.html',
-                    'resources/dynamic/dynamic.css',
+                    'resources\\dynamic\\default.html',
+                    'resources\\dynamic\\dynamic.css',
                     'resources/static/',
-                    'resources/static/default.html',
-                    'resources/static/static.css',
+                    'resources\\static\\default.html',
+                    'resources\\static\\static.css',
                     'resources/share/',
-                    'resources/share/default.js',
-                    'resources/share/share.js',
+                    'resources\\share\\default.js',
+                    'resources\\share\\share.js',
                     'config.xml',
                     'readme.txt'
                 ]);
@@ -226,14 +234,14 @@ describe('ADCBuilder', function () {
                 expect(files).toEqual([
                     'resources/',
                     'resources/dynamic/',
-                    'resources/dynamic/default.html',
-                    'resources/dynamic/dynamic.css',
+                    'resources\\dynamic\\default.html',
+                    'resources\\dynamic\\dynamic.css',
                     'resources/static/',
-                    'resources/static/default.html',
-                    'resources/static/static.css',
+                    'resources\\static\\default.html',
+                    'resources\\static\\static.css',
                     'resources/share/',
-                    'resources/share/default.js',
-                    'resources/share/share.js',
+                    'resources\\share\\default.js',
+                    'resources\\share\\share.js',
                     'config.xml',
                     'readme.txt'
                 ]);
@@ -251,8 +259,8 @@ describe('ADCBuilder', function () {
                 expect(files).toEqual([
                     'resources/',
                     'resources/static/',
-                    'resources/static/default.html',
-                    'resources/static/static.css',
+                    'resources\\static\\default.html',
+                    'resources\\static\\static.css',
                     'config.xml',
                     'readme.txt'
                 ]);
@@ -283,16 +291,16 @@ describe('ADCBuilder', function () {
                 expect(files).toEqual([
                     'resources/',
                     'resources/dynamic/',
-                    'resources/dynamic/default.html',
-                    'resources/dynamic/dynamic.css',
+                    'resources\\dynamic\\default.html',
+                    'resources\\dynamic\\dynamic.css',
                     'resources/dynamic/shouldbeinclude/',
-                    'resources/dynamic/shouldbeinclude/test.html',
+                    'resources\\dynamic\\shouldbeinclude\\test.html',
                     'resources/static/',
-                    'resources/static/default.html',
-                    'resources/static/static.css',
+                    'resources\\static\\default.html',
+                    'resources\\static\\static.css',
                     'resources/share/',
-                    'resources/share/default.js',
-                    'resources/share/share.js',
+                    'resources\\share\\default.js',
+                    'resources\\share\\share.js',
                     'config.xml',
                     'readme.txt'
                 ]);
@@ -309,9 +317,9 @@ describe('ADCBuilder', function () {
 
         describe("done", function () {
             beforeEach(function () {
-                adcValidator.validate.andCallFake(function (program, path, callback) {
-                    adcValidator.adcName = 'myadc';
-                    adcValidator.adcDirectoryPath = 'adc/path/dir/';
+                spies.validateHook.andCallFake(function (options, callback) {
+                    this.adcName = 'myadc';
+                    this.adcDirectoryPath = 'adc/path/dir/';
                     callback(null);
                 });
 
@@ -360,14 +368,28 @@ describe('ADCBuilder', function () {
             });
 
             it("should output a success when the build succeed", function () {
+                spies.validateHook.andCallFake(function (options, callback) {
+                    this.adcName = 'myadc';
+                    this.adcDirectoryPath = 'adc/path/dir/';
+                    this.report = {
+                        warnings : 0,
+                        errors : 0
+                    };
+                    callback(null, this.report);
+                });
                 adcBuilder.build(null, 'adc/path/dir');
                 expect(common.writeSuccess).toHaveBeenCalledWith(successMsg.buildSucceed, 'adc\\path\\dir\\bin\\myadc.adc');
             });
 
             it("should output a with warning when the build succeed with warning", function () {
-                adcValidator.report = {
-                    warnings : 1
-                };
+                spies.validateHook.andCallFake(function (options, callback) {
+                    this.adcName = 'myadc';
+                    this.adcDirectoryPath = 'adc/path/dir/';
+                    this.report = {
+                        warnings : 1
+                    };
+                    callback(null, this.report);
+                });
                 adcBuilder.build(null, 'adc/path/dir');
                 expect(common.writeSuccess).toHaveBeenCalledWith(successMsg.buildSucceedWithWarning, 1, 'adc\\path\\dir\\bin\\myadc.adc');
             });
