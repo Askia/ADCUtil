@@ -15,8 +15,20 @@ function Configurator(dir) {
     if (!dir) {
         throw new Error(errMsg.invalidPathArg);
     }
+    /**
+     * Path of the ADC directory
+     * @type {String}
+     */
     this.path   = dir;
+
+
     this.xmldoc = null;
+
+    /**
+     * Info of the ADC
+     * @type {ADCInfo}
+     */
+    this.info = null;
 }
 
 
@@ -58,7 +70,6 @@ Configurator.prototype.load = function load(callback) {
 
     });
 };
-
 
 /**
  * Return the configuration as xml
@@ -114,7 +125,6 @@ ADCInfo.prototype.get = function get() {
     });
     return result;
 };
-
 
 /**
  * Set the information using a plain object
