@@ -6,6 +6,7 @@ describe('ADCBuilder', function () {
         adcValidator,
         Validator,
         adcBuilder,
+        Builder,
         errMsg,
         successMsg;
 
@@ -28,10 +29,10 @@ describe('ADCBuilder', function () {
             spies.validateHook.apply(this, arguments);
         };
 
-
-
         delete require.cache[adcBuilderKey];
         adcBuilder = require('../../app/builder/ADCBuilder.js');
+
+        Builder = adcBuilder.Builder;
 
         // Messages
         errMsg      = common.messages.error;
@@ -392,6 +393,115 @@ describe('ADCBuilder', function () {
                 });
                 adcBuilder.build(null, 'adc/path/dir');
                 expect(common.writeSuccess).toHaveBeenCalledWith(successMsg.buildSucceedWithWarning, 1, 'adc\\path\\dir\\bin\\myadc.adc');
+            });
+        });
+
+        describe("API `callback`", function () {
+            beforeEach(function () {
+                spies.validateHook.andCallFake(function (options, callback) {
+                    this.adcName = 'myadc';
+                    this.adcDirectoryPath = 'adc/path/dir/';
+                    callback(null, {
+                        fakeReport : true
+                    });
+                });
+
+                spies.dirExists.andCallFake(function (path, callback) {
+                    callback(null, true);
+                });
+
+                spyOn(common, 'getDirStructure').andCallFake(function (path, callback) {
+                    callback(null, [
+                        {
+                            name : 'resources',
+                            sub  : [
+                                {
+                                    name : 'dynamic',
+                                    sub  : [
+                                        'default.html',
+                                        'dynamic.css'
+                                    ]
+                                },
+                                {
+                                    name : 'static',
+                                    sub  : [
+                                        'default.html',
+                                        'static.css'
+                                    ]
+                                },
+                                {
+                                    name : 'share',
+                                    sub  : [
+                                        'default.js',
+                                        'share.js'
+                                    ]
+                                }
+                            ]
+                        },
+                        'config.xml',
+                        'readme.txt'
+                    ]);
+                });
+
+                spies.getNewZip.andReturn({
+                    file : function () {},
+                    folder: function () {},
+                    generate : function () {}
+                });
+            });
+
+            it("should be called when defined without `options` arg", function () {
+               var builder = new Builder('adc/path/dir/');
+                var wasCalled = false;
+                builder.build(function () {
+                    wasCalled = true;
+                });
+
+                expect(wasCalled).toBe(true);
+            });
+
+            it("should be called when defined with the`options` arg", function () {
+                var builder = new Builder('adc/path/dir/');
+                var wasCalled = false;
+                builder.build({}, function () {
+                    wasCalled = true;
+                });
+
+                expect(wasCalled).toBe(true);
+            });
+
+            it("should be call with an err argument as an Error", function () {
+                spies.validateHook.andCallFake(function (options, callback) {
+                    callback(new Error("Fake error"));
+                });
+                var builder = new Builder('some/path');
+                var callbackErr;
+                builder.build(function (err) {
+                    callbackErr = err;
+                });
+                expect(callbackErr instanceof Error).toBe(true);
+            });
+
+            it("should be call with the `outputPath` in arg", function () {
+              var builder = new Builder('adc/path/dir/');
+                var callbackPath;
+                builder.build(function (err, outputPath) {
+                    callbackPath = outputPath;
+                });
+
+                expect(callbackPath).toEqual('adc\\path\\dir\\bin\\myadc.adc');
+            });
+
+            it("should be call with the `report` in arg", function () {
+                var builder = new Builder('adc/path/dir/');
+                var callbackReport;
+                builder.build(function (err, outputPath, report) {
+                    callbackReport = report;
+                });
+
+                expect(callbackReport).toEqual({
+                    fakeReport : true
+                });
             });
         });
 

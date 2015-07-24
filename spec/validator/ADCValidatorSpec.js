@@ -2075,7 +2075,6 @@ describe('ADCValidator', function () {
 
     });
 
-
     describe('#runAutoTests', function () {
         var spyExec,
             childProc;
@@ -2223,6 +2222,66 @@ describe('ADCValidator', function () {
             adcValidator.validate(null, '/adc/path/dir');
 
             expect(common.writeSuccess).toHaveBeenCalledWith(successMsg.adcUnitSucceed);
+        });
+    });
+
+    describe("API `callback`", function () {
+        it("should be called when defined without `options` arg", function () {
+            spies.validateHook = function () {
+                this.validators.sequence = [];
+            };
+
+            var validatorInstance = new Validator('test');
+            var wasCalled = false;
+            validatorInstance.validate(function () {
+                wasCalled = true;
+            });
+
+            expect(wasCalled).toBe(true);
+        });
+
+        it("should be called when defined with the`options` arg", function () {
+            spies.validateHook = function () {
+                this.validators.sequence = [];
+            };
+            var validatorInstance = new Validator('test');
+            var wasCalled = false;
+            validatorInstance.validate({}, function () {
+                wasCalled = true;
+            });
+
+            expect(wasCalled).toBe(true);
+        });
+
+        it("should be call with an err argument as an Error", function () {
+            spies.validateHook = function () {
+                this.validators.sequence = ['raiseError'];
+                this.raiseError = function () {
+                    this.resume(new Error("An error occurred"));
+                };
+            };
+
+            var validatorInstance = new Validator('test');
+            var callbackErr;
+            validatorInstance.validate(function (err) {
+                callbackErr = err;
+            });
+
+            expect(callbackErr instanceof Error).toBe(true);
+        });
+
+        it("should be call with the `report`", function () {
+            spies.validateHook = function () {
+                this.validators.sequence = [];
+            };
+
+            var validatorInstance = new Validator('test');
+            var callbackReport;
+            validatorInstance.validate(function (err, report) {
+                callbackReport = report;
+            });
+
+            expect(callbackReport.runs).toEqual(0);
         });
     });
 });

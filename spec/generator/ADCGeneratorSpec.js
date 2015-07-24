@@ -8,6 +8,8 @@ describe('ADCGenerator', function () {
         spies           = {},
         common,
         adcGenerator,
+        Generator,
+        generatorInstance,
         errMsg,
         successMsg;
 
@@ -22,8 +24,17 @@ describe('ADCGenerator', function () {
         delete require.cache[adcGeneratorKey];
         adcGenerator = require('../../app/generator/ADCGenerator.js');
 
+        Generator = adcGenerator.Generator;
+        var oldGenerate = Generator.prototype.generate;
+
+        Generator.prototype.generate = function () {
+            generatorInstance = this;
+            oldGenerate.apply(this, arguments);
+        };
+
+
         // Messages
-        errMsg      = common.messages.error;
+        errMsg              = common.messages.error;
         successMsg         = common.messages.success;
 
         // Court-circuit the validation outputs
@@ -49,6 +60,8 @@ describe('ADCGenerator', function () {
 
         // Court-circuit the uuid generator
         spyOn(uuid, 'v4').andReturn('guid');
+
+        spies.cwd = spyOn(process, 'cwd').andReturn('adc/path/dir');
     });
 
     describe('#generator', function () {
@@ -65,29 +78,29 @@ describe('ADCGenerator', function () {
         });
 
         it("should use the current working directory when the `output` path is not specified", function () {
-            spyOn(process, 'cwd').andReturn('/cwd');
+            spies.cwd.andReturn('/cwd');
             adcGenerator.generate({}, 'adcname');
-            expect(adcGenerator.outputDirectory).toBe('/cwd');
+            expect(generatorInstance.outputDirectory).toBe('/cwd');
         });
 
         it("should use the `output` path when it's specified", function () {
             adcGenerator.generate({
                 output : '/adc/path/dir'
             }, 'adcname');
-            expect(adcGenerator.outputDirectory).toBe('/adc/path/dir');
+            expect(generatorInstance.outputDirectory).toBe('/adc/path/dir');
         });
 
         it("should use the template when the `program` argument has a template property", function () {
             adcGenerator.generate({
                 template : 'test'
             }, 'adcname');
-            expect(adcGenerator.template).toBe('test');
+            expect(generatorInstance.template).toBe('test');
         });
 
         it("should use the `blank` template when the `program` has no template property", function () {
             adcGenerator.generate({
             }, 'adcname');
-            expect(adcGenerator.template).toBe(common.DEFAULT_TEMPLATE_NAME);
+            expect(generatorInstance.template).toBe(common.DEFAULT_TEMPLATE_NAME);
         });
 
         it("should output an error when the specified template was not found", function () {
@@ -121,7 +134,7 @@ describe('ADCGenerator', function () {
             });
         });
 
-        describe("#verifyADCDirNotalreadyExist", function () {
+        describe("#verifyADCDirNotAlreadyExist", function () {
             it("should output an error when the output directory + adc name already exist", function () {
                 spies.dirExists.andCallFake(function (path, callback) {
                     callback(null, true);
@@ -129,12 +142,12 @@ describe('ADCGenerator', function () {
                 adcGenerator.generate({
                     output : 'adc/path/dir'
                 }, 'adcname');
-                expect(common.writeError).toHaveBeenCalledWith(format(errMsg.directoryAlreadyExist, 'adc/path/dir/adcname/'));
+                expect(common.writeError).toHaveBeenCalledWith(format(errMsg.directoryAlreadyExist, 'adc\\path\\dir\\adcname'));
             });
 
             it('should not output an error when the output directory and the adc name is valid', function () {
                 spies.dirExists.andCallFake(function (path, callback) {
-                    if (path == 'adc/path/dir/adcname/') {
+                    if (path == 'adc\\path\\dir\\adcname') {
                         callback(null, false);
                     } else {
                         callback(null, true);
@@ -150,7 +163,7 @@ describe('ADCGenerator', function () {
         describe("#copyFromTemplate", function () {
             beforeEach(function () {
                 spies.dirExists.andCallFake(function (path, callback) {
-                    if (path === 'adc/path/dir/adcname/') {
+                    if (path === 'adc\\path\\dir\\adcname') {
                         callback(null, false);
                     } else {
                         callback(null, true);
@@ -169,8 +182,8 @@ describe('ADCGenerator', function () {
                     output : 'adc/path/dir'
                 }, 'adcname');
                 expect(wrench.copyDirRecursive).toHaveBeenCalled();
-                expect(source).toBe(adcGenerator.rootdir + common.TEMPLATES_PATH + common.DEFAULT_TEMPLATE_NAME);
-                expect(destination).toBe('adc/path/dir/adcname/');
+                expect(source).toBe(pathHelper.join(generatorInstance.rootdir, common.TEMPLATES_PATH, common.DEFAULT_TEMPLATE_NAME));
+                expect(destination).toBe('adc\\path\\dir\\adcname');
             });
 
             it("should output an error when the copy failed", function () {
@@ -197,7 +210,7 @@ describe('ADCGenerator', function () {
         describe("#updateFiles", function () {
             beforeEach(function () {
                 spies.dirExists.andCallFake(function (path, callback) {
-                    if (path === 'adc/path/dir/adcname/') {
+                    if (path === 'adc\\path\\dir\\adcname') {
                         callback(null, false);
                     } else {
                         callback(null, true);
@@ -217,7 +230,7 @@ describe('ADCGenerator', function () {
                 adcGenerator.generate({
                    output : 'adc/path/dir'
                 }, 'adcname');
-                expect(paths).toEqual(['adc/path/dir/adcname/config.xml', 'adc/path/dir/adcname/readme.md']);
+                expect(paths).toEqual(['adc\\path\\dir\\adcname\\config.xml', 'adc\\path\\dir\\adcname\\readme.md']);
             });
 
             it("should output an error when an error occurred while reading the file", function () {
@@ -303,7 +316,7 @@ describe('ADCGenerator', function () {
         describe("#done", function () {
            it("should output the structure of the ADC directory and a success message", function () {
                spies.dirExists.andCallFake(function (path, callback) {
-                   if (path === 'adc/path/dir/adcname/' || path === 'adc/path/dir/tests/units') {
+                   if (path === 'adc\\path\\dir\\adcname' || path === 'adc\\path\\dir\\tests\\units') {
                        callback(null, false);
                    } else {
                        callback(null, true);
@@ -366,8 +379,106 @@ describe('ADCGenerator', function () {
                d.push('|--|--|-- test.xml');
                d.push('|-- config.xml');
                d = d.join('\r\n');
-               expect(common.writeSuccess).toHaveBeenCalledWith(successMsg.adcStructureGenerated, d, 'adcname', 'adc/path/dir/adcname/');
+               expect(common.writeSuccess).toHaveBeenCalledWith(successMsg.adcStructureGenerated, d, 'adcname', 'adc\\path\\dir\\adcname');
            });
+        });
+
+        describe("API `callback`", function () {
+            beforeEach(function () {
+
+                spies.dirExists.andCallFake(function (path, callback) {
+                    if (path === 'adc\\path\\dir\\adcname' || path === 'adc\\path\\dir\\tests\\units') {
+                        callback(null, false);
+                    } else {
+                        callback(null, true);
+                    }
+                });
+                spies.wrench.copyDirRecursive.andCallFake(function (src, dest, option, callback) {
+                    callback(null);
+                });
+                spies.fs.readFile.andCallFake(function (path, option, callback) {
+                    callback(null, "");
+                });
+                spies.fs.writeFile.andCallFake(function (path, content, callback) {
+                    callback(null);
+                });
+                spies.getDirStructure.andCallFake(function (path, callback) {
+                    callback(null, [
+                        {
+                            name : 'resources',
+                            sub  : [
+                                {
+                                    name : 'dynamic',
+                                    sub  : ['default.html']
+                                },
+                                {
+                                    name : 'share',
+                                    sub  : []
+                                },
+                                {
+                                    name : 'static',
+                                    sub  : []
+                                }
+                            ]
+                        },
+                        {
+                            name : 'tests',
+                            sub  : [
+                                {
+                                    name : 'units',
+                                    sub  : [
+                                        'test.xml'
+                                    ]
+                                }
+                            ]
+                        },
+                        'config.xml'
+                    ]);
+                });
+            });
+
+            it("should be called when defined without `options` arg", function () {
+                var generator = new Generator();
+                var wasCalled = false;
+                generator.generate('myadc', function () {
+                    wasCalled = true;
+                });
+
+                expect(wasCalled).toBe(true);
+            });
+
+            it("should be called when defined with the`options` arg", function () {
+                var generator = new Generator();
+                var wasCalled = false;
+                generator.generate('myadc', {}, function () {
+                    wasCalled = true;
+                });
+
+                expect(wasCalled).toBe(true);
+            });
+
+            it("should be call with an err argument as an Error", function () {
+                spies.dirExists.andCallFake(function (path, callback) {
+                    callback(new Error("Fake error"));
+                });
+                var generator = new Generator();
+                var callbackErr;
+                generator.generate('myadc', function (err) {
+                    callbackErr = err;
+                });
+                expect(callbackErr instanceof Error).toBe(true);
+            });
+
+            it("should be call with the `outputDir` in arg", function () {
+                var generator = new Generator();
+                var callbackPath;
+                generator.generate('myadc', function (err, outputDir) {
+                    callbackPath = outputDir;
+                });
+
+                expect(callbackPath).toEqual('adc\\path\\dir\\\myadc');
+            });
+
         });
     });
 });

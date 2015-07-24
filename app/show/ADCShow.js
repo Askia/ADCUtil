@@ -1,38 +1,80 @@
-// Common
-var common = require('../common/common.js'),
+var common          = require('../common/common.js');
+var pathHelper      = require('path');
+var errMsg          = common.messages.error;
 
-// Path helper
-    pathHelper = require('path'),
+/**
+ * Create a new instance of ADC Show
+ *
+ * @constructor
+ * @param {String} adcDirPath Path of the ADC directory
+ */
+function Show(adcDirPath) {
+    /**
+     * Root dir of the current ADCUtil
+     */
+    this.rootdir    = pathHelper.resolve(__dirname, "../../");
 
-// Error messages
-    errMsg          = common.messages.error,
+    /**
+     * Path to the ADC directory
+     * @type {string}
+     */
+    this.adcDirectoryPath = adcDirPath ? pathHelper.normalize(adcDirPath) : process.cwd();
+}
 
-// Regular messages
-    successMsg       = common.messages.success;
+/**
+ * Write an error output in the console
+ * @param {String} text Text to write in the console
+ */
+Show.prototype.writeError = function writeError(text) {
+    common.writeError.apply(common, arguments);
+};
+
+/**
+ * Write a warning output in the console
+ * @param {String} text Text to write in the console
+ */
+Show.prototype.writeWarning = function writeWarning(text) {
+    common.writeWarning.apply(common, arguments);
+};
+
+/**
+ * Write a success output in the console
+ * @param {String} text Text to write in the console
+ */
+Show.prototype.writeSuccess = function writeSuccess(text) {
+    common.writeSuccess.apply(common, arguments);
+};
+
+/**
+ * Write an arbitrary message in the console without specific prefix
+ * @param {String} text Text to write in the console
+ */
+Show.prototype.writeMessage = function writeMessage(text) {
+    common.writeMessage.apply(common, arguments);
+};
 
 /**
  * Show an ADC output
  *
- * @param {Command} program Commander object which hold the arguments pass to the program
- * @param {String} path Path of the ADC to directory
+ * @param {Object} options Options
+ * @param {String} options.output Name of the ADC Output to use
+ * @param {String} options.fixture FileName of the ADC fixture to use
+ * @param {String} [options.masterPage] Path of the master page to use
  * @param {Function} callback Callback function
  * @param {Error} callback.err Error
  * @param {String} callback.output Output string
  */
-exports.show = function show(program, path, callback) {
-    program = program || {};
-    path = path || process.cwd();
-
-    if (!program.output) {
-        common.writeError(errMsg.noOutputDefinedForShow);
+Show.prototype.show = function show(options, callback) {
+    if (!options || !options.output) {
+        this.writeError(errMsg.noOutputDefinedForShow);
         if (typeof callback === 'function') {
             callback(new Error(errMsg.noOutputDefinedForShow));
         }
         return;
     }
 
-    if (!program.fixture) {
-        common.writeError(errMsg.noFixtureDefinedForShow);
+    if (!options || !options.fixture) {
+        this.writeError(errMsg.noFixtureDefinedForShow);
         if (typeof callback === 'function') {
             callback(new Error(errMsg.noFixtureDefinedForShow));
         }
@@ -42,18 +84,18 @@ exports.show = function show(program, path, callback) {
     var execFile = require('child_process').execFile,
         args     = [
             'show',
-            '-output:' + program.output,
-            '-fixture:' + program.fixture
-        ],
-        rootDir = pathHelper.resolve(__dirname, "../../");
+            '-output:' + options.output,
+            '-fixture:' + options.fixture
+        ];
 
-    if (program.masterPage) {
-        args.push('-masterPage:' + pathHelper.resolve(program.masterPage));
+    if (options.masterPage) {
+        args.push('-masterPage:' + pathHelper.resolve(options.masterPage));
     }
-    args.push(path);
+    args.push(this.adcDirectoryPath);
 
+    var self = this;
     execFile('.\\' + common.ADC_UNIT_PROCESS_NAME, args, {
-        cwd   : rootDir + common.ADC_UNIT_DIR_PATH,
+        cwd   : pathHelper.join(self.rootdir, common.ADC_UNIT_DIR_PATH),
         env   : process.env
     }, function cb(err, stdout, stderr) {
         if (err && typeof callback === 'function') {
@@ -61,17 +103,31 @@ exports.show = function show(program, path, callback) {
             return;
         }
 
-        common.writeMessage(stdout);
+        self.writeMessage(stdout);
         if (!stderr && typeof  callback === 'function') {
             callback(null, stdout);
         }
 
         if (stderr) {
-            common.writeError("\r\n" + stderr);
+            self.writeError("\r\n" + stderr);
             if (typeof callback === 'function') {
                 callback(new Error(stderr));
             }
         }
     });
 
+};
+
+// Make it public
+exports.Show = Show;
+
+/**
+ * Show an ADC output
+ *
+ * @param {Command} program Commander object which hold the arguments pass to the program
+ * @param {String} path Path of the ADC to directory
+ */
+exports.show = function show(program, path) {
+    var showInstance = new Show(path);
+    showInstance.show(program);
 };
