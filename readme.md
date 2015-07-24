@@ -6,6 +6,30 @@ It contains validators and allow to display outputs of the ADC using the ADCEngi
 
 ADCUtil is a CLI tools (Command Line Interface) but it also provide an API for NodeJS project. 
 
+## Setup
+
+Install NodeJs: https://nodejs.org/download/
+
+Then install the npm package adcutil:
+ 
+    npm install -g adcutil
+
+
+## Run unit tests of ADCUtil
+
+Install jasmine-node for unit tests
+
+    npm install jasmine-node -g
+    
+Then run
+
+    jasmine-node spec/
+
+or
+
+    npm test
+    
+
 ## CLI Usage
 
 This application works through Windows PowerShell
@@ -33,17 +57,14 @@ This application works through Windows PowerShell
 
 ## API Usage
 
+Example of usage of existing ADC
+
     var ADC = require('adcutil').ADC;
     
     var myAdc = new ADC('path/to/adc/dir');
-    
-    // Generate an ADC
-    myAdc.generate(function (err) {
-        // Callback when the ADC structure has been generated
-    });
-    
+        
     // Validate an ADC
-    myAdc.validate(function (err, report) {
+    myAdc.validate({test : false, autoTest : false}, function (err, report) {
         // Callback when the ADC structure has been validated
     });
     
@@ -53,32 +74,24 @@ This application works through Windows PowerShell
     });
     
     // Build the ADC (package it)
-    myAdc.build(function (err, path, report) {
+    myAdc.build({test : false, autoTest : false}, function (err, path, report) {
         // Callback when the ADC has been built 
     });
     
 
-
-## Setup
-
-Install NodeJs: https://nodejs.org/download/
-
-Then install the npm package adcutil:
- 
-    npm install -g adcutil
-
-## Run unit tests of ADCUtil
-
-Install jasmine-node for unit tests
-
-    npm install jasmine-node -g
+Generate and use the new ADC instance
     
-Then run
+    ADC.generate('myNewADC', {output : '/path/of/parent/dir', template : 'blank'}, function (err, adc) {
+        console.log(adc.path);
+        adc.load(function (err) {
+            if (err) {
+                console.log(err);
+                return;
+            }
+            console.log(adc.configurator.info.get());
+        });
+    });
+    
 
-    jasmine-node spec/
-
-or
-
-    npm test
 
 
