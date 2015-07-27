@@ -248,10 +248,10 @@ function newError(message) {
 }
 
 /**
- * Create a new instance of ADC validator
+ * Validate the ADC files structure, configuration and logical
  *
- * @constructor
- * @param {String} adcDirPath Path of the ADC directory
+ * @class ADC.Validator
+ * @private
  */
 function Validator(adcDirPath) {
     /**
@@ -331,6 +331,14 @@ function Validator(adcDirPath) {
      */
     this.configXmlDoc  = null;
 }
+
+/**
+ * Create a new instance of ADC validator
+ *
+ * @constructor
+ * @param {String} adcDirPath Path of the ADC directory
+ */
+Validator.prototype.constructor = Validator;
 
 /**
  * Validate the current ADC instance
@@ -1090,7 +1098,7 @@ Validator.prototype.runADCUnitTests  = function runADCUnitTests() {
 // Export the Validator object
 exports.Validator = Validator;
 
-/**
+/*
  * Validate an ADC (CLI)
  *
  * @param {Command} program Commander object which hold the arguments pass to the program

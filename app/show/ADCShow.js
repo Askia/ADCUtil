@@ -2,11 +2,12 @@ var common          = require('../common/common.js');
 var pathHelper      = require('path');
 var errMsg          = common.messages.error;
 
+
 /**
- * Create a new instance of ADC Show
+ * Compile, execute and display the output of an ADC
  *
- * @constructor
- * @param {String} adcDirPath Path of the ADC directory
+ * @class ADC.Show
+ * @private
  */
 function Show(adcDirPath) {
     /**
@@ -20,6 +21,14 @@ function Show(adcDirPath) {
      */
     this.adcDirectoryPath = adcDirPath ? pathHelper.normalize(adcDirPath) : process.cwd();
 }
+
+/**
+ * Create a new instance of ADC Show
+ *
+ * @constructor
+ * @param {String} adcDirPath Path of the ADC directory
+ */
+Show.prototype.constructor = Show;
 
 /**
  * Write an error output in the console
@@ -121,7 +130,7 @@ Show.prototype.show = function show(options, callback) {
 // Make it public
 exports.Show = Show;
 
-/**
+/*
  * Show an ADC output
  *
  * @param {Command} program Commander object which hold the arguments pass to the program

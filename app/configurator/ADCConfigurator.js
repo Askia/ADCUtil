@@ -8,8 +8,7 @@ var errMsg = common.messages.error;
 /**
  * Object used to read and manipulate the config.xml file of an ADC
  *
- * @constructor
- * @param {String} dir Path of the ADC directory
+ * @class ADC.Configurator
  */
 function Configurator(dir) {
     if (!dir) {
@@ -26,11 +25,18 @@ function Configurator(dir) {
 
     /**
      * Info of the ADC
-     * @type {ADCInfo}
+     * @type {ADC.Configurator.Info}
      */
     this.info = null;
 }
 
+/**
+ * Create a new instance of the ADC configurator object
+ *
+ * @constructor
+ * @param {String} dir Path of the ADC directory
+ */
+Configurator.prototype.constructor = Configurator;
 
 /**
  * Read the config.xml file and initialize all properties of the current instance object
@@ -102,13 +108,21 @@ Configurator.prototype.fromXml = function fromXml(xml) {
 };
 
 /**
- * ADC Info
- * @constructor
- * @param {Configurator} configurator Instance of the configurator
+ * Provide an object to manipulate the meta-information of the ADC (config.xml > info)
+ *
+ * @class ADC.Configurator.Info
  */
 function ADCInfo(configurator) {
     this.configurator = configurator;
 }
+
+/**
+ * Creates a new instance of ADC Info
+ *
+ * @constructor
+ * @param {ADC.Configurator} configurator Instance of the configurator
+ */
+ADCInfo.prototype.constructor = ADCInfo;
 
 /**
  * Get the entire information as object

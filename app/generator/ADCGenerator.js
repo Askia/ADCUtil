@@ -9,9 +9,10 @@ var successMsg  = common.messages.success;
 
 
 /**
- * Create a new instance of ADC Generator
+ * Generate the file structure of an ADC using a template
  *
- * @constructor
+ * @class ADC.Generator
+ * @private
  */
 function Generator() {
     /**
@@ -55,6 +56,13 @@ function Generator() {
     ], this.done, this);
 
 }
+
+/**
+ * Create a new instance of ADC Generator
+ *
+ * @constructor
+ */
+Generator.prototype.constructor = Generator;
 
 /**
  * Write an error output in the console
@@ -273,7 +281,7 @@ Generator.prototype.updateFiles = function updateFiles() {
 // Make it public
 exports.Generator = Generator;
 
-/**
+/*
  * Generate a new ADC structure
  *
  * @param {Command} program Commander object which hold the arguments pass to the program

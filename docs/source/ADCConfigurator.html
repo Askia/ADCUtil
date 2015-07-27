@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">var fs = require(&#39;fs&#39;);
+var path = require(&#39;path&#39;);
+var et = require(&#39;elementtree&#39;);
+var subElement = et.SubElement;
+var common = require(&#39;../common/common.js&#39;);
+var errMsg = common.messages.error;
+
+<span id='ADC-Configurator'>/**
+</span> * Object used to read and manipulate the config.xml file of an ADC
+ *
+ * @class ADC.Configurator
+ */
+function Configurator(dir) {
+    if (!dir) {
+        throw new Error(errMsg.invalidPathArg);
+    }
+<span id='ADC-Configurator-property-path'>    /**
+</span>     * Path of the ADC directory
+     * @type {String}
+     */
+    this.path   = dir;
+
+
+    this.xmldoc = null;
+
+<span id='ADC-Configurator-property-info'>    /**
+</span>     * Info of the ADC
+     * @type {ADC.Configurator.Info}
+     */
+    this.info = null;
+}
+
+<span id='ADC-Configurator-method-constructor'>/**
+</span> * Create a new instance of the ADC configurator object
+ *
+ * @constructor
+ * @param {String} dir Path of the ADC directory
+ */
+Configurator.prototype.constructor = Configurator;
+
+<span id='ADC-Configurator-method-load'>/**
+</span> * Read the config.xml file and initialize all properties of the current instance object
+ *
+ * @param {Function} [callback] Callback function
+ * @param {Error} [callback.err] Error
+ */
+Configurator.prototype.load = function load(callback) {
+    callback = callback || function () {};
+    var self = this;
+
+    common.dirExists(this.path, function (err, isExist) {
+        if (err) {
+            callback(err);
+            return;
+        }
+        if (!isExist) {
+            callback(errMsg.noSuchFileOrDirectory);
+            return;
+        }
+
+        var filePath = path.join(self.path, &#39;config.xml&#39;);
+
+        fs.readFile(filePath, function (err, data) {
+            if (err) {
+                callback(err);
+                return;
+            }
+
+            self.xmldoc = et.parse(data.toString());
+
+            self.info = new ADCInfo(self);
+            callback(null);
+
+        });
+
+
+    });
+};
+
+<span id='ADC-Configurator-method-toXml'>/**
+</span> * Return the configuration as xml
+ *
+ * @return {String}
+ */
+Configurator.prototype.toXml = function toXml() {
+    var xml = [];
+
+    xml.push(&#39;&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;&#39;);
+    xml.push(&#39;&lt;control  xmlns=&quot;http://www.askia.com/ADCSchema&quot;&#39; +
+            &#39;\n          xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;&#39; +
+            &#39;\n          xsi:schemaLocation=&quot;http://www.askia.com/ADCSchema http://www.askia.com/Downloads/dev/schemas/adc2.0/Config.xsd&quot;&#39; +
+            &#39;\n          version=&quot;2.0.0&quot;&#39; +
+            &#39;\n          askiaCompat=&quot;5.3.3&quot;&gt;&#39;);
+    xml.push(this.info.toXml());
+    xml.push(&#39;&lt;/control&gt;&#39;);
+
+    return xml.join(&#39;\n&#39;);
+};
+
+<span id='ADC-Configurator-method-fromXml'>/**
+</span> * Re-init the configurator using the xml string
+ *
+ * @return {String}
+ */
+Configurator.prototype.fromXml = function fromXml(xml) {
+    this.xmldoc = et.parse(xml);
+    this.info = new ADCInfo(this);
+};
+
+<span id='ADC-Configurator-Info'>/**
+</span> * Provide an object to manipulate the meta-information of the ADC (config.xml &gt; info)
+ *
+ * @class ADC.Configurator.Info
+ */
+function ADCInfo(configurator) {
+    this.configurator = configurator;
+}
+
+<span id='ADC-Configurator-Info-method-constructor'>/**
+</span> * Creates a new instance of ADC Info
+ *
+ * @constructor
+ * @param {ADC.Configurator} configurator Instance of the configurator
+ */
+ADCInfo.prototype.constructor = ADCInfo;
+
+<span id='ADC-Configurator-Info-method-get'>/**
+</span> * Get the entire information as object
+ *
+ * @return {Object}
+ */
+ADCInfo.prototype.get = function get() {
+    var self = this,
+        result = {};
+
+    [&quot;name&quot;, &quot;guid&quot;, &quot;version&quot;, &quot;date&quot;, &quot;description&quot;, &quot;company&quot;, &quot;author&quot;, &quot;site&quot;,
+        &quot;helpURL&quot;, &quot;categories&quot;, &quot;style&quot;, &quot;constraints&quot;].forEach(function (methodName) {
+            result[methodName] = self[methodName]();
+    });
+    return result;
+};
+
+<span id='ADC-Configurator-Info-method-set'>/**
+</span> * Set the information using a plain object
+ *
+ * @param {Object} data Data to set
+ * @return {Object}
+ */
+ADCInfo.prototype.set = function set(data) {
+    var self = this;
+
+    if (!data) {
+        return;
+    }
+
+
+    [&quot;name&quot;, &quot;guid&quot;, &quot;version&quot;, &quot;date&quot;, &quot;description&quot;, &quot;company&quot;, &quot;author&quot;, &quot;site&quot;,
+        &quot;helpURL&quot;, &quot;categories&quot;, &quot;style&quot;, &quot;constraints&quot;].forEach(function (methodName) {
+            if (data.hasOwnProperty(methodName)) {
+                self[methodName](data[methodName]);
+            }
+        });
+};
+
+([&quot;name&quot;, &quot;guid&quot;, &quot;version&quot;, &quot;date&quot;, &quot;description&quot;, &quot;company&quot;, &quot;author&quot;, &quot;site&quot;, &quot;helpURL&quot;].forEach(function (propName) {
+
+    ADCInfo.prototype[propName] = function (data) {
+        var xmldoc = this.configurator.xmldoc;
+        var el = xmldoc.find(&quot;info/&quot; + propName);
+        if (data !== undefined) {
+            el.text = data;
+        }
+        return el.text;
+    };
+}));
+
+<span id='ADC-Configurator-Info-method-style'>/**
+</span> * Get or set the style
+ *
+ * @param {Object} [data] Style to set
+ * #param {Number} [data.width] Style width
+ * @param {Number} [data.height] Style height
+ * @returns {Object}
+ */
+ADCInfo.prototype.style = function style(data) {
+    var xmldoc = this.configurator.xmldoc;
+    var el = xmldoc.find(&quot;info/style&quot;);
+    var result = {}, w, h;
+    if (data !== undefined) {
+        if (data.width !== undefined) {
+            el.set(&quot;width&quot;, data.width);
+        }
+        if (data.height !== undefined) {
+            el.set(&quot;height&quot;, data.height);
+        }
+    }
+    w = el.get(&quot;width&quot;) || &quot;0&quot;;
+    h = el.get(&quot;height&quot;) || &quot;0&quot;;
+
+    result.width = parseInt(w, 10);
+    result.height = parseInt(h, 10);
+
+    return result;
+};
+
+<span id='ADC-Configurator-Info-method-categories'>/**
+</span> * Get or set the categories
+ *
+ * @param {String[]} [data] Array of string which represent the categories to set
+ * @returns {String[]} Name of categories
+ */
+ADCInfo.prototype.categories = function categories(data) {
+    var xmldoc = this.configurator.xmldoc;
+    var el = xmldoc.find(&quot;info/categories&quot;);
+    var result = [];
+    if (Array.isArray(data)) {
+        el.delSlice(0, el.len());
+        data.forEach(function (text) {
+            var cat = subElement(el, &#39;category&#39;);
+            cat.text = text;
+        });
+    }
+
+    el.iter(&#39;category&#39;, function (cat) {
+        result.push(cat.text);
+    });
+
+    return result;
+};
+
+<span id='ADC-Configurator-Info-method-constraints'>/**
+</span> * Get or set the constraints
+ *
+ * @param {Object} [data] Constraint data to set
+ * @return {Object} Constraints
+ */
+ADCInfo.prototype.constraints = function constraints(data) {
+    var xmldoc = this.configurator.xmldoc;
+    var el = xmldoc.find(&quot;info/constraints&quot;);
+    var result = {};
+    if (data) {
+        Object.keys(data).forEach(function (on) {
+            if (on !== &#39;questions&#39; &amp;&amp;  on !== &#39;responses&#39; &amp;&amp;  on !== &#39;controls&#39;) {
+               return;
+            }
+            var node = el.find(&quot;constraint[@on=&#39;&quot; + on + &quot;&#39;]&quot;);
+            if (!node) {
+                node = subElement(el, &quot;constraint&quot;);
+                node.set(&quot;on&quot;, on);
+            }
+
+            Object.keys(data[on]).forEach(function (attName) {
+                var value = data[on][attName].toString();
+                node.set(attName,  value);
+            });
+
+        });
+    }
+
+    el.iter(&#39;constraint&#39;, function (constraint) {
+        var on = constraint.get(&quot;on&quot;);
+        var value = {};
+
+        constraint.keys().forEach(function (attName) {
+            if (attName === &#39;on&#39;) {
+                return;
+            }
+            var v = constraint.get(attName);
+            if (attName === &#39;min&#39; || attName === &#39;max&#39;) {
+                if (v !== &#39;*&#39;) {
+                    v = parseInt(v, 10);
+                }
+            } else {
+                v = v !== undefined &amp;&amp; (v !== &#39;false&#39; &amp;&amp; v !== &#39;0&#39; );
+            }
+
+            value[attName] = v;
+        });
+
+        result[on] = value;
+    });
+
+    return result;
+};
+
+<span id='ADC-Configurator-Info-method-constraint'>/**
+</span> * Get or set the constraint
+ *
+ * @param {String} where Which constraint to target
+ * @param {String} attName Name of the constraint attribute to get or set
+ * @param {Boolean|Number} [attValue] Value of the attribute to set
+ * @return {Boolean|Number} Value of the attribute
+ */
+ADCInfo.prototype.constraint = function constraint(where, attName, attValue) {
+    var xmldoc = this.configurator.xmldoc;
+    var el = xmldoc.find(&quot;info/constraints/constraint[@on=&#39;&quot; + where + &quot;&#39;]&quot;);
+    var result;
+    if (attValue !== undefined) {
+        if (!el) {
+            var parent = xmldoc.find(&#39;info/constraints&#39;);
+            if (!parent) {
+                throw new Error(&quot;Unable to find the  `constraints` node &quot;);
+            }
+            el = subElement(parent, &#39;constraint&#39;);
+            el.set(&quot;on&quot;, where);
+        }
+        el.set(attName, attValue.toString());
+    }
+
+    if (!el) {
+        return (attName === &#39;min&#39; || attName === &#39;max&#39;) ? Infinity  : false;
+    }
+
+    result = el.get(attName);
+
+    // Some properties are treat as number instead of boolean
+    if (attName === &#39;min&#39; || attName === &#39;max&#39;) {
+        if (result === &#39;*&#39;) {
+            return Infinity;
+        }
+        return parseInt(result, 10);
+    }
+
+    if (result === undefined) {
+        return false;
+    }
+
+    return (result !== &quot;false&quot; &amp;&amp; result !== &quot;0&quot;);
+};
+
+<span id='ADC-Configurator-Info-method-toXml'>/**
+</span> * Return the info as xml string
+ *
+ * @return {String}
+ */
+ADCInfo.prototype.toXml = function toXml() {
+    var xml = [],
+        self = this,
+        style,
+        constraints,
+        constraintsKeys = [&#39;questions&#39;, &#39;controls&#39;, &#39;responses&#39;];
+
+    xml.push(&#39;  &lt;info&gt;&#39;);
+
+
+
+    [&quot;name&quot;, &quot;guid&quot;, &quot;version&quot;, &quot;date&quot;, &quot;description&quot;, &quot;company&quot;, &quot;author&quot;, &quot;site&quot;,
+        &quot;helpURL&quot;].forEach(function (methodName) {
+            var data = self[methodName]();
+            if (methodName === &#39;description&#39; || methodName === &#39;author&#39;) {
+                data = &#39;&lt;![CDATA[&#39; + data + &#39;]]&gt;&#39;;
+            }
+            xml.push(&#39;    &lt;&#39; + methodName + &#39;&gt;&#39; + data + &#39;&lt;/&#39; + methodName + &#39;&gt;&#39;);
+    });
+
+    xml.push(&#39;    &lt;categories&gt;&#39;);
+    self.categories().forEach(function (cat) {
+        xml.push(&#39;      &lt;category&gt;&#39; + cat + &#39;&lt;/category&gt;&#39;);
+    });
+    xml.push(&#39;    &lt;/categories&gt;&#39;);
+
+    style = self.style();
+    xml.push(&#39;    &lt;style width=&quot;&#39; + style.width + &#39;&quot; height=&quot;&#39; + style.height + &#39;&quot; /&gt;&#39; );
+
+    constraints = self.constraints();
+    xml.push(&#39;    &lt;constraints&gt;&#39;);
+
+    constraintsKeys.forEach(function (on) {
+        if (!constraints[on]) {
+            return;
+        }
+        var str = &#39;      &lt;constraint on=&quot;&#39; + on + &#39;&quot;&#39;,
+            constraint = constraints[on];
+        for(var key in constraint) {
+            if (constraint.hasOwnProperty(key)) {
+                str += &#39; &#39; + key + &#39;=&quot;&#39; + constraint[key].toString() + &#39;&quot;&#39;;
+            }
+        }
+        str += &#39; /&gt;&#39;;
+        xml.push(str);
+    });
+    xml.push(&#39;    &lt;/constraints&gt;&#39;);
+
+    xml.push(&#39;  &lt;/info&gt;&#39;);
+    return xml.join(&#39;\n&#39;);
+};
+
+// Make it public
+exports.Configurator = Configurator;</pre>
+</body>
+</html>

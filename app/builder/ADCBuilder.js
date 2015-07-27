@@ -5,12 +5,11 @@ var errMsg      = common.messages.error;
 var successMsg  = common.messages.success;
 var Validator   = require('../validator/ADCValidator.js').Validator;
 
-
 /**
- * Create a new instance of ADC Builder
+ * Validate and compress the ADC directory to an `.adc` file
  *
- * @constructor
- * @param {String} adcDirPath Path of the ADC directory
+ * @class ADC.Builder
+ * @private
  */
 function Builder(adcDirPath) {
     /**
@@ -60,6 +59,14 @@ function Builder(adcDirPath) {
 }
 
 /**
+ * Create a new instance of ADC Builder
+ *
+ * @constructor
+ * @param {String} adcDirPath Path of the ADC directory
+ */
+Builder.prototype.constructor = Builder;
+
+/**
  * Build the ADC
  *
  * @param {Object} [options] Options of validation
@@ -68,7 +75,7 @@ function Builder(adcDirPath) {
  * @param {Boolean} [options.xml=true] Validate the config.xml file
  * @param {Function} [callback] Callback function
  * @param {Error} [callback.err] Error
- * @param {String} [callback.outputPath} Path of the output
+ * @param {String} [callback.outputPath] Path of the output
  * @param {Object} [callback.report] Validation report
  */
 Builder.prototype.build = function build(options, callback) {
@@ -234,7 +241,7 @@ Builder.prototype.compressADC =  function compressADC() {
 exports.Builder = Builder;
 
 
-/**
+/*
  * Build the ADC file
  *
  * @param {Command} program Commander object which hold the arguments pass to the program
