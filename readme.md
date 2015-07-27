@@ -57,7 +57,7 @@ This application works through Windows PowerShell
 
 ## API Usage
 
-Please find the "full API documentation here":(http://www.askia.com/Downloads/dev/docs/ADCUtil/index.html)
+Please find the [full API documentation here](http://www.askia.com/Downloads/dev/docs/ADCUtil/index.html)
 
 Example of usage of existing ADC
 
