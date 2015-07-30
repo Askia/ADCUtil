@@ -86,6 +86,7 @@ Show.prototype.writeMessage = function writeMessage(text) {
  * @param {String} options.output Name of the ADC Output to use
  * @param {String} options.fixture FileName of the ADC fixture to use
  * @param {String} [options.masterPage] Path of the master page to use
+ * @param {String} [options.properties] ADC properties (in url query string format: &#39;param1=value1&amp;param2-value2&#39;)
  * @param {Function} callback Callback function
  * @param {Error} callback.err Error
  * @param {String} callback.output Output string
@@ -116,6 +117,9 @@ Show.prototype.show = function show(options, callback) {
 
     if (options.masterPage) {
         args.push(&#39;-masterPage:&#39; + pathHelper.resolve(options.masterPage));
+    }
+    if (options.properties) {
+        args.push(&#39;-properties:&#39; + options.properties);
     }
     args.push(this.adcDirectoryPath);
 

@@ -111,6 +111,178 @@ Configurator.prototype.load = function load(callback) {
 };
 
 /**
+ * Get the entire configuration as object
+ *
+ *       // Get the info object
+ *       configurator.get();
+ *       // {
+ *       //   info : { // .... },
+ *       //   outputs : { // ... },
+ *       //   properties : { // ...}
+ *       // }
+ *
+ * @return {Object}
+ */
+Configurator.prototype.get = function get() {
+    return {
+        info : this.info.get(),
+        outputs : this.outputs.get(),
+        properties : this.properties.get()
+    };
+};
+
+/**
+ * Set th configuration using an object
+ *
+ *       // Get the info object
+ *       configurator.set(
+ *          info {
+ *              name : "My ADC"
+ *              version : "2.2.0.beta1",
+ *              date  : "2015-06-25",
+ *              guid  : "the-guid",
+ *              description : "Description of the ADC"
+ *              author  : "The author name",
+ *              company : "The company name",
+ *              site    : "http://website.url.com",
+ *              helpURL : "http://help.url.com",
+ *              style   : { width : 400, height : 200},
+ *              categories : ["General", "Slider", "Single"],
+ *              constraints : {
+ *                  questions : {
+ *                     single : true,
+ *                     multiple : true
+ *                  },
+ *                  controls : {
+ *                      responseBlock : true
+ *                  },
+ *                  responses : {
+ *                      max : 10
+ *                  }
+ *              }
+ *          },
+ *          outputs : {
+ *              defaultOutput : "main",
+ *              outputs : [
+ *                 {
+ *                     id : "main",
+ *                     description : "Main output",
+ *                      contents : [
+ *                           {
+ *                              fileName : 'main.css',
+ *                              type : 'css',
+ *                              mode : 'static',
+ *                              position : 'head'
+ *                          },
+ *                          {
+ *                              fileName : 'main.html',
+ *                              type : 'html',
+ *                              mode : 'dynamic',
+ *                              position : 'placeholder'
+ *                          },
+ *                          {
+ *                              fileName : 'main.js',
+ *                              type : 'javascript',
+ *                              mode : 'static',
+ *                              position: 'foot'
+ *                          }
+ *                      ]
+ *                  },
+ *                  {
+ *                      id : "second",
+ *                      description : "Second output",
+ *                      condition : "Browser.Support(\"javascript\")",
+ *                      contents : [
+ *                          {
+ *                              fileName : 'second.css',
+ *                              type : 'css',
+ *                              mode : 'static',
+ *                              position : 'head'
+ *                          },
+ *                          {
+ *                              fileName : 'second.html',
+ *                              type : 'html',
+ *                              mode : 'dynamic',
+ *                              position : 'placeholder'
+ *                          },
+ *                          {
+ *                              fileName : 'second.js',
+ *                              type : 'javascript',
+ *                              mode : 'static',
+ *                              position : 'foot'
+ *                          }
+ *                      ]
+ *                  },
+ *                  {
+ *                      id : "third",
+ *                      description : "Third output",
+ *                      maxIterations : 12,
+ *                      defaultGeneration : false,
+ *                      contents : [
+ *                          {
+ *                              fileName : "third.css",
+ *                              type  : "css",
+ *                              mode : "static",
+ *                              position : "head",
+ *                              attributes : [
+ *                                  {
+ *                                      name : "rel",
+ *                                      value : "alternate"
+ *                                  },
+ *                                  {
+ *                                      name : "media",
+ *                                      value : "print"
+ *                                  }
+ *                              ]
+ *                          },
+ *                          {
+ *                              fileName : 'HTML5Shim.js',
+ *                              type : 'javascript',
+ *                              mode : 'static',
+ *                              position : 'head',
+ *                              yieldValue : '<!--[if lte IE 9]><script type="text/javascript"  src="{%= CurrentADC.URLTo("static/HTML5Shim.js") %}" ></script><![endif]-->'
+ *                          }
+ *                      ]
+ *                 }
+ *              },
+ *              properties : {
+ *                  categories : [
+ *                     {
+ *                         id : "general",
+ *                         description : "General",
+ *                         properties  : [
+ *                               {
+ *                                  id : "background",
+ *                                  name : "Background color",
+ *                                  type : "color",
+ *                                  description : "Color of the ADC background",
+ *                                  colorFormat : "rgb",
+ *                                  value  : "255,255,255"
+ *                              }
+ *                        ]
+ *                     }
+ *                  ]
+ *              }
+ *        });
+ *
+ * @param {Object} data Data to set
+ * @param {Object} [data.info] Info data
+ * @param {Object} [data.outputs] Outputs data
+ * @param {Object} [data.properties] Properties data
+ */
+Configurator.prototype.set = function set(data) {
+    if (data.info) {
+        this.info.set(data.info);
+    }
+    if (data.outputs) {
+        this.outputs.set(data.outputs);
+    }
+    if (data.properties) {
+        this.properties.set(data.properties);
+    }
+};
+
+/**
  * Return the configuration as xml
  *
  *       // Serialize the config to XML
@@ -977,7 +1149,7 @@ ADCOutputs.prototype.get = function get() {
  *                      }
  *                  ]
  *             }
-
+ *
  *       });
  *
  * @param {Object} data Data to set

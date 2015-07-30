@@ -464,6 +464,1011 @@ describe('ADCConfigurator', function () {
         });
     });
 
+    describe("#get", function () {
+        beforeEach(function () {
+            spies.dirExists.andCallFake(function (p, cb) {
+                cb(null, true);
+            });
+            spies.fs.readFile.andCallFake(function (p, cb) {
+                cb(null, '<control><info><name>the-name</name><guid>the-guid</guid>' +
+                    '<version>the-version</version><date>the-date</date><description><![CDATA[the-description]]></description>' +
+                    '<company>the-company</company><author>the-author</author><site>the-site</site>' +
+                    '<helpURL>the-helpURL</helpURL>' +
+                    '<categories><category>cat-1</category><category>cat-2</category></categories>' +
+                    '<style width="200" height="400" />' +
+                    '<constraints><constraint on="questions" single="true" multiple="true" open="false" />' +
+                    '<constraint on="controls" label="true" responseblock="true" />' +
+                    '<constraint on="responses" min="2" max="*" />' +
+                    '</constraints>' +
+                    '</info>' +
+                    '<outputs defaultOutput="main">' +
+                    '<output id="main">' +
+                    '<description><![CDATA[Main output]]></description>' +
+                    '<content fileName="main.css" type="css" mode="static" position="head" />' +
+                    '<content fileName="main.html" type="html" mode="dynamic" position="placeholder" />' +
+                    '<content fileName="main.js" type="javascript" mode="static" position="foot" />' +
+                    '</output>' +
+                    '<output id="second">' +
+                    '<description><![CDATA[Second output]]></description>' +
+                    '<condition><![CDATA[Browser.Support("javascript")]]></condition>' +
+                    '<content fileName="second.css" type="css" mode="static" position="head" />' +
+                    '<content fileName="second.html" type="html" mode="dynamic" position="placeholder" />' +
+                    '<content fileName="second.js" type="javascript" mode="static" position="foot" />' +
+                    '</output>' +
+                    '<output id="third" defaultGeneration="false" maxIterations="12">' +
+                    '<description><![CDATA[Third output]]></description>' +
+                    '<content fileName="third.css" type="css" mode="static" position="head" >' +
+                    ' <attribute name="rel">' +
+                    '<value>alternate</value>' +
+                    '</attribute>' +
+                    '<attribute name="media">' +
+                    '<value>print</value>' +
+                    '</attribute>' +
+                    '</content>' +
+                    '<content fileName="HTML5Shim.js" type="javascript" mode="static" position="head">' +
+                    '<yield>' +
+                    '<![CDATA[' +
+                    '<!--[if lte IE 9]>' +
+                    '<script type="text/javascript"  src="{%= CurrentADC.URLTo("static/HTML5Shim.js") %}" ></script>' +
+                    '<![endif]-->' +
+                    ']]>' +
+                    '</yield>' +
+                    '</content>'+
+                    '</output>' +
+                    '</outputs>' +
+                    '<properties>' +
+                    '<category id="general" name="General">' +
+                    '<property xsi:type="askiaProperty" id="askia-theme">' +
+                    '<options>' +
+                    '<option value="red-theme" text="Red" />' +
+                    '<option value="blue-theme" text="Blue" />' +
+                    '</options>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="renderingType" name="Rendering type" type="string">' +
+                    '<description>Type of rendering</description>' +
+                    '<value>classic</value>' +
+                    '<options>' +
+                    '<option value="classic" text="Classic"/>' +
+                    '<option value="image" text="Image"/>' +
+                    '</options>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="other" name="Open-ended question for semi-open" type="question" open="true" numeric="true">' +
+                    '<description>Additional open-ended question that could be use to emulate semi-open</description>' +
+                    '</property>' +
+                    '</category>' +
+                    '<category id="images" name="Rendering type images">' +
+                    '<property xsi:type="standardProperty" id="singleImage" name="Image for single question" type="file" fileExtension=".png, .gif, .jpg">' +
+                    '<description>Image of single question when the rendering type is image</description>' +
+                    '<value>Single.png</value>' +
+                    '<value theme="red-theme">SingleRed.png</value>' +
+                    '<value theme="blue-theme">SingleBlue.png</value>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="multipleImage" name="Image for multiple question" type="file" fileExtension=".png, .gif, .jpg">' +
+                    '<description>Image of multiple question when the rendering type is image</description>' +
+                    '<value>Multiple.png</value>' +
+                    '<value theme="red-theme">MultipleRed.png</value>' +
+                    '<value theme="blue-theme">MultipleBlue.png</value>' +
+                    '</property>' +
+                    '</category>' +
+                    '<category id="fake" name="Fake for test">' +
+                    '<property xsi:type="standardProperty" id="testNumber" name="TEST" type="number" min="12" max="100.5" decimal="3" mode="dynamic" visible="false" require="true">' +
+                    '<description>Test number properties</description>' +
+                    '<value>13</value>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="testColor" name="TEST" type="color" colorFormat="rgb">' +
+                    '<description>Test color properties</description>' +
+                    '<value>255,255,255</value>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="testQuestion" name="TEST" type="question" chapter="false" single="true" multiple="true" numeric="false" open="false" date="false">' +
+                    '<description>Test question properties</description>' +
+                    '<value></value>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="testFile" name="TEST" type="file" fileExtension=".test, .test2">' +
+                    '<description>Test file properties</description>' +
+                    '<value>file.test</value>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="testString" name="TEST" type="string" pattern=".+@.+">' +
+                    '<description>Test string properties</description>' +
+                    '<value>test@test.com</value>' +
+                    '</property>' +
+                    '</category>' +
+                    '</properties>' +
+                    '</control>');
+            });
+        });
+
+        it("should return the configuration as object", function () {
+            runSync(function (done) {
+                var configurator = new ADCConfigurator("an/valid/path");
+                configurator.load(function () {
+                    var result = configurator.get();
+                    expect(result ).toEqual({
+                        info : {
+                            name : "the-name",
+                            guid : "the-guid",
+                            version : "the-version",
+                            date : "the-date",
+                            description : "the-description",
+                            company : "the-company",
+                            author : "the-author",
+                            site : "the-site",
+                            helpURL : "the-helpURL",
+                            categories : ["cat-1", "cat-2"],
+                            style : {
+                                width : 200,
+                                height : 400
+                            },
+                            constraints : {
+                                questions : {
+                                    single : true,
+                                    multiple : true,
+                                    open : false
+                                },
+                                controls : {
+                                    label : true,
+                                    responseblock : true
+                                },
+                                responses : {
+                                    min : 2,
+                                    max : '*'
+                                }
+                            }
+                        },
+                        outputs : {
+                            defaultOutput : 'main',
+                            outputs : [
+                                {
+                                    id : "main",
+                                    description : "Main output",
+                                    contents : [
+                                        {
+                                            fileName : 'main.css',
+                                            type : 'css',
+                                            mode : 'static',
+                                            position : 'head'
+                                        },
+                                        {
+                                            fileName : 'main.html',
+                                            type : 'html',
+                                            mode : 'dynamic',
+                                            position : 'placeholder'
+                                        },
+                                        {
+                                            fileName : 'main.js',
+                                            type : 'javascript',
+                                            mode : 'static',
+                                            position: 'foot'
+                                        }
+                                    ]
+                                },
+                                {
+                                    id : "second",
+                                    description : "Second output",
+                                    condition : "Browser.Support(\"javascript\")",
+                                    contents : [
+                                        {
+                                            fileName : 'second.css',
+                                            type : 'css',
+                                            mode : 'static',
+                                            position : 'head'
+                                        },
+                                        {
+                                            fileName : 'second.html',
+                                            type : 'html',
+                                            mode : 'dynamic',
+                                            position : 'placeholder'
+                                        },
+                                        {
+                                            fileName : 'second.js',
+                                            type : 'javascript',
+                                            mode : 'static',
+                                            position : 'foot'
+                                        }
+                                    ]
+                                },
+                                {
+                                    id : "third",
+                                    description : "Third output",
+                                    maxIterations : 12,
+                                    defaultGeneration : false,
+                                    contents : [
+                                        {
+                                            fileName : "third.css",
+                                            type  : "css",
+                                            mode : "static",
+                                            position : "head",
+                                            attributes : [
+                                                {
+                                                    name : "rel",
+                                                    value : "alternate"
+                                                },
+                                                {
+                                                    name : "media",
+                                                    value : "print"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            fileName : 'HTML5Shim.js',
+                                            type : 'javascript',
+                                            mode : 'static',
+                                            position : 'head',
+                                            yieldValue : '<!--[if lte IE 9]><script type="text/javascript"  src="{%= CurrentADC.URLTo("static/HTML5Shim.js") %}" ></script><![endif]-->'
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        properties : {
+                            categories : [{
+                                id: "general",
+                                name: "General",
+                                properties: [
+                                    {
+                                        xsiType: "askiaProperty",
+                                        id: "askia-theme",
+                                        options: [
+                                            {
+                                                value: "red-theme",
+                                                text: "Red"
+                                            },
+                                            {
+                                                value: "blue-theme",
+                                                text: "Blue"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        id: "renderingType",
+                                        name: "Rendering type",
+                                        type: "string",
+                                        description: "Type of rendering",
+                                        value: "classic",
+                                        options: [
+                                            {
+                                                value: "classic",
+                                                text: "Classic"
+                                            },
+                                            {
+                                                value: "image",
+                                                text: "Image"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        id: "other",
+                                        name: "Open-ended question for semi-open",
+                                        type: "question",
+                                        numeric : true,
+                                        open : true,
+                                        description: "Additional open-ended question that could be use to emulate semi-open"
+                                    }
+                                ]
+                            },
+                                {
+                                    id : "images",
+                                    name : "Rendering type images",
+                                    properties : [
+                                        {
+                                            id : "singleImage",
+                                            name : "Image for single question",
+                                            type : "file",
+                                            fileExtension : ".png, .gif, .jpg",
+                                            description : "Image of single question when the rendering type is image",
+                                            value : "Single.png",
+                                            valueTheme : {
+                                                "red-theme" : "SingleRed.png",
+                                                "blue-theme" : "SingleBlue.png"
+                                            }
+                                        },
+                                        {
+                                            id : "multipleImage",
+                                            name : "Image for multiple question",
+                                            type : "file",
+                                            fileExtension : ".png, .gif, .jpg",
+                                            description : "Image of multiple question when the rendering type is image",
+                                            value : "Multiple.png",
+                                            valueTheme : {
+                                                "red-theme" : "MultipleRed.png",
+                                                "blue-theme" : "MultipleBlue.png"
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    id : "fake",
+                                    name : "Fake for test",
+                                    properties : [
+                                        {
+                                            id : "testNumber",
+                                            name : "TEST",
+                                            type : "number",
+                                            mode : "dynamic",
+                                            visible : false,
+                                            require : true,
+                                            min  :12,
+                                            max : 100.5,
+                                            decimal : 3,
+                                            description : "Test number properties",
+                                            value : "13"
+                                        },
+                                        {
+                                            id : "testColor",
+                                            name : "TEST",
+                                            type : "color",
+                                            colorFormat  :"rgb",
+                                            description : "Test color properties",
+                                            value : "255,255,255"
+                                        },
+                                        {
+                                            id : "testQuestion",
+                                            name : "TEST",
+                                            type : "question",
+                                            chapter : false,
+                                            single : true,
+                                            multiple : true,
+                                            numeric : false,
+                                            open : false,
+                                            date : false,
+                                            description : "Test question properties",
+                                            value : ""
+                                        },
+                                        {
+                                            id : "testFile",
+                                            name : "TEST",
+                                            type : "file",
+                                            fileExtension : ".test, .test2",
+                                            description : "Test file properties",
+                                            value : "file.test"
+                                        },
+                                        {
+                                            id : "testString",
+                                            name : "TEST",
+                                            type : "string",
+                                            pattern : ".+@.+",
+                                            description : "Test string properties",
+                                            value : "test@test.com"
+                                        }
+                                    ]
+                                }]
+                        }
+                    });
+                    done();
+                });
+            });
+        });
+    });
+
+    describe("#set", function () {
+        beforeEach(function () {
+            spies.dirExists.andCallFake(function (p, cb) {
+                cb(null, true);
+            });
+            spies.fs.readFile.andCallFake(function (p, cb) {
+                cb(null, '<control><info><name>the-name</name><guid>the-guid</guid>' +
+                    '<version>the-version</version><date>the-date</date><description><![CDATA[the-description]]></description>' +
+                    '<company>the-company</company><author>the-author</author><site>the-site</site>' +
+                    '<helpURL>the-helpURL</helpURL>' +
+                    '<categories><category>cat-1</category><category>cat-2</category></categories>' +
+                    '<style width="200" height="400" />' +
+                    '<constraints><constraint on="questions" single="true" multiple="true" open="false" />' +
+                    '<constraint on="controls" label="true" responseblock="true" />' +
+                    '<constraint on="responses" min="2" max="*" />' +
+                    '</constraints>' +
+                    '</info>' +
+                    '<outputs defaultOutput="main">' +
+                    '<output id="main">' +
+                    '<description><![CDATA[Main output]]></description>' +
+                    '<content fileName="main.css" type="css" mode="static" position="head" />' +
+                    '<content fileName="main.html" type="html" mode="dynamic" position="placeholder" />' +
+                    '<content fileName="main.js" type="javascript" mode="static" position="foot" />' +
+                    '</output>' +
+                    '<output id="second">' +
+                    '<description><![CDATA[Second output]]></description>' +
+                    '<condition><![CDATA[Browser.Support("javascript")]]></condition>' +
+                    '<content fileName="second.css" type="css" mode="static" position="head" />' +
+                    '<content fileName="second.html" type="html" mode="dynamic" position="placeholder" />' +
+                    '<content fileName="second.js" type="javascript" mode="static" position="foot" />' +
+                    '</output>' +
+                    '<output id="third" defaultGeneration="false" maxIterations="12">' +
+                    '<description><![CDATA[Third output]]></description>' +
+                    '<content fileName="third.css" type="css" mode="static" position="head" >' +
+                    ' <attribute name="rel">' +
+                    '<value>alternate</value>' +
+                    '</attribute>' +
+                    '<attribute name="media">' +
+                    '<value>print</value>' +
+                    '</attribute>' +
+                    '</content>' +
+                    '<content fileName="HTML5Shim.js" type="javascript" mode="static" position="head">' +
+                    '<yield>' +
+                    '<![CDATA[' +
+                    '<!--[if lte IE 9]>' +
+                    '<script type="text/javascript"  src="{%= CurrentADC.URLTo("static/HTML5Shim.js") %}" ></script>' +
+                    '<![endif]-->' +
+                    ']]>' +
+                    '</yield>' +
+                    '</content>'+
+                    '</output>' +
+                    '</outputs>' +
+                    '<properties>' +
+                    '<category id="general" name="General">' +
+                    '<property xsi:type="askiaProperty" id="askia-theme">' +
+                    '<options>' +
+                    '<option value="red-theme" text="Red" />' +
+                    '<option value="blue-theme" text="Blue" />' +
+                    '</options>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="renderingType" name="Rendering type" type="string">' +
+                    '<description>Type of rendering</description>' +
+                    '<value>classic</value>' +
+                    '<options>' +
+                    '<option value="classic" text="Classic"/>' +
+                    '<option value="image" text="Image"/>' +
+                    '</options>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="other" name="Open-ended question for semi-open" type="question" open="true" numeric="true">' +
+                    '<description>Additional open-ended question that could be use to emulate semi-open</description>' +
+                    '</property>' +
+                    '</category>' +
+                    '<category id="images" name="Rendering type images">' +
+                    '<property xsi:type="standardProperty" id="singleImage" name="Image for single question" type="file" fileExtension=".png, .gif, .jpg">' +
+                    '<description>Image of single question when the rendering type is image</description>' +
+                    '<value>Single.png</value>' +
+                    '<value theme="red-theme">SingleRed.png</value>' +
+                    '<value theme="blue-theme">SingleBlue.png</value>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="multipleImage" name="Image for multiple question" type="file" fileExtension=".png, .gif, .jpg">' +
+                    '<description>Image of multiple question when the rendering type is image</description>' +
+                    '<value>Multiple.png</value>' +
+                    '<value theme="red-theme">MultipleRed.png</value>' +
+                    '<value theme="blue-theme">MultipleBlue.png</value>' +
+                    '</property>' +
+                    '</category>' +
+                    '<category id="fake" name="Fake for test">' +
+                    '<property xsi:type="standardProperty" id="testNumber" name="TEST" type="number" min="12" max="100.5" decimal="3" mode="dynamic" visible="false" require="true">' +
+                    '<description>Test number properties</description>' +
+                    '<value>13</value>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="testColor" name="TEST" type="color" colorFormat="rgb">' +
+                    '<description>Test color properties</description>' +
+                    '<value>255,255,255</value>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="testQuestion" name="TEST" type="question" chapter="false" single="true" multiple="true" numeric="false" open="false" date="false">' +
+                    '<description>Test question properties</description>' +
+                    '<value></value>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="testFile" name="TEST" type="file" fileExtension=".test, .test2">' +
+                    '<description>Test file properties</description>' +
+                    '<value>file.test</value>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="testString" name="TEST" type="string" pattern=".+@.+">' +
+                    '<description>Test string properties</description>' +
+                    '<value>test@test.com</value>' +
+                    '</property>' +
+                    '</category>' +
+                    '</properties>' +
+                    '</control>');
+            });
+        });
+
+        it("should set the configuration using the object in arg", function () {
+            runSync(function (done) {
+                var configurator = new ADCConfigurator("an/valid/path");
+                configurator.load(function () {
+                    configurator.set({
+                        info : {
+                            name : "new-name",
+                            guid : "new-guid",
+                            version : "new-version",
+                            date : "new-date",
+                            description : "new-description",
+                            company : "new-company",
+                            author : "new-author",
+                            site : "new-site",
+                            helpURL : "new-helpURL",
+                            categories : ["new-cat-1", "new-cat-2", "new-cat-3"],
+                            style : {
+                                width : 300,
+                                height : 500
+                            },
+                            constraints : {
+                                questions : {
+                                    single : false,
+                                    numeric : true
+                                },
+                                controls : {
+                                    label :false,
+                                    checkbox : true
+                                },
+                                responses : {
+                                    min : 10
+                                }
+                            }
+                        },
+                        outputs : {
+                            defaultOutput : "new-second",
+                            outputs : [
+                                {
+                                    id : "new-main",
+                                    description : "New Main output",
+                                    contents : [
+                                        {
+                                            fileName : 'new-main.css',
+                                            type : 'css',
+                                            mode : 'dynamic',
+                                            position : 'none'
+                                        },
+                                        {
+                                            fileName : 'new-main.html',
+                                            type : 'html',
+                                            mode : 'dynamic',
+                                            position : 'placeholder'
+                                        },
+                                        {
+                                            fileName : 'new-main.js',
+                                            type : 'javascript',
+                                            mode : 'static',
+                                            position: 'foot'
+                                        }
+                                    ]
+                                },
+                                {
+                                    id : "new-second",
+                                    description : "New Second output",
+                                    condition : "Browser.Support(\"javascript\") and true",
+                                    contents : [
+                                        {
+                                            fileName : 'new-second.css',
+                                            type : 'css',
+                                            mode : 'static',
+                                            position : 'head'
+                                        },
+                                        {
+                                            fileName : 'new-second.html',
+                                            type : 'html',
+                                            mode : 'dynamic',
+                                            position : 'placeholder'
+                                        },
+                                        {
+                                            fileName : 'new-second.js',
+                                            type : 'javascript',
+                                            mode : 'static',
+                                            position : 'foot'
+                                        }
+                                    ]
+                                },
+                                {
+                                    id : "new-third",
+                                    description : "New Third output",
+                                    maxIterations : 50,
+                                    defaultGeneration : true,
+                                    contents : [
+                                        {
+                                            fileName : "new-third.css",
+                                            type  : "css",
+                                            mode : "static",
+                                            position : "head",
+                                            attributes : [
+                                                {
+                                                    name : "new-rel",
+                                                    value : "new-alternate"
+                                                },
+                                                {
+                                                    name : "new-media",
+                                                    value : "new-print"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            fileName : 'new-HTML5Shim.js',
+                                            type : 'javascript',
+                                            mode : 'static',
+                                            position : 'head',
+                                            yieldValue :'<!--New-->\n<!--[if lte IE 9]><script type="text/javascript"  src="{%= CurrentADC.URLTo("static/HTML5Shim.js") %}" ></script><![endif]-->'
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        properties : {
+                            categories : [{
+                                id: "new-general",
+                                name: "New General",
+                                properties: [
+                                    {
+                                        xsiType: "askiaProperty",
+                                        id: "new-askia-theme",
+                                        options: [
+                                            {
+                                                value: "new-red-theme",
+                                                text: "New Red"
+                                            },
+                                            {
+                                                value: "new-blue-theme",
+                                                text: "New Blue"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        id: "newRenderingType",
+                                        name: "New rendering type",
+                                        type: "string",
+                                        description: "New Type of rendering",
+                                        value: "new-classic",
+                                        options: [
+                                            {
+                                                value: "new-classic",
+                                                text: "New Classic"
+                                            },
+                                            {
+                                                value: "new-image",
+                                                text: "New Image"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        id: "new-other",
+                                        name: "Open-ended question for semi-open",
+                                        type: "question",
+                                        single : true,
+                                        multiple : true,
+                                        numeric : false,
+                                        open : false,
+                                        description: "Additional open-ended question that could be use to emulate semi-open"
+                                    }
+                                ]
+                            },
+                                {
+                                    id : "images",
+                                    name : "Rendering type images",
+                                    properties : [
+                                        {
+                                            id : "singleImage",
+                                            name : "Image for single question",
+                                            type : "file",
+                                            fileExtension : ".png, .gif, .jpg",
+                                            description : "Image of single question when the rendering type is image",
+                                            value : "Single.png",
+                                            valueTheme : {
+                                                "new-red-theme" : "SingleRed.png",
+                                                "new-blue-theme" : "SingleBlue.png"
+                                            }
+                                        },
+                                        {
+                                            id : "multipleImage",
+                                            name : "Image for multiple question",
+                                            type : "file",
+                                            fileExtension : ".png, .gif, .jpg",
+                                            description : "Image of multiple question when the rendering type is image",
+                                            value : "Multiple.png",
+                                            valueTheme : {
+                                                "red-theme" : "MultipleRed.png",
+                                                "blue-theme" : "MultipleBlue.png"
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    id : "newFake",
+                                    name : "New Fake for test",
+                                    properties : [
+                                        {
+                                            id : "testNumber",
+                                            name : "Number value",
+                                            type : "number",
+                                            mode : "static",
+                                            visible : true,
+                                            require : false,
+                                            min  :25,
+                                            max : 200,
+                                            decimal : 1,
+                                            description : "New Test number properties",
+                                            value : "26"
+                                        },
+                                        {
+                                            id : "testColor",
+                                            name : "Color value",
+                                            type : "color",
+                                            colorFormat  :"rgba",
+                                            description : "Test color properties",
+                                            value : "255,255,255,.9"
+                                        },
+                                        {
+                                            id : "testQuestion",
+                                            name : "Question value",
+                                            type : "question",
+                                            chapter : true,
+                                            single : false,
+                                            multiple : false,
+                                            numeric : true,
+                                            open : true,
+                                            date : true,
+                                            description : "Test question properties",
+                                            value : "CurrentQuestion"
+                                        },
+                                        {
+                                            id : "testFile",
+                                            name : "File value",
+                                            type : "file",
+                                            fileExtension : ".doc, .docx",
+                                            description : "Test file properties",
+                                            value : "file.docs"
+                                        },
+                                        {
+                                            id : "testString",
+                                            name : "String value",
+                                            type : "string",
+                                            pattern : "\w@\w",
+                                            description : "Test string properties",
+                                            value : "foo@bar.com"
+                                        }
+                                    ]
+                                }]
+                        }
+                    });
+                    var result = configurator.get();
+                    expect(result ).toEqual({
+                        info : {
+                            name : "new-name",
+                            guid : "new-guid",
+                            version : "new-version",
+                            date : "new-date",
+                            description : "new-description",
+                            company : "new-company",
+                            author : "new-author",
+                            site : "new-site",
+                            helpURL : "new-helpURL",
+                            categories : ["new-cat-1", "new-cat-2", "new-cat-3"],
+                            style : {
+                                width : 300,
+                                height : 500
+                            },
+                            constraints : {
+                                questions : {
+                                    single : false,
+                                    multiple : true,
+                                    open : false,
+                                    numeric : true
+                                },
+                                controls : {
+                                    label :false,
+                                    responseblock : true,
+                                    checkbox : true
+                                },
+                                responses : {
+                                    min : 10,
+                                    max : "*"
+                                }
+                            }
+                        },
+                        outputs : {
+                            defaultOutput : "new-second",
+                            outputs : [
+                                {
+                                    id : "new-main",
+                                    description : "New Main output",
+                                    contents : [
+                                        {
+                                            fileName : 'new-main.css',
+                                            type : 'css',
+                                            mode : 'dynamic',
+                                            position : 'none'
+                                        },
+                                        {
+                                            fileName : 'new-main.html',
+                                            type : 'html',
+                                            mode : 'dynamic',
+                                            position : 'placeholder'
+                                        },
+                                        {
+                                            fileName : 'new-main.js',
+                                            type : 'javascript',
+                                            mode : 'static',
+                                            position: 'foot'
+                                        }
+                                    ]
+                                },
+                                {
+                                    id : "new-second",
+                                    description : "New Second output",
+                                    condition : "Browser.Support(\"javascript\") and true",
+                                    contents : [
+                                        {
+                                            fileName : 'new-second.css',
+                                            type : 'css',
+                                            mode : 'static',
+                                            position : 'head'
+                                        },
+                                        {
+                                            fileName : 'new-second.html',
+                                            type : 'html',
+                                            mode : 'dynamic',
+                                            position : 'placeholder'
+                                        },
+                                        {
+                                            fileName : 'new-second.js',
+                                            type : 'javascript',
+                                            mode : 'static',
+                                            position : 'foot'
+                                        }
+                                    ]
+                                },
+                                {
+                                    id : "new-third",
+                                    description : "New Third output",
+                                    maxIterations : 50,
+                                    defaultGeneration : true,
+                                    contents : [
+                                        {
+                                            fileName : "new-third.css",
+                                            type  : "css",
+                                            mode : "static",
+                                            position : "head",
+                                            attributes : [
+                                                {
+                                                    name : "new-rel",
+                                                    value : "new-alternate"
+                                                },
+                                                {
+                                                    name : "new-media",
+                                                    value : "new-print"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            fileName : 'new-HTML5Shim.js',
+                                            type : 'javascript',
+                                            mode : 'static',
+                                            position : 'head',
+                                            yieldValue :'<!--New-->\n<!--[if lte IE 9]><script type="text/javascript"  src="{%= CurrentADC.URLTo("static/HTML5Shim.js") %}" ></script><![endif]-->'
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        properties : {
+                            categories : [{
+                                id: "new-general",
+                                name: "New General",
+                                properties: [
+                                    {
+                                        xsiType: "askiaProperty",
+                                        id: "new-askia-theme",
+                                        options: [
+                                            {
+                                                value: "new-red-theme",
+                                                text: "New Red"
+                                            },
+                                            {
+                                                value: "new-blue-theme",
+                                                text: "New Blue"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        id: "newRenderingType",
+                                        name: "New rendering type",
+                                        type: "string",
+                                        description: "New Type of rendering",
+                                        value: "new-classic",
+                                        options: [
+                                            {
+                                                value: "new-classic",
+                                                text: "New Classic"
+                                            },
+                                            {
+                                                value: "new-image",
+                                                text: "New Image"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        id: "new-other",
+                                        name: "Open-ended question for semi-open",
+                                        type: "question",
+                                        single : true,
+                                        multiple : true,
+                                        numeric : false,
+                                        open : false,
+                                        description: "Additional open-ended question that could be use to emulate semi-open"
+                                    }
+                                ]
+                            },
+                                {
+                                    id : "images",
+                                    name : "Rendering type images",
+                                    properties : [
+                                        {
+                                            id : "singleImage",
+                                            name : "Image for single question",
+                                            type : "file",
+                                            fileExtension : ".png, .gif, .jpg",
+                                            description : "Image of single question when the rendering type is image",
+                                            value : "Single.png",
+                                            valueTheme : {
+                                                "new-red-theme" : "SingleRed.png",
+                                                "new-blue-theme" : "SingleBlue.png"
+                                            }
+                                        },
+                                        {
+                                            id : "multipleImage",
+                                            name : "Image for multiple question",
+                                            type : "file",
+                                            fileExtension : ".png, .gif, .jpg",
+                                            description : "Image of multiple question when the rendering type is image",
+                                            value : "Multiple.png",
+                                            valueTheme : {
+                                                "red-theme" : "MultipleRed.png",
+                                                "blue-theme" : "MultipleBlue.png"
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    id : "newFake",
+                                    name : "New Fake for test",
+                                    properties : [
+                                        {
+                                            id : "testNumber",
+                                            name : "Number value",
+                                            type : "number",
+                                            mode : "static",
+                                            visible : true,
+                                            require : false,
+                                            min  :25,
+                                            max : 200,
+                                            decimal : 1,
+                                            description : "New Test number properties",
+                                            value : "26"
+                                        },
+                                        {
+                                            id : "testColor",
+                                            name : "Color value",
+                                            type : "color",
+                                            colorFormat  :"rgba",
+                                            description : "Test color properties",
+                                            value : "255,255,255,.9"
+                                        },
+                                        {
+                                            id : "testQuestion",
+                                            name : "Question value",
+                                            type : "question",
+                                            chapter : true,
+                                            single : false,
+                                            multiple : false,
+                                            numeric : true,
+                                            open : true,
+                                            date : true,
+                                            description : "Test question properties",
+                                            value : "CurrentQuestion"
+                                        },
+                                        {
+                                            id : "testFile",
+                                            name : "File value",
+                                            type : "file",
+                                            fileExtension : ".doc, .docx",
+                                            description : "Test file properties",
+                                            value : "file.docs"
+                                        },
+                                        {
+                                            id : "testString",
+                                            name : "String value",
+                                            type : "string",
+                                            pattern : "\w@\w",
+                                            description : "Test string properties",
+                                            value : "foo@bar.com"
+                                        }
+                                    ]
+                                }]
+                        }
+                    });
+                    done();
+                });
+            });
+        });
+    });
+
     describe("#info", function () {
 
         beforeEach(function () {
