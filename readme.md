@@ -46,14 +46,17 @@ This application works through Windows PowerShell
 
     Options:
 
-    -h, --help             output usage information
-    -V, --version          output the version number
-    -o, --output <name>    name of the output to display or path to the output directory for the generation
-    -f, --fixture <name>   name of the fixture to use for the `show` command
-    -T, --no-test          skip the execution of ADC unit tests
-    -X, --no-xml           skip the validation of the config.xml file
-    -A, --no-autoTest      skip the execution of the auto-generated unit tests
-    -t, --template <name>  name of the template to use to generate the ADC
+    -h, --help               output usage information
+    -V, --version            output the version number
+    -o, --output <name>      name of the output to display or path to the output directory for the generation
+    -f, --fixture <name>     name of the fixture to use for the `show` command
+    -m, --masterPage <path>  path of the master page to use for the `show` command'
+    -p, --properties <props> ADC properties (in url query string format) to set for the `show` command'
+    -T, --no-test            skip the execution of ADC unit tests
+    -X, --no-xml             skip the validation of the config.xml file
+    -A, --no-autoTest        skip the execution of the auto-generated unit tests
+    -t, --template <name>    name of the template to use to generate the ADC
+    
 
 ## API Usage
 

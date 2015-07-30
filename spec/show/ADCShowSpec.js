@@ -97,6 +97,25 @@ describe('ADCShow', function () {
             expect(childProc.execFile).toHaveBeenCalled();
         });
 
+        it("should call the program `ADCShell.exe` with the `-properties` parameter when it's defined", function() {
+            var childProc = require('child_process'),
+                spyExec   = spyOn(childProc, 'execFile');
+
+            spyOn(process, 'cwd').andReturn('');
+
+            spyExec.andCallFake(function (file, args) {
+                expect(file).toBe('.\\ADXShell.exe');
+                expect(args).toEqual(['show', '-output:something', '-fixture:single.xml', '-masterPage:mp.html', '-properties:prop1=value1&prop2=value2&prop%203=value%2C%223', '\\adc\\path\\dir']);
+            });
+            adcShow.show({
+                output : 'something',
+                fixture : 'single.xml',
+                masterPage : 'mp.html',
+                properties : 'prop1=value1&prop2=value2&prop%203=value%2C%223'
+            }, '/adc/path/dir');
+
+            expect(childProc.execFile).toHaveBeenCalled();
+        });
 
         describe("API `callback`", function () {
 

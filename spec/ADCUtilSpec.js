@@ -193,6 +193,7 @@ describe('ADCUtil', function () {
                 'output:fallback',
                 'fixture:single.xml',
                 'masterPage:masterPage.html',
+                'properties:prop1=value1&prop2=value2',
                 'adc/directory/path'
             ];
 

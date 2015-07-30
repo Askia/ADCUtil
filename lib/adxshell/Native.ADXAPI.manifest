@@ -9,7 +9,7 @@
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
       <dsig:DigestValue>zmk9hh0o2wJDnePp7LmAYeXJ/JM=</dsig:DigestValue>
     </hash>
-    <typelib tlbid="{f9397fec-2ef0-4206-af18-b6ddf44b66f1}" version="1.0" helpdir="C:\Users\mamadou.PARIS\AppData\Roaming\npm\node_modules\adcutil\lib\adcunit\ADCEngineTester.hlp" resourceid="0" flags="CONTROL,HASDISKIMAGE" />
+    <typelib tlbid="{f9397fec-2ef0-4206-af18-b6ddf44b66f1}" version="1.0" helpdir="\\vmware-host\Shared Folders\PROJECTS\ADCSolution\ADXStudio\node_modules\adcutil\lib\adxshell\ADCEngineTester.hlp" resourceid="0" flags="CONTROL,HASDISKIMAGE" />
     <comClass clsid="{92054620-14ce-4a74-9d70-135383ee9f6f}" threadingModel="Apartment" tlbid="{f9397fec-2ef0-4206-af18-b6ddf44b66f1}" progid="ADCENGINETESTER.ADCEngineCtrl.1" description="ADCEngine Control" />
   </file>
 </assembly>
