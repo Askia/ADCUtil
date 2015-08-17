@@ -92,7 +92,7 @@ describe('ADCValidator', function () {
     });
 
     // Add extra hook
-    function extraHool(fn){
+    function extraHook(fn){
         var previousHook = spies.validateHook;
         spies.validateHook = function () {
             previousHook.apply(this, arguments);
@@ -1360,7 +1360,7 @@ describe('ADCValidator', function () {
                 });
 
                 it("should output an error when there is no contents", function () {
-                    extraHool(function () {
+                    extraHook(function () {
                         delete this.configXmlDoc.control.outputs[0].output[0].content;
                     });
                     adcValidator.validate(null, '/adc/path/dir');
@@ -1371,7 +1371,7 @@ describe('ADCValidator', function () {
                     expect(common.writeError).toHaveBeenCalledWith(format(errMsg.dynamicFileRequire, "empty"));
                 });
                 it("should output an error when there is a dynamic html content but with position=none", function () {
-                    extraHool(function () {
+                    extraHook(function () {
                         htmlContent.$.mode = 'dynamic';
                         htmlContent.$.position = 'none';
                     });
@@ -1379,21 +1379,21 @@ describe('ADCValidator', function () {
                     expect(common.writeError).toHaveBeenCalledWith(format(errMsg.dynamicFileRequire, "empty"));
                 });
                 it("should not output an error when there is a dynamic html content", function () {
-                    extraHool(function () {
+                    extraHook(function () {
                         htmlContent.$.mode = 'dynamic';
                     });
                     adcValidator.validate(null, '/adc/path/dir');
                     expect(common.writeError).not.toHaveBeenCalledWith(format(errMsg.dynamicFileRequire, "empty"));
                 });
                 it("should not output an error when there is a dynamic javascript content", function () {
-                    extraHool(function () {
+                    extraHook(function () {
                         jsContent.$.mode = 'dynamic';
                     });
                     adcValidator.validate(null, '/adc/path/dir');
                     expect(common.writeError).not.toHaveBeenCalledWith(format(errMsg.dynamicFileRequire, "empty"));
                 });
                 it("should  output an error when there is a dynamic javascript content but with position=none", function () {
-                    extraHool(function () {
+                    extraHook(function () {
                         jsContent.$.mode = 'dynamic';
                         jsContent.$.position = 'none';
                     });
@@ -1757,7 +1757,7 @@ describe('ADCValidator', function () {
                     });
 
                     it("should not output an error when binary content have a yield", function () {
-                        extraHool(function () {
+                        extraHook(function () {
                             content.yield = ['test'];
                         });
                         adcValidator.validate(null, '/adc/path/dir');
@@ -1765,7 +1765,7 @@ describe('ADCValidator', function () {
                     });
 
                     it("should not output an error when binary content have a position=none", function () {
-                        extraHool(function () {
+                        extraHook(function () {
                             content.$.position = 'none';
                         });
                         adcValidator.validate(null, '/adc/path/dir');
@@ -1811,7 +1811,7 @@ describe('ADCValidator', function () {
                        });
 
                         it("should output an error when the directory associated doesn't exist", function () {
-                            extraHool(function () {
+                            extraHook(function () {
                                 instance.dirResources[key].isExist = false;
                             });
                             adcValidator.validate(null, '/adc/path/dir');
@@ -1819,7 +1819,7 @@ describe('ADCValidator', function () {
                         });
 
                         it("should output an error when the file associated doesn't exist", function () {
-                            extraHool(function () {
+                            extraHook(function () {
                                 instance.dirResources[key].isExist = true;
                             });
                             adcValidator.validate(null, '/adc/path/dir');
@@ -1828,7 +1828,7 @@ describe('ADCValidator', function () {
 
                         function testDynamicBinary(type) {
                             it("should output an error when trying to use " + type + " file", function () {
-                                extraHool(function () {
+                                extraHook(function () {
                                     instance.configXmlDoc.control.outputs[0].output[0].content[0].$.type = type;
                                     instance.dirResources[key].isExist = true;
                                     instance.dirResources[key]['test.html'] = 'test.html';
@@ -1840,7 +1840,7 @@ describe('ADCValidator', function () {
 
                         function testDynamicText(type) {
                             it("should not output an error when trying to use " + type + " file", function () {
-                                extraHool(function () {
+                                extraHook(function () {
                                     instance.configXmlDoc.control.outputs[0].output[0].content[0].$.type = type;
                                     instance.dirResources[key].isExist = true;
                                     instance.dirResources[key]['test.html'] = 'test.html';
@@ -1910,7 +1910,7 @@ describe('ADCValidator', function () {
                     });
 
                     it("should output an error when there is duplicate attribute node with the same name", function () {
-                        extraHool(function () {
+                        extraHook(function () {
                             content.attribute = [
                                 {
                                     $: {
@@ -1930,7 +1930,7 @@ describe('ADCValidator', function () {
 
                     function testIgnoredFile(type) {
                         it("should output a warning with " + type + " file", function () {
-                            extraHool(function () {
+                            extraHook(function () {
                                 content.$.type = type;
                                 content.attribute = [
                                     {}
@@ -1945,7 +1945,7 @@ describe('ADCValidator', function () {
                         ['text', 'binary', 'html', 'flash'].forEach(testIgnoredFile);
 
                         it("should output a warning with dynamic file", function () {
-                            extraHool(function () {
+                            extraHook(function () {
                                 content.$.mode = 'dynamic';
                                 content.attribute = [
                                     {}
@@ -1961,7 +1961,7 @@ describe('ADCValidator', function () {
                             attrName = obj.attr;
                         it("should output an error on " + type + " content when attempt to override " + attrName, function () {
 
-                            extraHool(function () {
+                            extraHook(function () {
                                 content.$.type = type;
                                 content.attribute = [
                                     {
@@ -2077,7 +2077,9 @@ describe('ADCValidator', function () {
 
     describe('#runAutoTests', function () {
         var spyExec,
-            childProc;
+            childProc,
+            InteractiveADXShell,
+            spyInteractiveExec;
 
         beforeEach(function () {
             // Modify the sequence of the validation to only call the runAutoTests method
@@ -2086,6 +2088,9 @@ describe('ADCValidator', function () {
             childProc = require('child_process');
             spyOn(process, 'cwd').andReturn('');
             spyExec = spyOn(childProc, 'execFile');
+
+            InteractiveADXShell  =  require('../../app/common/InteractiveADXShell.js').InteractiveADXShell;
+            spyInteractiveExec = spyOn(InteractiveADXShell.prototype, 'exec');
         });
 
 
@@ -2136,6 +2141,23 @@ describe('ADCValidator', function () {
             adcValidator.validate(null, '/adc/path/dir');
 
             expect(common.writeSuccess).toHaveBeenCalledWith(successMsg.adcUnitSucceed);
+        });
+
+        it("should run the ADXShell process using the InteractiveADXShell when it's defined in the options", function () {
+            spies.fs.stat.andCallFake(function (path, callback) {
+                callback(null);
+            });
+            var mockCommand;
+            spyInteractiveExec.andCallFake(function (command) {
+                mockCommand = command;
+            });
+            adcValidator.validate({
+                test     : false,
+                autoTest : true,
+                xml      : false,
+                adxShell : new InteractiveADXShell()
+            }, 'adc/path/dir');
+            expect(mockCommand).toBe('test --auto adc\\path\\dir');
         });
     });
 

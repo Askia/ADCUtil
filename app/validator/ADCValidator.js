@@ -347,11 +347,13 @@ Validator.prototype.constructor = Validator;
  * @param {Boolean} [options.test=true] Run unit tests
  * @param {Boolean} [options.autoTest=true] Run auto unit tests
  * @param {Boolean} [options.xml=true] Validate the config.xml file
+ * @param {InteractiveADXShell} [options.adxShell] Interactive ADXShell process
  * @param {Function} [callback] Callback function
  * @param {Error} [callback.err] Error
  * @param {Object} [callback.report] Validation report
  */
 Validator.prototype.validate = function validate(options, callback) {
+
     // Start timer
     this.report.startTime  = new Date().getTime();
 
@@ -370,6 +372,9 @@ Validator.prototype.validate = function validate(options, callback) {
 
     // Register the end callback for future usage
     this.validationCallback = callback;
+
+
+    this._adxShell = (options && options.adxShell) || null;
 
     // Validate according to the options
     if (options) {
@@ -1059,23 +1064,33 @@ Validator.prototype.runTests = function runTests(args, message) {
             self.resume(null);
             return ;
         }
-
-        var execFile = require('child_process').execFile;
-        execFile('.\\' + common.ADC_UNIT_PROCESS_NAME, args, {
-            cwd   : pathHelper.join(self.rootdir, common.ADC_UNIT_DIR_PATH),
-            env   : process.env
-        }, function callback(err, stdout, stderr) {
-            self.writeMessage(message);
+        function execCallback(err, data, stderr) {
             if (stderr) {
+                err = new Error(stderr);
+            }
+            self.writeMessage(message);
+            if (err) {
                 self.report.warnings++;
-                self.writeWarning("\r\n" + stderr);
-                self.writeMessage(stdout);
+                self.writeWarning("\r\n" + err.message);
+                if (data) {
+                    self.writeMessage(data);
+                }
             } else {
-                self.writeMessage(stdout);
+                self.writeMessage(data);
                 self.writeSuccess(successMsg.adcUnitSucceed);
             }
             self.resume(null);
-        });
+        }
+
+        if (!self._adxShell) {
+            var execFile =  require('child_process').execFile;
+            execFile('.\\' + common.ADC_UNIT_PROCESS_NAME, args, {
+                cwd   : pathHelper.join(self.rootdir, common.ADC_UNIT_DIR_PATH),
+                env   : process.env
+            }, execCallback);
+        } else {
+            self._adxShell.exec('test ' + args.join(' '), execCallback);
+        }
     });
 };
 

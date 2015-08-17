@@ -1,6 +1,7 @@
 describe('ADCShow', function () {
 
     var common,
+        InteractiveADXShell,
         adcShow,
         Show,
         spies = {},
@@ -30,7 +31,8 @@ describe('ADCShow', function () {
         spies.writeMessage = spyOn(common, 'writeMessage');
         spies.dirExists    = spyOn(common, 'dirExists');
 
-
+        InteractiveADXShell  = require('../../app/common/InteractiveADXShell.js').InteractiveADXShell;
+        spies.interactiveExec = spyOn(InteractiveADXShell.prototype, 'exec');
     });
 
 
@@ -115,6 +117,23 @@ describe('ADCShow', function () {
             }, '/adc/path/dir');
 
             expect(childProc.execFile).toHaveBeenCalled();
+        });
+
+        it("should run the `ADXShell` process using the InteractiveADXShell when it's defined in the options", function () {
+            spyOn(process, 'cwd').andReturn('');
+
+            var mockCommand;
+            spies.interactiveExec.andCallFake(function (command) {
+                mockCommand = command;
+            });
+            adcShow.show({
+                output : 'something',
+                fixture : 'single.xml',
+                masterPage : 'mp.html',
+                properties : 'prop1=value1&prop2=value2&prop%203=value%2C%223',
+                adxShell : new InteractiveADXShell()
+            }, '/adc/path/dir');
+            expect(mockCommand).toBe('show -output:something -fixture:single.xml -masterPage:mp.html -properties:prop1=value1&prop2=value2&prop%203=value%2C%223 \\adc\\path\\dir');
         });
 
         describe("API `callback`", function () {

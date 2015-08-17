@@ -1,5 +1,6 @@
 describe('ADCUtilAPI', function () {
     var fs = require('fs');
+    var InteractiveADXShell = require('../app/common/InteractiveADXShell.js').InteractiveADXShell;
     var ADC,
         adcUtilApi,
         errMsg,
@@ -14,6 +15,7 @@ describe('ADCUtilAPI', function () {
         adcConfigurator,
         Configurator,
         spies = {};
+
 
     beforeEach(function () {
         adcUtilApi = require.resolve('../app/ADCUtilAPI.js');
@@ -83,6 +85,11 @@ describe('ADCUtilAPI', function () {
                 expect(function () {
                     var adc = new ADC('/invalid/path');
                 }).toThrow("No such file or directory");
+            });
+
+            it("should initialize a new instance of the InteractiveADXShell in #_adxShell", function () {
+                var adc = new ADC('some/path');
+                expect(adc._adxShell instanceof InteractiveADXShell).toBe(true);
             });
         });
 
@@ -167,9 +174,11 @@ describe('ADCUtilAPI', function () {
             });
             it("should call the Validator#validate with the arguments", function () {
                 var adc = new ADC('some/path');
-                var opt = {}, cb = function () {};
-                adc.validate(opt, cb);
-                expect(spies.validate).toHaveBeenCalledWith(opt, cb);
+                var cb = function () {};
+                adc.validate({}, cb);
+                expect(spies.validate).toHaveBeenCalledWith({
+                    adxShell : adc._adxShell
+                }, cb);
             });
         });
 
@@ -198,9 +207,11 @@ describe('ADCUtilAPI', function () {
             });
             it("should call the Builder#build with the arguments", function () {
                 var adc = new ADC('some/path');
-                var opt = {}, cb = function () {};
-                adc.build(opt, cb);
-                expect(spies.build).toHaveBeenCalledWith(opt, cb);
+                var cb = function () {};
+                adc.build({}, cb);
+                expect(spies.build).toHaveBeenCalledWith({
+                    adxShell : adc._adxShell
+                }, cb);
             });
         });
 
@@ -229,9 +240,11 @@ describe('ADCUtilAPI', function () {
             });
             it("should call the Show#show with the arguments", function () {
                 var adc = new ADC('some/path');
-                var opt = {}, cb = function () {};
-                adc.show(opt, cb);
-                expect(spies.show).toHaveBeenCalledWith(opt, cb);
+                var cb = function () {};
+                adc.show({}, cb);
+                expect(spies.show).toHaveBeenCalledWith({
+                    adxShell : adc._adxShell
+                }, cb);
             });
         });
 

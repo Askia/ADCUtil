@@ -7,6 +7,7 @@ var Builder      = require('./builder/ADCBuilder.js').Builder;
 var Show         = require('./show/ADCShow.js').Show;
 var Generator    = require('./generator/ADCGenerator.js').Generator;
 var Configurator = require('./configurator/ADCConfigurator.js').Configurator;
+var InteractiveADXShell = require('./common/InteractiveADXShell.js').InteractiveADXShell;
 
 /**
  * Object used to generate, validate, show and build an ADC
@@ -69,6 +70,14 @@ function ADC(adcDirPath) {
      * @type {ADC.Configurator}
      */
     this.configurator = null;
+
+    /**
+     * Interactive ADX Shell
+     *
+     * @type {*|InteractiveADXShell}
+     * @private
+     */
+    this._adxShell = new InteractiveADXShell(this.path);
 }
 
 /**
@@ -134,6 +143,8 @@ ADC.prototype.load = function load(callback) {
  */
 ADC.prototype.validate = function validate(options, callback) {
     var validator = new Validator(this.path);
+    options = options || {};
+    options.adxShell = this._adxShell;
     validator.validate(options, callback);
 };
 
@@ -159,6 +170,8 @@ ADC.prototype.validate = function validate(options, callback) {
  */
 ADC.prototype.build = function build(options, callback){
     var builder = new Builder(this.path);
+    options = options || {};
+    options.adxShell = this._adxShell;
     builder.build(options, callback);
 };
 
@@ -183,6 +196,8 @@ ADC.prototype.build = function build(options, callback){
  */
 ADC.prototype.show = function show(options, callback) {
     var show = new Show(this.path);
+    options = options || {};
+    options.adxShell = this._adxShell;
     show.show(options, callback);
 };
 

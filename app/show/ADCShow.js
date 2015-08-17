@@ -1,4 +1,5 @@
 var common          = require('../common/common.js');
+var InteractiveADXShell = require('../common/InteractiveADXShell.js').InteractiveADXShell;
 var pathHelper      = require('path');
 var errMsg          = common.messages.error;
 
@@ -70,6 +71,7 @@ Show.prototype.writeMessage = function writeMessage(text) {
  * @param {String} options.fixture FileName of the ADC fixture to use
  * @param {String} [options.masterPage] Path of the master page to use
  * @param {String} [options.properties] ADC properties (in url query string format: 'param1=value1&param2-value2')
+ * @param {InteractiveADXShell} [options.adxShell] Interactive ADXShell process
  * @param {Function} callback Callback function
  * @param {Error} callback.err Error
  * @param {String} callback.output Output string
@@ -107,10 +109,7 @@ Show.prototype.show = function show(options, callback) {
     args.push(this.adcDirectoryPath);
 
     var self = this;
-    execFile('.\\' + common.ADC_UNIT_PROCESS_NAME, args, {
-        cwd   : pathHelper.join(self.rootdir, common.ADC_UNIT_DIR_PATH),
-        env   : process.env
-    }, function cb(err, stdout, stderr) {
+    function execCallback(err, stdout, stderr) {
         if (err && typeof callback === 'function') {
             callback(err, null);
             return;
@@ -127,7 +126,16 @@ Show.prototype.show = function show(options, callback) {
                 callback(new Error(stderr));
             }
         }
-    });
+    }
+
+    if (!options.adxShell) {
+        execFile('.\\' + common.ADC_UNIT_PROCESS_NAME, args, {
+            cwd   : pathHelper.join(self.rootdir, common.ADC_UNIT_DIR_PATH),
+            env   : process.env
+        }, execCallback);
+    } else {
+        options.adxShell.exec(args.join(' '), execCallback);
+    }
 
 };
 
