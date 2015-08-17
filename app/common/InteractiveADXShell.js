@@ -34,11 +34,12 @@ InteractiveADXShell.prototype.constructor = InteractiveADXShell;
 InteractiveADXShell.prototype.exec = function exec(command, callback) {
     var self = this;
     if (!self._process) {
+        var root =  path.resolve(__dirname, "../../");
         self._process = childProcess.spawn('.\\' + common.ADC_UNIT_PROCESS_NAME, [
             'interactive',
             self.path
         ], {
-            cwd   : path.join(this.path, common.ADC_UNIT_DIR_PATH),
+            cwd   : path.join(root, common.ADC_UNIT_DIR_PATH),
             env   : process.env
         });
         self._process._firstData = true;
@@ -47,6 +48,7 @@ InteractiveADXShell.prototype.exec = function exec(command, callback) {
     function onOutput(data) {
         if (self._process._firstData) {
             self._process._firstData = false;
+            self._process.stdin.write(command + '\n');
             return;
         }
         if (typeof callback === 'function') {
@@ -68,7 +70,10 @@ InteractiveADXShell.prototype.exec = function exec(command, callback) {
 
     self._process.stdout.on('data', onOutput);
     self._process.stderr.on('data', onError);
-    self._process.stdin.write(command);
+    if (!self._process._firstData) {
+        self._process.stdin.write(command  + '\n');
+    }
+
 };
 
 exports.InteractiveADXShell = InteractiveADXShell;

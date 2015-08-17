@@ -65,7 +65,7 @@ describe('InteractiveADXShell', function () {
                 '/adc/path'
             ];
             var processOptions = {
-                cwd   : pathHelper.join('/adc/path', common.ADC_UNIT_DIR_PATH),
+                cwd   : pathHelper.join(pathHelper.resolve(__dirname, '../../'), common.ADC_UNIT_DIR_PATH),
                 env   : process.env
             };
             expect(spies.spawn).toHaveBeenCalledWith(processPath, processArgs, processOptions);
@@ -84,9 +84,9 @@ describe('InteractiveADXShell', function () {
         });
 
         it("should send the command in the standard input of the process", function () {
-            var writeData;
+            var writeData, mock;
             spies.spawn.andCallFake(function () {
-                var mock = new ChildProcessFake();
+                mock = new ChildProcessFake();
                 mock.stdin.write = function (data) {
                     writeData = data;
                 };
@@ -94,7 +94,8 @@ describe('InteractiveADXShell', function () {
             });
             var adxShell = new InteractiveADXShell('/adc/path');
             adxShell.exec('this is the command');
-            expect(writeData).toBe('this is the command');
+            mock.stdout.events.data('first data');
+            expect(writeData).toBe('this is the command\n');
         });
 
         [{
