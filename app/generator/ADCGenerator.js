@@ -27,6 +27,23 @@ function Generator() {
     this.adcName = '';
 
     /**
+     * Description of the ADC
+     * @type {string}
+     */
+    this.adcDescription = '';
+
+    /**
+     * Author
+     * @type {Object}
+     */
+    this.adcAuthor = {
+        name : '',
+        email : '',
+        company : '',
+        webSite : ''
+    };
+
+    /**
      * Path of the template directory
      * @type {string}
      */
@@ -103,6 +120,12 @@ Generator.prototype.writeMessage = function writeMessage(text) {
  * @param {String} name Name of the ADC to generate
  * @param {Object} [options] Options
  * @param {String} [options.output=process.cwd()] Path of the output director
+ * @param {String} [options.description=''] Description of the ADC
+ * @param {Object} [options.author] Author of the ADC
+ * @param {String} [options.author.name=''] Author name
+ * @param {String} [options.author.email=''] Author email
+ * @param {String} [options.author.company=''] Author Company
+ * @param {String} [options.author.webSite=''] Author web site
  * @param {String} [options.template="blank"] Name of the template to use
  * @param {Function} [callback]
  * @param {Error} [callback.err] Error
@@ -128,6 +151,13 @@ Generator.prototype.generate = function generate(name, options, callback) {
     }
 
     this.adcName = name;
+    this.adcDescription = (options && options.description) || '';
+    this.adcAuthor = (options && options.author) || {};
+    this.adcAuthor.name = this.adcAuthor.name || '';
+    this.adcAuthor.email = this.adcAuthor.email || '';
+    this.adcAuthor.company = this.adcAuthor.company || '';
+    this.adcAuthor.webSite = this.adcAuthor.webSite || '';
+    
     this.outputDirectory = (options && options.output) || process.cwd();
     this.template = (options && options.template) || common.DEFAULT_TEMPLATE_NAME;
 
@@ -261,10 +291,20 @@ Generator.prototype.updateFiles = function updateFiles() {
                 return;
             }
 
-            var result = data;
+            var result = data, authorFullName = '';
 
             result = result.replace(/\{\{ADCName\}\}/gi, self.adcName);
             result = result.replace(/\{\{ADCGuid\}\}/gi, uuid.v4());
+            result = result.replace(/\{\{ADCDescription\}\}/gi, self.adcDescription);
+            result = result.replace(/\{\{ADCAuthor.Name\}\}/gi, self.adcAuthor.name);
+            result = result.replace(/\{\{ADCAuthor.Email\}\}/gi, self.adcAuthor.email);
+            result = result.replace(/\{\{ADCAuthor.Company\}\}/gi, self.adcAuthor.company);
+            result = result.replace(/\{\{ADCAuthor.WebSite\}\}/gi, self.adcAuthor.webSite);
+            authorFullName = self.adcAuthor.name || '';
+            if (self.adcAuthor.email) {
+                authorFullName += ' <' + self.adcAuthor.email + '>';
+            }
+            result = result.replace(/\{\{ADCAuthor\}\}/gi, authorFullName);
             result = result.replace(/2000-01-01/, common.formatXmlDate());
             result = result.replace('\ufeff', ''); // Remove the BOM characters (Marker of the UTF-8 in the string)
 

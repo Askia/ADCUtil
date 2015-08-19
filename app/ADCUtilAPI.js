@@ -211,6 +211,12 @@ ADC.prototype.show = function show(options, callback) {
  *
  * @param {String} name Name of the ADC to generate
  * @param {Object} [options] Options
+ * @param {String} [options.description=''] Description of the ADC
+ * @param {Object} [options.author] Author of the ADC
+ * @param {String} [options.author.name=''] Author name
+ * @param {String} [options.author.email=''] Author email
+ * @param {String} [options.author.company=''] Author Company
+ * @param {String} [options.author.webSite=''] Author web site
  * @param {String} [options.output=process.cwd()] Path of the output director
  * @param {String} [options.template="blank"] Name of the template to use
  * @param {Function} [callback]

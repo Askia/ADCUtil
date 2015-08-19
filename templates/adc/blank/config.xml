@@ -10,32 +10,14 @@
     <version>1.0.0</version>
     <date>2000-01-01</date>
     <description>
-      <![CDATA[
-[Describe the ADC]
-
-## Tested in:
-
-[List the browsers name and version where the ADC should work on]
-
-## Dependencies:
-
-* [Name of the 3rd party resource. Version. URL]
-* [Name of the 3rd party resource. Version. URL]
-
-## Notes
-
-[Special notes about incompatibility or warnings]
-]]>
+      <![CDATA[{{ADCDescription}}]]>
     </description>
     <author>
-      <![CDATA[
-        Author1 <author1@email.com>, 
-        Author2 <author2@email.com>
-      ]]>
+      <![CDATA[{{ADCAuthor}}]]>
     </author>
-    <company>Company name</company>
+    <company>{{ADCAuthor.Company}}</company>
     <helpURL></helpURL>
-    <site></site>
+    <site>{{ADCAuthor.WebSite}}</site>
     <categories>
       <category>General</category>
     </categories>

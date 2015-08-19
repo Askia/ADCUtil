@@ -264,7 +264,14 @@ describe('ADCGenerator', function () {
                     });
                     spyOn(common, 'formatXmlDate').andReturn('2013-12-31');
                     adcGenerator.generate({
-                        output : 'adc/path/dir'
+                        output : 'adc/path/dir',
+                        description : 'My description',
+                        author : {
+                            name : 'MySelf',
+                            email : 'myself@test.com',
+                            company : 'My Company',
+                            webSite : 'http://my/web/site.com'
+                        }
                     }, 'adcname');
                     expect(result).toBe(obj.replacement);
                 });
@@ -282,6 +289,30 @@ describe('ADCGenerator', function () {
                 {
                     pattern : "2000-01-01",
                     replacement : "2013-12-31"
+                },
+                {
+                    pattern : '{{ADCDescription}}',
+                    replacement : 'My description'
+                },
+                {
+                    pattern : '{{ADCAuthor}}',
+                    replacement : 'MySelf <myself@test.com>'
+                },
+                {
+                    pattern : '{{ADCAuthor.Name}}',
+                    replacement : 'MySelf'
+                },
+                {
+                    pattern : '{{ADCAuthor.Email}}',
+                    replacement : 'myself@test.com'
+                },
+                {
+                    pattern : '{{ADCAuthor.Company}}',
+                    replacement : 'My Company'
+                },
+                {
+                    pattern : '{{ADCAuthor.WebSite}}',
+                    replacement : 'http://my/web/site.com'
                 }
             ];
             replacement.forEach(testReplacement);
