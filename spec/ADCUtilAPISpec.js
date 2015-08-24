@@ -28,7 +28,7 @@ describe('ADCUtilAPI', function () {
 
         var common = require('../app/common/common.js');
         errMsg     = common.messages.error;
-
+        spies.getTemplateList = spyOn(common, 'getTemplateList');
 
         // Court-circuit the access of the filesystem
         spies.fs = {
@@ -310,6 +310,30 @@ describe('ADCUtilAPI', function () {
                 expect(adc.path).toBe('\\output\\path');
             });
         });
+
+        describe(".getTemplateList", function () {
+           it("should return the list of template", function () {
+               spies.getTemplateList.andCallFake(function (cb) {
+                  cb(null, [{
+                      name : 'template1',
+                      path : 'path/of/template1'
+                  },{
+                      name : 'template2',
+                      path : 'path/of/template2'
+                  }]);
+               });
+               ADC.getTemplateList(function (err, dirs) {
+                  expect(dirs).toEqual([{
+                      name : 'template1',
+                      path : 'path/of/template1'
+                  },{
+                      name : 'template2',
+                      path : 'path/of/template2'
+                  }]);
+               });
+           });
+        });
+
 
     });
 });

@@ -11,6 +11,8 @@ var fs = require('fs'),
 
 exports = module.exports;
 
+// Application name
+exports.APP_NAME = 'ADCUtil';
 // Common
 // File name of the config.xml
 exports.CONFIG_FILE_NAME = 'config.xml';
@@ -329,6 +331,118 @@ exports.getDirStructure = function getDirStructure(path, callback) {
         }
         files.forEach(function (file) {
             record(path, file, structure, incrementTreat);
+        });
+    });
+};
+
+/**
+ * Returns the list of templates directory
+ *
+ * It searches in the user data folder, the program data folder and the installation program folder
+ *
+ * @param {Function} callback Callback
+ * @param {Error} callback.err Error
+ * @param {Object[]} callback.dirs List of template
+ * @param {String} callback.dirs[].name Name of the template
+ * @param {String} callback.dirs[].path Path of the template directory
+ */
+exports.getTemplateList = function getTemplateList(callback) {
+    // 1. Get the templates from the application path
+    // 2. Get the templates from the PROGRAM_DATA path
+    // 3. Get the templates from the USER_DATA path
+    var result = [], map = {};
+    function addFiles(files) {
+        for (var i = 0, l = files.length; i < l; i++) {
+            var stat = fs.statSync(files[i]),
+                name, lowerName, dir;
+            if (stat.isDirectory()) {
+                name = pathHelper.basename(files[i]);
+                lowerName = name.toLowerCase();
+                dir = {
+                    name : name,
+                    path : files[i]
+                };
+                if (lowerName in map) {
+                    result[map[lowerName]] = dir;
+                } else {
+                    map[lowerName] = result.length;
+                    result.push(dir);
+                }
+            }
+        }
+    }
+
+    // 1.
+    var sysTemplatePath = pathHelper.resolve(__dirname, '../../');
+    fs.readdir(pathHelper.join(sysTemplatePath, exports.TEMPLATES_PATH), function (err, files) {
+        if (!err) {
+            addFiles(files);
+        }
+
+        // 2.
+        var programDataPath = process.env.ALLUSERSPROFILE || process.env.ProgramData || '';
+        fs.readdir(pathHelper.join(programDataPath, exports.APP_NAME , exports.TEMPLATES_PATH), function (err, files) {
+            if (!err) {
+                addFiles(files);
+            }
+
+            // 3.
+            var userDataPath = process.env.APPDATA || '';
+            fs.readdir(pathHelper.join(userDataPath, exports.APP_NAME , exports.TEMPLATES_PATH), function (err, files) {
+                if (!err) {
+                    addFiles(files);
+                }
+
+                callback(null, result);
+            });
+        });
+    });
+};
+
+
+/**
+ * Returns the path of the template according to his name
+ *
+ * It searches in the user data folder, the program data folder and the installation program folder
+ *
+ * @param {Function} callback Callback
+ * @param {Error} callback.err Error
+ * @param {String} callback.path Path of the template
+ */
+exports.getTemplatePath = function getTemplatePath(name, callback) {
+    // 1. Search in the USER_DATA path
+    // 2. Search in the PROGRAM_DATA path
+    // 3. Search in the installation path
+
+    // 1.
+    var userDataPath = process.env.APPDATA || '';
+    userDataPath = pathHelper.join(userDataPath, exports.APP_NAME , exports.TEMPLATES_PATH, name);
+    exports.dirExists(userDataPath, function (err, exist) {
+        if (exist) {
+            callback(null, userDataPath);
+            return;
+        }
+
+        // 2.
+        var programDataPath = process.env.ALLUSERSPROFILE || process.env.ProgramData || '';
+        programDataPath = pathHelper.join(programDataPath, exports.APP_NAME , exports.TEMPLATES_PATH, name);
+        exports.dirExists(programDataPath, function (err, exist) {
+            if (exist) {
+                callback(null, programDataPath);
+                return;
+            }
+
+            // 3.
+            var sysTemplatePath = pathHelper.resolve(__dirname, '../../');
+            sysTemplatePath = pathHelper.join(exports.TEMPLATES_PATH, name);
+            exports.dirExists(sysTemplatePath, function (err, exist) {
+                if (exist) {
+                    callback(null, sysTemplatePath);
+                    return;
+                }
+
+                callback(new Error(util.format(exports.messages.error.cannotFoundTemplate, name)), null);
+            });
         });
     });
 };

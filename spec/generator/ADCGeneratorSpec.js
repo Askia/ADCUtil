@@ -42,6 +42,10 @@ describe('ADCGenerator', function () {
         spies.writeSuccess = spyOn(common, 'writeSuccess');
         spies.dirExists    = spyOn(common, 'dirExists');
         spies.getDirStructure = spyOn(common, 'getDirStructure');
+        spies.getTemplatePath = spyOn(common, 'getTemplatePath');
+        spies.getTemplatePath.andCallFake(function (name, cb) {
+            cb(null, pathHelper.join(common.TEMPLATES_PATH, name));
+        });
 
         // Court-circuit the access of the filesystem
         spies.fs = {
@@ -72,7 +76,7 @@ describe('ADCGenerator', function () {
             expect(common.writeError).toHaveBeenCalledWith(errMsg.missingNameArgument);
         });
 
-        it("should output an error when the `name` argument is malformatted", function () {
+        it("should output an error when the `name` argument is not correctly formatted", function () {
             adcGenerator.generate({}, ':/\\#@!');
             expect(common.writeError).toHaveBeenCalledWith(errMsg.incorrectADCName);
         });
@@ -104,13 +108,13 @@ describe('ADCGenerator', function () {
         });
 
         it("should output an error when the specified template was not found", function () {
-            spies.dirExists.andCallFake(function (path, callback) {
+            spies.getTemplatePath.andCallFake(function (path, callback) {
                 if (path === 'adc/dir/path') {
-                    callback(null, true);
+                    callback(null, 'adc/dir/path');
                 } else {
-                    callback(null, false);
+                    callback(new Error(format(errMsg.cannotFoundTemplate, 'test')));
                 }
-            })
+            });
             adcGenerator.generate({
                 output   : 'test',
                 template : 'test'
@@ -182,8 +186,23 @@ describe('ADCGenerator', function () {
                     output : 'adc/path/dir'
                 }, 'adcname');
                 expect(wrench.copyDirRecursive).toHaveBeenCalled();
-                expect(source).toBe(pathHelper.join(generatorInstance.rootdir, common.TEMPLATES_PATH, common.DEFAULT_TEMPLATE_NAME));
+                expect(source).toBe('\\templates\\\adc\\' + common.DEFAULT_TEMPLATE_NAME);
                 expect(destination).toBe('adc\\path\\dir\\adcname');
+            });
+
+            it("should search the path of template using `common.getTemplatePath` when the `templatePath` is not defined", function () {
+                var source;
+                spies.getTemplatePath.andCallFake(function (name, cb) {
+                    cb(null, 'template/path/test');
+                });
+                spies.wrench.copyDirRecursive.andCallFake(function (src, dest) {
+                    source = src;
+                });
+                adcGenerator.generate({
+                    template : 'test',
+                    output : 'adc/path/dir'
+                }, 'adcname');
+                expect(source).toBe('template/path/test');
             });
 
             it("should output an error when the copy failed", function () {

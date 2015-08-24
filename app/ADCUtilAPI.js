@@ -242,6 +242,20 @@ ADC.generate = function generate(name, options, callback) {
     });
 };
 
+/**
+ * Returns the list of templates directory
+ *
+ * @param {Function} callback Callback
+ * @param {Error} callback.err Error
+ * @param {Object[]} callback.dirs List of template
+ * @param {String} callback.dirs[].name Name of the template
+ * @param {String} callback.dirs[].path Path of the template directory
+ * @static
+ */
+ADC.getTemplateList = function getTemplateList(callback) {
+    common.getTemplateList(callback);
+};
+
 
 // Make it public
 exports.ADC = ADC;

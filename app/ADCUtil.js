@@ -49,44 +49,4 @@ program
         adcShow.show(program, path);
     });
 
-program
-    .command('interactive')
-    .description('test interactive mode')
-    .action(function interactive() {
-        var spawn = require('child_process').spawn,
-            args     = [
-                'interactive',
-                process.cwd()
-            ];
-
-        var path = require('path');
-        var common = require('./common/common.js');
-        var proc = spawn('.\\' + common.ADC_UNIT_PROCESS_NAME, args, {
-            cwd   : path.join(process.cwd(), common.ADC_UNIT_DIR_PATH),
-            env   : process.env
-        });
-        var callCount = 0;
-        proc.stdout.on('data', function (data) {
-            if (callCount) {
-                console.log(data.toString());
-            }
-            callCount++;
-            if (callCount === 1) {
-                proc.stdin.write('show -output:default -fixture:single.xml ' + path.join(process.cwd(), '/tmp/test/\n'));
-            }
-            if (callCount === 2) {
-                proc.stdin.write('show -output:fallback -fixture:single.xml ' + path.join(process.cwd(), '/tmp/test/\n'));
-            }
-            if (callCount === 3) {
-                proc.stdin.write('help\n');
-            }
-        });
-
-
-        /*var proc = new InteractveADXShell(dir);
-        proc.exec('show ....', function (err, stdout, stderr) {
-
-        });*/
-    });
-
 program.parse(process.argv);

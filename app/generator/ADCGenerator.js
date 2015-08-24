@@ -159,22 +159,23 @@ Generator.prototype.generate = function generate(name, options, callback) {
     this.adcAuthor.webSite = this.adcAuthor.webSite || '';
     
     this.outputDirectory = (options && options.output) || process.cwd();
-    this.template = (options && options.template) || common.DEFAULT_TEMPLATE_NAME;
-
     if (!this.outputDirectory) {
         this.done(new Error(errMsg.missingOutputArgument));
         return;
     }
 
-
+    this.template = (options && options.template) || common.DEFAULT_TEMPLATE_NAME;
     this.templateSrc = pathHelper.join(this.rootdir, common.TEMPLATES_PATH, this.template);
+
     var self = this;
-    common.dirExists(this.templateSrc, function verifyTemplatePath(err, exist) {
-        if (err || !exist) {
-            return self.done(new Error(format(errMsg.cannotFoundTemplate, self.template)));
+    common.getTemplatePath(this.template, function (err, src) {
+        if (err) {
+            return self.done(err);
         }
+        self.templateSrc = src;
         return self.sequence.resume();
     });
+
 };
 
 /**

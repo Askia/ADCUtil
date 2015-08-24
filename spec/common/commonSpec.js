@@ -3,6 +3,7 @@ describe('common', function () {
     var fs              = require('fs'),
         clc             = require('cli-color'),
         pathHelper      = require('path'),
+        util            = require('util'),
         spies           = {},
         common,
         errMsg;
@@ -21,8 +22,237 @@ describe('common', function () {
             stat        : spyOn(fs, 'stat') ,
             statSync    : spyOn(fs, 'statSync'),
             readdirSync : spyOn(fs, 'readdirSync'),
+            readdir     : spyOn(fs, 'readdir'),
             readFileSync : spyOn(fs, 'readFileSync')
         };
+
+    });
+
+    function runSync(fn) {
+        var wasCalled = false;
+        runs( function () {
+            fn(function () {
+                wasCalled = true;
+            });
+        });
+        waitsFor(function () {
+            return wasCalled;
+        });
+    }
+
+    describe('#getTemplateList', function () {
+        it('should list directories in the `template` path of the application', function () {
+           spyOn(pathHelper, 'resolve').andReturn('');
+           spies.fs.statSync.andReturn({
+               isDirectory : function () {return true;}
+           });
+           spies.fs.readdir.andCallFake(function (path, cb) {
+               if (path === '\\templates\\adc\\') {
+                   cb(null, [
+                      '/templates/adc/template1',
+                      '/templates/adc/template2',
+                      '/templates/adc/template3'
+                    ]);
+               }
+               return cb(null, []);
+           });
+           runSync(function (done) {
+               common.getTemplateList(function (err, dirs) {
+                   expect(dirs).toEqual([{
+                       name : 'template1',
+                       path : '/templates/adc/template1'
+                   }, {
+                       name : 'template2',
+                       path : '/templates/adc/template2'
+                   }, {
+                       name : 'template3',
+                       path : '/templates/adc/template3'
+                   }]);
+                   done();
+               });
+           });
+       });
+
+        it('should list directories in the `template` path of the program data', function () {
+            spyOn(pathHelper, 'resolve').andReturn('');
+            spies.fs.statSync.andReturn({
+                isDirectory : function () {return true;}
+            });
+            process.env.ALLUSERSPROFILE = '\\ProgramData';
+
+            spies.fs.readdir.andCallFake(function (path, cb) {
+                if (path === '\\ProgramData\\ADCUtil\\templates\\adc\\') {
+                    cb(null, [
+                        '/ProgramData/ADCUtil/templates/adc/template1',
+                        '/ProgramData/ADCUtil/templates/adc/template2',
+                        '/ProgramData/ADCUtil/templates/adc/template3'
+                    ]);
+                }
+                return cb(null, []);
+            });
+            runSync(function (done) {
+                common.getTemplateList(function (err, dirs) {
+                    expect(dirs).toEqual([{
+                        name : 'template1',
+                        path : '/ProgramData/ADCUtil/templates/adc/template1'
+                    }, {
+                        name : 'template2',
+                        path : '/ProgramData/ADCUtil/templates/adc/template2'
+                    }, {
+                        name : 'template3',
+                        path : '/ProgramData/ADCUtil/templates/adc/template3'
+                    }]);
+                    done();
+                });
+            });
+        });
+
+        it('should list directories in the `template` path of the user data', function () {
+            spyOn(pathHelper, 'resolve').andReturn('');
+            spies.fs.statSync.andReturn({
+                isDirectory : function () {return true;}
+            });
+            process.env.APPDATA = '\\username.domain\\AppData\\Roaming';
+
+            spies.fs.readdir.andCallFake(function (path, cb) {
+                if (path === '\\username.domain\\AppData\\Roaming\\ADCUtil\\templates\\adc\\') {
+                    cb(null, [
+                        '/username.domain/AppData/Roaming/ADCUtil/templates/adc/template1',
+                        '/username.domain/AppData/Roaming/ADCUtil/templates/adc/template2',
+                        '/username.domain/AppData/Roaming/ADCUtil/templates/adc/template3'
+                    ]);
+                }
+                return cb(null, []);
+            });
+            runSync(function (done) {
+                common.getTemplateList(function (err, dirs) {
+                    expect(dirs).toEqual([{
+                        name : 'template1',
+                        path : '/username.domain/AppData/Roaming/ADCUtil/templates/adc/template1'
+                    }, {
+                        name : 'template2',
+                        path : '/username.domain/AppData/Roaming/ADCUtil/templates/adc/template2'
+                    }, {
+                        name : 'template3',
+                        path : '/username.domain/AppData/Roaming/ADCUtil/templates/adc/template3'
+                    }]);
+                    done();
+                });
+            });
+        });
+
+        it('should override the template when duplicate using the template nearest to the user data', function () {
+            spyOn(pathHelper, 'resolve').andReturn('');
+            spies.fs.statSync.andReturn({
+                isDirectory : function () {return true;}
+            });
+            process.env.ALLUSERSPROFILE = '\\ProgramData';
+            process.env.APPDATA = '\\username.domain\\AppData\\Roaming';
+
+            spies.fs.readdir.andCallFake(function (path, cb) {
+                if (path === '\\templates\\adc\\') {
+                    cb(null, [
+                        '/templates/adc/template1',
+                        '/templates/adc/template2',
+                        '/templates/adc/template3'
+                    ]);
+                }
+                if (path === '\\ProgramData\\ADCUtil\\templates\\adc\\') {
+                    cb(null, [
+                        '/ProgramData/ADCUtil/templates/adc/template2',
+                        '/ProgramData/ADCUtil/templates/adc/template3'
+                    ]);
+                }
+                if (path === '\\username.domain\\AppData\\Roaming\\ADCUtil\\templates\\adc\\') {
+                    cb(null, [
+                        '/username.domain/AppData/Roaming/ADCUtil/templates/adc/template3'
+                    ]);
+                }
+                return cb(null, []);
+            });
+            runSync(function (done) {
+                common.getTemplateList(function (err, dirs) {
+                    expect(dirs).toEqual([{
+                        name : 'template1',
+                        path : '/templates/adc/template1'
+                    }, {
+                        name : 'template2',
+                        path : '/ProgramData/ADCUtil/templates/adc/template2'
+                    }, {
+                        name : 'template3',
+                        path : '/username.domain/AppData/Roaming/ADCUtil/templates/adc/template3'
+                    }]);
+                    done();
+                });
+            });
+        });
+    });
+
+    describe('#getTemplatePath', function () {
+        it('should return the path of template from user data if it\'s found', function () {
+            spyOn(pathHelper, 'resolve').andReturn('');
+            spyOn(common, 'dirExists').andCallFake(function (path, cb) {
+                cb(null, true);
+            });
+            process.env.ALLUSERSPROFILE = '\\ProgramData';
+            process.env.APPDATA = '\\username.domain\\AppData\\Roaming';
+            runSync(function (done) {
+                common.getTemplatePath('template1', function (err, path) {
+                    expect(path).toEqual('\\username.domain\\AppData\\Roaming\\ADCUtil\\templates\\adc\\template1');
+                    done();
+                });
+            });
+        });
+
+        it('should return the path of template from program  data if it\'s found', function () {
+            spyOn(pathHelper, 'resolve').andReturn('');
+            spyOn(common, 'dirExists').andCallFake(function (path, cb) {
+                if (path === '\\username.domain\\AppData\\Roaming\\ADCUtil\\templates\\adc\\template1') {
+                    cb(null, false);
+                    return;
+                }
+                cb(null, true);
+            });
+            process.env.ALLUSERSPROFILE = '\\ProgramData';
+            process.env.APPDATA = '\\username.domain\\AppData\\Roaming';
+            runSync(function (done) {
+                common.getTemplatePath('template1', function (err, path) {
+                    expect(path).toEqual('\\ProgramData\\ADCUtil\\templates\\adc\\template1');
+                    done();
+                });
+            });
+        });
+
+        it('should return the path of template from installation data if it\'s found', function () {
+            spyOn(pathHelper, 'resolve').andReturn('');
+            spyOn(common, 'dirExists').andCallFake(function (path, cb) {
+                if (path !== '\\templates\\adc\\template1') {
+                    cb(null, false);
+                    return;
+                }
+                cb(null, true);
+            });
+            process.env.ALLUSERSPROFILE = '\\ProgramData';
+            process.env.APPDATA = '\\username.domain\\AppData\\Roaming';
+            runSync(function (done) {
+                common.getTemplatePath('template1', function (err, path) {
+                    expect(path).toEqual('\\templates\\adc\\template1');
+                    done();
+                });
+            });
+        });
+
+        it('should return an error when the template is not found', function () {
+            spyOn(common, 'dirExists').andCallFake(function (path, cb) {
+                cb(null, false);
+            });
+            runSync(function (done) {
+                common.getTemplatePath('template1', function (err) {
+                    expect(err.message).toEqual(util.format(errMsg.cannotFoundTemplate, 'template1'));
+                    done();
+                });
+            });
+        });
     });
 
     describe('#dirExists', function () {
