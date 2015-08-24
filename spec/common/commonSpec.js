@@ -49,9 +49,9 @@ describe('common', function () {
            spies.fs.readdir.andCallFake(function (path, cb) {
                if (path === '\\templates\\adc\\') {
                    cb(null, [
-                      '/templates/adc/template1',
-                      '/templates/adc/template2',
-                      '/templates/adc/template3'
+                      'template1',
+                      'template2',
+                      'template3'
                     ]);
                }
                return cb(null, []);
@@ -60,13 +60,13 @@ describe('common', function () {
                common.getTemplateList(function (err, dirs) {
                    expect(dirs).toEqual([{
                        name : 'template1',
-                       path : '/templates/adc/template1'
+                       path : '\\templates\\adc\\template1'
                    }, {
                        name : 'template2',
-                       path : '/templates/adc/template2'
+                       path : '\\templates\\adc\\template2'
                    }, {
                        name : 'template3',
-                       path : '/templates/adc/template3'
+                       path : '\\templates\\adc\\template3'
                    }]);
                    done();
                });
@@ -83,9 +83,9 @@ describe('common', function () {
             spies.fs.readdir.andCallFake(function (path, cb) {
                 if (path === '\\ProgramData\\ADCUtil\\templates\\adc\\') {
                     cb(null, [
-                        '/ProgramData/ADCUtil/templates/adc/template1',
-                        '/ProgramData/ADCUtil/templates/adc/template2',
-                        '/ProgramData/ADCUtil/templates/adc/template3'
+                        'template1',
+                        'template2',
+                        'template3'
                     ]);
                 }
                 return cb(null, []);
@@ -94,13 +94,13 @@ describe('common', function () {
                 common.getTemplateList(function (err, dirs) {
                     expect(dirs).toEqual([{
                         name : 'template1',
-                        path : '/ProgramData/ADCUtil/templates/adc/template1'
+                        path : '\\ProgramData\\ADCUtil\\templates\\adc\\template1'
                     }, {
                         name : 'template2',
-                        path : '/ProgramData/ADCUtil/templates/adc/template2'
+                        path : '\\ProgramData\\ADCUtil\\templates\\adc\\template2'
                     }, {
                         name : 'template3',
-                        path : '/ProgramData/ADCUtil/templates/adc/template3'
+                        path : '\\ProgramData\\ADCUtil\\templates\\adc\\template3'
                     }]);
                     done();
                 });
@@ -117,9 +117,9 @@ describe('common', function () {
             spies.fs.readdir.andCallFake(function (path, cb) {
                 if (path === '\\username.domain\\AppData\\Roaming\\ADCUtil\\templates\\adc\\') {
                     cb(null, [
-                        '/username.domain/AppData/Roaming/ADCUtil/templates/adc/template1',
-                        '/username.domain/AppData/Roaming/ADCUtil/templates/adc/template2',
-                        '/username.domain/AppData/Roaming/ADCUtil/templates/adc/template3'
+                        'template1',
+                        'template2',
+                        'template3'
                     ]);
                 }
                 return cb(null, []);
@@ -128,13 +128,13 @@ describe('common', function () {
                 common.getTemplateList(function (err, dirs) {
                     expect(dirs).toEqual([{
                         name : 'template1',
-                        path : '/username.domain/AppData/Roaming/ADCUtil/templates/adc/template1'
+                        path : '\\username.domain\\AppData\\Roaming\\ADCUtil\\templates\\adc\\template1'
                     }, {
                         name : 'template2',
-                        path : '/username.domain/AppData/Roaming/ADCUtil/templates/adc/template2'
+                        path : '\\username.domain\\AppData\\Roaming\\ADCUtil\\templates\\adc\\template2'
                     }, {
                         name : 'template3',
-                        path : '/username.domain/AppData/Roaming/ADCUtil/templates/adc/template3'
+                        path : '\\username.domain\\AppData\\Roaming\\ADCUtil\\templates\\adc\\template3'
                     }]);
                     done();
                 });
@@ -152,20 +152,20 @@ describe('common', function () {
             spies.fs.readdir.andCallFake(function (path, cb) {
                 if (path === '\\templates\\adc\\') {
                     cb(null, [
-                        '/templates/adc/template1',
-                        '/templates/adc/template2',
-                        '/templates/adc/template3'
+                        'template1',
+                        'template2',
+                        'template3'
                     ]);
                 }
                 if (path === '\\ProgramData\\ADCUtil\\templates\\adc\\') {
                     cb(null, [
-                        '/ProgramData/ADCUtil/templates/adc/template2',
-                        '/ProgramData/ADCUtil/templates/adc/template3'
+                        'template2',
+                        'template3'
                     ]);
                 }
                 if (path === '\\username.domain\\AppData\\Roaming\\ADCUtil\\templates\\adc\\') {
                     cb(null, [
-                        '/username.domain/AppData/Roaming/ADCUtil/templates/adc/template3'
+                        'template3'
                     ]);
                 }
                 return cb(null, []);
@@ -174,13 +174,13 @@ describe('common', function () {
                 common.getTemplateList(function (err, dirs) {
                     expect(dirs).toEqual([{
                         name : 'template1',
-                        path : '/templates/adc/template1'
+                        path : '\\templates\\adc\\template1'
                     }, {
                         name : 'template2',
-                        path : '/ProgramData/ADCUtil/templates/adc/template2'
+                        path : '\\ProgramData\\ADCUtil\\templates\\adc\\template2'
                     }, {
                         name : 'template3',
-                        path : '/username.domain/AppData/Roaming/ADCUtil/templates/adc/template3'
+                        path : '\\username.domain\\AppData\\Roaming\\ADCUtil\\templates\\adc\\template3'
                     }]);
                     done();
                 });

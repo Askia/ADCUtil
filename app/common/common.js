@@ -351,16 +351,17 @@ exports.getTemplateList = function getTemplateList(callback) {
     // 2. Get the templates from the PROGRAM_DATA path
     // 3. Get the templates from the USER_DATA path
     var result = [], map = {};
-    function addFiles(files) {
+    function addFiles(parent, files) {
         for (var i = 0, l = files.length; i < l; i++) {
-            var stat = fs.statSync(files[i]),
+            var fullPath = pathHelper.join(parent, files[i]),
+                stat = fs.statSync(fullPath),
                 name, lowerName, dir;
             if (stat.isDirectory()) {
                 name = pathHelper.basename(files[i]);
                 lowerName = name.toLowerCase();
                 dir = {
                     name : name,
-                    path : files[i]
+                    path : fullPath
                 };
                 if (lowerName in map) {
                     result[map[lowerName]] = dir;
@@ -374,23 +375,26 @@ exports.getTemplateList = function getTemplateList(callback) {
 
     // 1.
     var sysTemplatePath = pathHelper.resolve(__dirname, '../../');
-    fs.readdir(pathHelper.join(sysTemplatePath, exports.TEMPLATES_PATH), function (err, files) {
+    sysTemplatePath = pathHelper.join(sysTemplatePath, exports.TEMPLATES_PATH);
+    fs.readdir(sysTemplatePath, function (err, files) {
         if (!err) {
-            addFiles(files);
+            addFiles(sysTemplatePath, files);
         }
 
         // 2.
         var programDataPath = process.env.ALLUSERSPROFILE || process.env.ProgramData || '';
-        fs.readdir(pathHelper.join(programDataPath, exports.APP_NAME , exports.TEMPLATES_PATH), function (err, files) {
+        programDataPath = pathHelper.join(programDataPath, exports.APP_NAME , exports.TEMPLATES_PATH);
+        fs.readdir(programDataPath, function (err, files) {
             if (!err) {
-                addFiles(files);
+                addFiles(programDataPath, files);
             }
 
             // 3.
             var userDataPath = process.env.APPDATA || '';
-            fs.readdir(pathHelper.join(userDataPath, exports.APP_NAME , exports.TEMPLATES_PATH), function (err, files) {
+            userDataPath = pathHelper.join(userDataPath, exports.APP_NAME , exports.TEMPLATES_PATH);
+            fs.readdir(userDataPath, function (err, files) {
                 if (!err) {
-                    addFiles(files);
+                    addFiles(userDataPath, files);
                 }
 
                 callback(null, result);
