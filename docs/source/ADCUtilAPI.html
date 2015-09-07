@@ -24,6 +24,7 @@ var Builder      = require(&#39;./builder/ADCBuilder.js&#39;).Builder;
 var Show         = require(&#39;./show/ADCShow.js&#39;).Show;
 var Generator    = require(&#39;./generator/ADCGenerator.js&#39;).Generator;
 var Configurator = require(&#39;./configurator/ADCConfigurator.js&#39;).Configurator;
+var InteractiveADXShell = require(&#39;./common/InteractiveADXShell.js&#39;).InteractiveADXShell;
 
 <span id='ADC'>/**
 </span> * Object used to generate, validate, show and build an ADC
@@ -86,6 +87,14 @@ function ADC(adcDirPath) {
      * @type {ADC.Configurator}
      */
     this.configurator = null;
+
+<span id='ADC-property-_adxShell'>    /**
+</span>     * Interactive ADX Shell
+     *
+     * @type {*|InteractiveADXShell}
+     * @private
+     */
+    this._adxShell = new InteractiveADXShell(this.path);
 }
 
 <span id='ADC-method-constructor'>/**
@@ -151,6 +160,8 @@ ADC.prototype.load = function load(callback) {
  */
 ADC.prototype.validate = function validate(options, callback) {
     var validator = new Validator(this.path);
+    options = options || {};
+    options.adxShell = this._adxShell;
     validator.validate(options, callback);
 };
 
@@ -176,6 +187,8 @@ ADC.prototype.validate = function validate(options, callback) {
  */
 ADC.prototype.build = function build(options, callback){
     var builder = new Builder(this.path);
+    options = options || {};
+    options.adxShell = this._adxShell;
     builder.build(options, callback);
 };
 
@@ -200,7 +213,41 @@ ADC.prototype.build = function build(options, callback){
  */
 ADC.prototype.show = function show(options, callback) {
     var show = new Show(this.path);
+    options = options || {};
+    options.adxShell = this._adxShell;
     show.show(options, callback);
+};
+
+<span id='ADC-method-getFixtureList'>/**
+</span> * Returns the list of fixtures
+ *
+ *      var ADC = require(&#39;adcutil&#39;).ADC;
+ *      var myAdc = new ADC(&#39;path/to/adc/dir&#39;);
+ *
+ *      // List all fixtures on the ADC
+ *      myAdc.getFixtureList(function (err, list) {
+ *          console.log(list[0]); // -&gt; &quot;Single.xml&quot;
+ *      });
+ *
+ * @param {Function} callback Callback
+ * @param {Error} callback.err Error
+ * @param {String[]} callback.list List of fixtures
+ */
+ADC.prototype.getFixtureList = function getFixtureList(callback) {
+    var fixturePath = path.join(this.path, common.FIXTIRES_DIR_PATH);
+    fs.readdir(fixturePath, function (err, files) {
+        if (err) {
+            callback(err, null);
+            return;
+        }
+        var fixtures = [], i, l;
+        for (i = 0, l  = files.length; i &lt; l; i += 1) {
+            if (/\.xml$/.test(files[i])) {
+                fixtures.push(files[i]);
+            }
+        }
+        callback(null, fixtures);
+    });
 };
 
 <span id='ADC-static-method-generate'>/**
@@ -213,6 +260,12 @@ ADC.prototype.show = function show(options, callback) {
  *
  * @param {String} name Name of the ADC to generate
  * @param {Object} [options] Options
+ * @param {String} [options.description=&#39;&#39;] Description of the ADC
+ * @param {Object} [options.author] Author of the ADC
+ * @param {String} [options.author.name=&#39;&#39;] Author name
+ * @param {String} [options.author.email=&#39;&#39;] Author email
+ * @param {String} [options.author.company=&#39;&#39;] Author Company
+ * @param {String} [options.author.webSite=&#39;&#39;] Author web site
  * @param {String} [options.output=process.cwd()] Path of the output director
  * @param {String} [options.template=&quot;blank&quot;] Name of the template to use
  * @param {Function} [callback]
@@ -236,6 +289,20 @@ ADC.generate = function generate(name, options, callback) {
         }
         callback(null, new ADC(outputPath));
     });
+};
+
+<span id='ADC-static-method-getTemplateList'>/**
+</span> * Returns the list of templates directory
+ *
+ * @param {Function} callback Callback
+ * @param {Error} callback.err Error
+ * @param {Object[]} callback.dirs List of template
+ * @param {String} callback.dirs[].name Name of the template
+ * @param {String} callback.dirs[].path Path of the template directory
+ * @static
+ */
+ADC.getTemplateList = function getTemplateList(callback) {
+    common.getTemplateList(callback);
 };
 
 

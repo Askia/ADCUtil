@@ -1,5 +1,6 @@
 describe('ADCUtilAPI', function () {
     var fs = require('fs');
+    var pathHelper = require('path');
     var InteractiveADXShell = require('../app/common/InteractiveADXShell.js').InteractiveADXShell;
     var ADC,
         adcUtilApi,
@@ -14,7 +15,8 @@ describe('ADCUtilAPI', function () {
         Generator,
         adcConfigurator,
         Configurator,
-        spies = {};
+        spies = {},
+        common;
 
 
     beforeEach(function () {
@@ -26,7 +28,7 @@ describe('ADCUtilAPI', function () {
         adcUtilApi = require('../app/ADCUtilAPI.js');
         ADC = adcUtilApi.ADC;
 
-        var common = require('../app/common/common.js');
+        common = require('../app/common/common.js');
         errMsg     = common.messages.error;
         spies.getTemplateList = spyOn(common, 'getTemplateList');
 
@@ -35,6 +37,7 @@ describe('ADCUtilAPI', function () {
             stat        : spyOn(fs, 'stat'),
             exists      : spyOn(fs, 'exists'),
             readdirSync : spyOn(fs, 'readdirSync'),
+            readdir     : spyOn(fs, 'readdir'),
             readFile    : spyOn(fs, 'readFile')
         };
 
@@ -245,6 +248,25 @@ describe('ADCUtilAPI', function () {
                 expect(spies.show).toHaveBeenCalledWith({
                     adxShell : adc._adxShell
                 }, cb);
+            });
+        });
+
+        describe('#getFixtureList', function () {
+            it('should return the names of xml file under the `tests/fixtures` path', function () {
+                spies.fs.readdir.andCallFake(function (path, cb) {
+                    if (path === pathHelper.join('some/path', common.FIXTIRES_DIR_PATH)) {
+                        cb(null, ['no-fixture.doc', 'fixture1.xml', 'fixture2.xml', 'fixture3.xml', 'no-fixture', 'no-fixture.txt', 'fixture4.xml']);
+                    } else {
+                        cb(new Error('No such file or directory'));
+                    }
+                });
+                var adc = new ADC('some/path');
+                var wasCalled = false;
+                adc.getFixtureList(function (err, list) {
+                    wasCalled = true;
+                    expect(list).toEqual(['fixture1.xml', 'fixture2.xml', 'fixture3.xml','fixture4.xml'])
+                });
+                expect(wasCalled).toBe(true);
             });
         });
 

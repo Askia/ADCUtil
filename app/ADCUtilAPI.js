@@ -202,6 +202,38 @@ ADC.prototype.show = function show(options, callback) {
 };
 
 /**
+ * Returns the list of fixtures
+ *
+ *      var ADC = require('adcutil').ADC;
+ *      var myAdc = new ADC('path/to/adc/dir');
+ *
+ *      // List all fixtures on the ADC
+ *      myAdc.getFixtureList(function (err, list) {
+ *          console.log(list[0]); // -> "Single.xml"
+ *      });
+ *
+ * @param {Function} callback Callback
+ * @param {Error} callback.err Error
+ * @param {String[]} callback.list List of fixtures
+ */
+ADC.prototype.getFixtureList = function getFixtureList(callback) {
+    var fixturePath = path.join(this.path, common.FIXTIRES_DIR_PATH);
+    fs.readdir(fixturePath, function (err, files) {
+        if (err) {
+            callback(err, null);
+            return;
+        }
+        var fixtures = [], i, l;
+        for (i = 0, l  = files.length; i < l; i += 1) {
+            if (/\.xml$/.test(files[i])) {
+                fixtures.push(files[i]);
+            }
+        }
+        callback(null, fixtures);
+    });
+};
+
+/**
  * Generate a new ADC structure
  *
  *      // Generate the ADC structure in '/path/of/parent/dir/myNewADC'

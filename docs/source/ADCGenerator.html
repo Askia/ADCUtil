@@ -43,6 +43,23 @@ function Generator() {
      */
     this.adcName = &#39;&#39;;
 
+<span id='ADC-Generator-property-adcDescription'>    /**
+</span>     * Description of the ADC
+     * @type {string}
+     */
+    this.adcDescription = &#39;&#39;;
+
+<span id='ADC-Generator-property-adcAuthor'>    /**
+</span>     * Author
+     * @type {Object}
+     */
+    this.adcAuthor = {
+        name : &#39;&#39;,
+        email : &#39;&#39;,
+        company : &#39;&#39;,
+        webSite : &#39;&#39;
+    };
+
 <span id='ADC-Generator-property-templateSrc'>    /**
 </span>     * Path of the template directory
      * @type {string}
@@ -120,6 +137,12 @@ Generator.prototype.writeMessage = function writeMessage(text) {
  * @param {String} name Name of the ADC to generate
  * @param {Object} [options] Options
  * @param {String} [options.output=process.cwd()] Path of the output director
+ * @param {String} [options.description=&#39;&#39;] Description of the ADC
+ * @param {Object} [options.author] Author of the ADC
+ * @param {String} [options.author.name=&#39;&#39;] Author name
+ * @param {String} [options.author.email=&#39;&#39;] Author email
+ * @param {String} [options.author.company=&#39;&#39;] Author Company
+ * @param {String} [options.author.webSite=&#39;&#39;] Author web site
  * @param {String} [options.template=&quot;blank&quot;] Name of the template to use
  * @param {Function} [callback]
  * @param {Error} [callback.err] Error
@@ -145,23 +168,31 @@ Generator.prototype.generate = function generate(name, options, callback) {
     }
 
     this.adcName = name;
+    this.adcDescription = (options &amp;&amp; options.description) || &#39;&#39;;
+    this.adcAuthor = (options &amp;&amp; options.author) || {};
+    this.adcAuthor.name = this.adcAuthor.name || &#39;&#39;;
+    this.adcAuthor.email = this.adcAuthor.email || &#39;&#39;;
+    this.adcAuthor.company = this.adcAuthor.company || &#39;&#39;;
+    this.adcAuthor.webSite = this.adcAuthor.webSite || &#39;&#39;;
+    
     this.outputDirectory = (options &amp;&amp; options.output) || process.cwd();
-    this.template = (options &amp;&amp; options.template) || common.DEFAULT_TEMPLATE_NAME;
-
     if (!this.outputDirectory) {
         this.done(new Error(errMsg.missingOutputArgument));
         return;
     }
 
-
+    this.template = (options &amp;&amp; options.template) || common.DEFAULT_TEMPLATE_NAME;
     this.templateSrc = pathHelper.join(this.rootdir, common.TEMPLATES_PATH, this.template);
+
     var self = this;
-    common.dirExists(this.templateSrc, function verifyTemplatePath(err, exist) {
-        if (err || !exist) {
-            return self.done(new Error(format(errMsg.cannotFoundTemplate, self.template)));
+    common.getTemplatePath(this.template, function (err, src) {
+        if (err) {
+            return self.done(err);
         }
+        self.templateSrc = src;
         return self.sequence.resume();
     });
+
 };
 
 <span id='ADC-Generator-method-done'>/**
@@ -278,10 +309,20 @@ Generator.prototype.updateFiles = function updateFiles() {
                 return;
             }
 
-            var result = data;
+            var result = data, authorFullName = &#39;&#39;;
 
             result = result.replace(/\{\{ADCName\}\}/gi, self.adcName);
             result = result.replace(/\{\{ADCGuid\}\}/gi, uuid.v4());
+            result = result.replace(/\{\{ADCDescription\}\}/gi, self.adcDescription);
+            result = result.replace(/\{\{ADCAuthor.Name\}\}/gi, self.adcAuthor.name);
+            result = result.replace(/\{\{ADCAuthor.Email\}\}/gi, self.adcAuthor.email);
+            result = result.replace(/\{\{ADCAuthor.Company\}\}/gi, self.adcAuthor.company);
+            result = result.replace(/\{\{ADCAuthor.WebSite\}\}/gi, self.adcAuthor.webSite);
+            authorFullName = self.adcAuthor.name || &#39;&#39;;
+            if (self.adcAuthor.email) {
+                authorFullName += &#39; &lt;&#39; + self.adcAuthor.email + &#39;&gt;&#39;;
+            }
+            result = result.replace(/\{\{ADCAuthor\}\}/gi, authorFullName);
             result = result.replace(/2000-01-01/, common.formatXmlDate());
             result = result.replace(&#39;\ufeff&#39;, &#39;&#39;); // Remove the BOM characters (Marker of the UTF-8 in the string)
 
