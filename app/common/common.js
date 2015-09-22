@@ -438,7 +438,7 @@ exports.getTemplatePath = function getTemplatePath(name, callback) {
 
             // 3.
             var sysTemplatePath = pathHelper.resolve(__dirname, '../../');
-            sysTemplatePath = pathHelper.join(exports.TEMPLATES_PATH, name);
+            sysTemplatePath = pathHelper.join(sysTemplatePath, exports.TEMPLATES_PATH, name);
             exports.dirExists(sysTemplatePath, function (err, exist) {
                 if (exist) {
                     callback(null, sysTemplatePath);
