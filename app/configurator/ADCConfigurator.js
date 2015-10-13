@@ -668,8 +668,8 @@ ADCInfo.prototype.style = function style(data) {
             el.set("height", data.height);
         }
     }
-    w = el.get("width") || "0";
-    h = el.get("height") || "0";
+    w = (el && el.get("width")) || "0";
+    h = (el && el.get("height")) || "0";
 
     result.width = parseInt(w, 10);
     result.height = parseInt(h, 10);
