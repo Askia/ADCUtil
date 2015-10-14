@@ -3,34 +3,23 @@ describe('InteractiveADXShell', function () {
     var childProcess    = require('child_process'),
         common          = require('../../app/common/common.js'),
         pathHelper      = require('path'),
+        util            = require('util'),
+        EventEmitter    = require('events').EventEmitter,
         spies           = {},
         InteractiveADXShell;
+
+    function StandardIO() {
+        EventEmitter.call(this);
+    }
+    util.inherits(StandardIO, EventEmitter);
 
     function ChildProcessFake() {
         var self = this;
         self.stdin = {
             write : function () {}
         };
-
-        self.stdout = {
-            events  : {},
-            removeListener : function (event) {
-                delete self.stdout.events[event];
-            },
-            on : function (event, callback) {
-                self.stdout.events[event] = callback;
-            }
-        };
-
-        self.stderr = {
-            events  : {},
-            removeListener : function (event) {
-                delete self.stderr.events[event];
-            },
-            on : function (event, callback) {
-                self.stderr.events[event] = callback;
-            }
-        };
+        self.stdout = new StandardIO();
+        self.stderr = new StandardIO();
     }
 
     beforeEach(function () {
@@ -94,7 +83,7 @@ describe('InteractiveADXShell', function () {
             });
             var adxShell = new InteractiveADXShell('/adc/path');
             adxShell.exec('this is the command');
-            mock.stdout.events.data('first data');
+            mock.stdout.emit('data', 'first data');
             expect(writeData).toBe('this is the command\n');
         });
 
@@ -113,10 +102,10 @@ describe('InteractiveADXShell', function () {
                 });
                 var adxShell = new InteractiveADXShell('/adc/path');
                 adxShell.exec('hello');
-                expect(typeof mock[obj.prop].events.data).toBe('function');
+                expect(mock[obj.prop].listeners('data').length).toEqual(1);
             });
 
-            it("should call the callback with the data of the " + obj.name  + " of the process", function () {
+            it("should call the callback with the data of the " + obj.name  + " of the process when it receive a message starting with [ADXShell:End]", function () {
                 var stub, result;
                 spies.spawn.andCallFake(function () {
                     stub = new ChildProcessFake();
@@ -131,9 +120,11 @@ describe('InteractiveADXShell', function () {
                     }
                 });
                 if (obj.prop === 'stdout') {
-                    stub[obj.prop].events.data("first call");
+                    stub[obj.prop].emit('data', "first call");
                 }
-                stub[obj.prop].events.data("process result");
+                stub[obj.prop].emit('data', "process");
+                stub[obj.prop].emit('data', " result");
+                stub[obj.prop].emit('data', "[ADXShell:End]");
                 expect(result).toBe('process result');
             });
 
@@ -146,11 +137,12 @@ describe('InteractiveADXShell', function () {
                 var adxShell = new InteractiveADXShell('/adc/path');
                 adxShell.exec('hello');
                 if (obj.prop === 'stdout') {
-                    mock[obj.prop].events.data("first call");
+                    mock[obj.prop].emit('data', "first call");
                 }
-                mock[obj.prop].events.data("process result");
-                expect(mock.stdout.events.data).toBe(undefined);
-                expect(mock.stderr.events.data).toBe(undefined);
+                mock[obj.prop].emit('data', "process result");
+                mock[obj.prop].emit('data', "[ADXShell:End]");
+                expect(mock.stdout.listeners('data').length).toEqual(0);
+                expect(mock.stderr.listeners('data').length).toEqual(0);
             });
         });
 
@@ -164,8 +156,9 @@ describe('InteractiveADXShell', function () {
             adxShell.exec('hello', function (err, data) {
                result += data;
             });
-            stub.stdout.events.data("first call");
-            stub.stdout.events.data("second call");
+            stub.stdout.emit('data', "first call");
+            stub.stdout.emit('data', "second call");
+            stub.stdout.emit('data', "[ADXShell:End]");
             expect(result).toBe('second call');
         });
 

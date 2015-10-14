@@ -33,6 +33,9 @@ InteractiveADXShell.prototype.constructor = InteractiveADXShell;
  */
 InteractiveADXShell.prototype.exec = function exec(command, callback) {
     var self = this;
+    var message = [],
+        errorMessage = [];
+
     if (!self._process) {
         var root =  path.resolve(__dirname, "../../");
         self._process = childProcess.spawn('.\\' + common.ADC_UNIT_PROCESS_NAME, [
@@ -51,21 +54,33 @@ InteractiveADXShell.prototype.exec = function exec(command, callback) {
             self._process.stdin.write(command + '\n');
             return;
         }
-        if (typeof callback === 'function') {
-            callback(null, data.toString());
+        var str = data.toString();
+        if (!/^\[ADXShell:End\]/.test(str)) {
+            message.push(str);
+        } else {
+            // Remove the listener at the end of the process
+            self._process.stdout.removeListener('data', onOutput);
+            self._process.stderr.removeListener('data', onError);
+
+            if (typeof callback === 'function') {
+                callback(null, message.join(''));
+            }
         }
-        // Remove the listener at the end of the process
-        self._process.stdout.removeListener('data', onOutput);
-        self._process.stderr.removeListener('data', onOutput);
     }
 
     function onError(data) {
-        if (typeof callback === 'function') {
-            callback(new Error(data.toString()), null);
+        var str = data.toString();
+        if (!/^\[ADXShell:End\]/.test(str)) {
+            errorMessage.push(str);
+        } else {
+            // Remove the listener at the end of the process
+            self._process.stdout.removeListener('data', onOutput);
+            self._process.stderr.removeListener('data', onError);
+
+            if (typeof callback === 'function') {
+                callback(new Error(errorMessage.join('')), null);
+            }
         }
-        // Remove the listener at the end of the process
-        self._process.stdout.removeListener('data', onOutput);
-        self._process.stderr.removeListener('data', onOutput);
     }
 
     self._process.stdout.on('data', onOutput);
