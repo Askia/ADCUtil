@@ -685,8 +685,8 @@ ADCInfo.prototype.style = function style(data) {
             el.set(&quot;height&quot;, data.height);
         }
     }
-    w = el.get(&quot;width&quot;) || &quot;0&quot;;
-    h = el.get(&quot;height&quot;) || &quot;0&quot;;
+    w = (el &amp;&amp; el.get(&quot;width&quot;)) || &quot;0&quot;;
+    h = (el &amp;&amp; el.get(&quot;height&quot;)) || &quot;0&quot;;
 
     result.width = parseInt(w, 10);
     result.height = parseInt(h, 10);

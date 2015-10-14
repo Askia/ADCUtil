@@ -89,13 +89,16 @@ Show.prototype.writeMessage = function writeMessage(text) {
  * @param {String} [options.masterPage] Path of the master page to use
  * @param {String} [options.properties] ADC properties (in url query string format: &#39;param1=value1&amp;param2-value2&#39;)
  * @param {InteractiveADXShell} [options.adxShell] Interactive ADXShell process
+ * @param {Boolean} [options.silent=false] Silent mode: Don&#39;t message in the console but only through the callback
  * @param {Function} callback Callback function
  * @param {Error} callback.err Error
  * @param {String} callback.output Output string
  */
 Show.prototype.show = function show(options, callback) {
     if (!options || !options.output) {
-        this.writeError(errMsg.noOutputDefinedForShow);
+        if (!options.silent) {
+            this.writeError(errMsg.noOutputDefinedForShow);
+        }
         if (typeof callback === &#39;function&#39;) {
             callback(new Error(errMsg.noOutputDefinedForShow));
         }
@@ -103,7 +106,9 @@ Show.prototype.show = function show(options, callback) {
     }
 
     if (!options || !options.fixture) {
-        this.writeError(errMsg.noFixtureDefinedForShow);
+        if (!options.silent) {
+            this.writeError(errMsg.noFixtureDefinedForShow);
+        }
         if (typeof callback === &#39;function&#39;) {
             callback(new Error(errMsg.noFixtureDefinedForShow));
         }
@@ -132,13 +137,18 @@ Show.prototype.show = function show(options, callback) {
             return;
         }
 
-        self.writeMessage(stdout);
+        if (!options.silent) {
+            self.writeMessage(stdout);
+        }
+
         if (!stderr &amp;&amp; typeof  callback === &#39;function&#39;) {
             callback(null, stdout);
         }
 
         if (stderr) {
-            self.writeError(&quot;\r\n&quot; + stderr);
+            if (!options.silent) {
+                self.writeError(&quot;\r\n&quot; + stderr);
+            }
             if (typeof callback === &#39;function&#39;) {
                 callback(new Error(stderr));
             }

@@ -190,6 +190,7 @@ ADC.prototype.build = function build(options, callback){
  * @param {String} options.output Name of the ADC Output to use
  * @param {String} options.fixture FileName of the ADC fixture to use
  * @param {String} [options.masterPage] Path of the master page to use
+ * @param {Boolean} [options.silent=false] Silent mode: Don't message in the console but only through the callback
  * @param {Function} callback Callback function
  * @param {Error} callback.err Error
  * @param {String} callback.output Output string

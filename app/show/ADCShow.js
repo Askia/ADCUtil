@@ -72,13 +72,16 @@ Show.prototype.writeMessage = function writeMessage(text) {
  * @param {String} [options.masterPage] Path of the master page to use
  * @param {String} [options.properties] ADC properties (in url query string format: 'param1=value1&param2-value2')
  * @param {InteractiveADXShell} [options.adxShell] Interactive ADXShell process
+ * @param {Boolean} [options.silent=false] Silent mode: Don't message in the console but only through the callback
  * @param {Function} callback Callback function
  * @param {Error} callback.err Error
  * @param {String} callback.output Output string
  */
 Show.prototype.show = function show(options, callback) {
     if (!options || !options.output) {
-        this.writeError(errMsg.noOutputDefinedForShow);
+        if (!options.silent) {
+            this.writeError(errMsg.noOutputDefinedForShow);
+        }
         if (typeof callback === 'function') {
             callback(new Error(errMsg.noOutputDefinedForShow));
         }
@@ -86,7 +89,9 @@ Show.prototype.show = function show(options, callback) {
     }
 
     if (!options || !options.fixture) {
-        this.writeError(errMsg.noFixtureDefinedForShow);
+        if (!options.silent) {
+            this.writeError(errMsg.noFixtureDefinedForShow);
+        }
         if (typeof callback === 'function') {
             callback(new Error(errMsg.noFixtureDefinedForShow));
         }
@@ -115,13 +120,18 @@ Show.prototype.show = function show(options, callback) {
             return;
         }
 
-        self.writeMessage(stdout);
+        if (!options.silent) {
+            self.writeMessage(stdout);
+        }
+
         if (!stderr && typeof  callback === 'function') {
             callback(null, stdout);
         }
 
         if (stderr) {
-            self.writeError("\r\n" + stderr);
+            if (!options.silent) {
+                self.writeError("\r\n" + stderr);
+            }
             if (typeof callback === 'function') {
                 callback(new Error(stderr));
             }
