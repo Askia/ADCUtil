@@ -124,8 +124,8 @@ describe('InteractiveADXShell', function () {
                 }
                 stub[obj.prop].emit('data', "process");
                 stub[obj.prop].emit('data', " result");
-                stub[obj.prop].emit('data', "[ADXShell:End]");
-                expect(result).toBe('process result');
+                stub[obj.prop].emit('data', "\n Hello World!\n[ADXShell:End]");
+                expect(result).toBe('process result\n Hello World!');
             });
 
             it("should remove the listener after data was emit via the " + obj.name  + " of the process", function () {
@@ -158,7 +158,7 @@ describe('InteractiveADXShell', function () {
             });
             stub.stdout.emit('data', "first call");
             stub.stdout.emit('data', "second call");
-            stub.stdout.emit('data', "[ADXShell:End]");
+            stub.stdout.emit('data', "\r\n[ADXShell:End]");
             expect(result).toBe('second call');
         });
 

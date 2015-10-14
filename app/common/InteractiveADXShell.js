@@ -55,9 +55,13 @@ InteractiveADXShell.prototype.exec = function exec(command, callback) {
             return;
         }
         var str = data.toString();
-        if (!/^\[ADXShell:End\]/.test(str)) {
+        if (!/^\[ADXShell:End\]/m.test(str)) {
             message.push(str);
         } else {
+            // Remove the end of the message
+            str = str.replace(/(\r?\n\[ADXShell:End\].*)/m, '');
+            message.push(str);
+
             // Remove the listener at the end of the process
             self._process.stdout.removeListener('data', onOutput);
             self._process.stderr.removeListener('data', onError);
@@ -70,9 +74,13 @@ InteractiveADXShell.prototype.exec = function exec(command, callback) {
 
     function onError(data) {
         var str = data.toString();
-        if (!/^\[ADXShell:End\]/.test(str)) {
+        if (!/^\[ADXShell:End\]/m.test(str)) {
             errorMessage.push(str);
         } else {
+            // Remove the end of the message
+            str = str.replace(/(\r?\n\[ADXShell:End\].*)/m, '');
+            errorMessage.push(str);
+
             // Remove the listener at the end of the process
             self._process.stdout.removeListener('data', onOutput);
             self._process.stderr.removeListener('data', onError);
