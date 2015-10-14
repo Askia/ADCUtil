@@ -2,6 +2,7 @@ describe('ADCUtilAPI', function () {
     var fs = require('fs');
     var pathHelper = require('path');
     var InteractiveADXShell = require('../app/common/InteractiveADXShell.js').InteractiveADXShell;
+    var wrench = require('wrench');
     var ADC,
         adcUtilApi,
         errMsg,
@@ -18,6 +19,17 @@ describe('ADCUtilAPI', function () {
         spies = {},
         common;
 
+    function runSync(fn) {
+        var wasCalled = false;
+        runs( function () {
+            fn(function () {
+                wasCalled = true;
+            });
+        });
+        waitsFor(function () {
+            return wasCalled;
+        });
+    }
 
     beforeEach(function () {
         adcUtilApi = require.resolve('../app/ADCUtilAPI.js');
@@ -60,6 +72,18 @@ describe('ADCUtilAPI', function () {
         adcConfigurator = require('../app/configurator/ADCConfigurator.js');
         Configurator = adcConfigurator.Configurator;
         spies.load = spyOn(Configurator.prototype, 'load');
+
+
+        // Court-circuit wrench
+        spies.wrench = {
+            copyDirRecursive : spyOn(wrench, 'copyDirRecursive'),
+            readdirRecursive : spyOn(wrench, 'readdirRecursive')
+        };
+
+        spies.getTemplatePath = spyOn(common, 'getTemplatePath');
+        spies.getTemplatePath.andCallFake(function (name, cb) {
+            cb(null, pathHelper.join(common.TEMPLATES_PATH, name));
+        });
     });
 
     describe(".ADC", function () {
@@ -267,6 +291,43 @@ describe('ADCUtilAPI', function () {
                     expect(list).toEqual(['fixture1.xml', 'fixture2.xml', 'fixture3.xml','fixture4.xml'])
                 });
                 expect(wasCalled).toBe(true);
+            });
+        });
+
+        describe('#checkFixtures', function () {
+            it("should copy `tests/fixtures` directory of the `blank` template if it  doesn't exist", function () {
+                spyOn(common, 'dirExists').andCallFake(function (p, cb) {
+                    cb(null, false);
+                });
+
+                runSync(function (done) {
+                    spies.wrench.copyDirRecursive.andCallFake(function (source, dest) {
+                        expect(source).toEqual(pathHelper.join(common.TEMPLATES_PATH, common.DEFAULT_TEMPLATE_NAME, common.FIXTIRES_DIR_PATH));
+                        expect(dest).toEqual(pathHelper.join('adc/path', common.FIXTIRES_DIR_PATH));
+                        done();
+                    });
+
+                    var adc= new ADC('adc/path');
+                    adc.checkFixtures();
+                });
+            });
+
+            it("should call the callback arg when the copy is finish", function () {
+                spyOn(common, 'dirExists').andCallFake(function (p, cb) {
+                    cb(null, false);
+                });
+
+                runSync(function (done) {
+                    spies.wrench.copyDirRecursive.andCallFake(function (source, dest, options, cb) {
+                        cb();
+                    });
+
+                    var adc= new ADC('adc/path');
+                    adc.checkFixtures(function () {
+                        expect(true).toBe(true);
+                        done();
+                    });
+                });
             });
         });
 

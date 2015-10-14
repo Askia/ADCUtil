@@ -17,6 +17,7 @@
 <body onload="prettyPrint(); highlight();">
   <pre class="prettyprint lang-js">var fs      = require(&#39;fs&#39;);
 var path    = require(&#39;path&#39;);
+var wrench  = require(&#39;wrench&#39;);
 var common  = require(&#39;./common/common.js&#39;);
 var errMsg  = common.messages.error;
 var Validator    = require(&#39;./validator/ADCValidator.js&#39;).Validator;
@@ -248,6 +249,32 @@ ADC.prototype.getFixtureList = function getFixtureList(callback) {
             }
         }
         callback(null, fixtures);
+    });
+};
+
+<span id='ADC-method-checkFixtures'>/**
+</span> * Verify if the fixture exist and create it if it doesn&#39;t
+ * @param {Function} callback Callback when the operation is complete
+ */
+ADC.prototype.checkFixtures = function checkFixtures(callback) {
+    var fixturePath = path.join(this.path, common.FIXTIRES_DIR_PATH);
+    var self = this;
+    common.dirExists(fixturePath, function (err, isExist) {
+        if (isExist) {
+            if (typeof callback === &#39;function&#39;) {
+                callback();
+            }
+            return;
+        }
+        wrench.copyDirRecursive(path.join(common.TEMPLATES_PATH, common.DEFAULT_TEMPLATE_NAME, common.FIXTIRES_DIR_PATH), fixturePath, {
+            forceDelete       : false,
+            excludeHiddenUnix : true,
+            preserveFiles     : true
+        }, function () {
+            if (typeof callback === &#39;function&#39;) {
+                callback();
+            }
+        });
     });
 };
 

@@ -1,5 +1,6 @@
 var fs      = require('fs');
 var path    = require('path');
+var wrench  = require('wrench');
 var common  = require('./common/common.js');
 var errMsg  = common.messages.error;
 var Validator    = require('./validator/ADCValidator.js').Validator;
@@ -231,6 +232,32 @@ ADC.prototype.getFixtureList = function getFixtureList(callback) {
             }
         }
         callback(null, fixtures);
+    });
+};
+
+/**
+ * Verify if the fixture exist and create it if it doesn't
+ * @param {Function} callback Callback when the operation is complete
+ */
+ADC.prototype.checkFixtures = function checkFixtures(callback) {
+    var fixturePath = path.join(this.path, common.FIXTIRES_DIR_PATH);
+    var self = this;
+    common.dirExists(fixturePath, function (err, isExist) {
+        if (isExist) {
+            if (typeof callback === 'function') {
+                callback();
+            }
+            return;
+        }
+        wrench.copyDirRecursive(path.join(common.TEMPLATES_PATH, common.DEFAULT_TEMPLATE_NAME, common.FIXTIRES_DIR_PATH), fixturePath, {
+            forceDelete       : false,
+            excludeHiddenUnix : true,
+            preserveFiles     : true
+        }, function () {
+            if (typeof callback === 'function') {
+                callback();
+            }
+        });
     });
 };
 
