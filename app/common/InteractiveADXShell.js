@@ -67,7 +67,7 @@ InteractiveADXShell.prototype.exec = function exec(command, callback) {
             self._process.stderr.removeListener('data', onError);
 
             if (typeof callback === 'function') {
-                callback(null, message.join(''));
+                callback(null, message.join('').replace(/(\[ADXShell:End\].*)/m, ''));
             }
         }
     }
@@ -86,7 +86,7 @@ InteractiveADXShell.prototype.exec = function exec(command, callback) {
             self._process.stderr.removeListener('data', onError);
 
             if (typeof callback === 'function') {
-                callback(new Error(errorMessage.join('')), null);
+                callback(new Error(errorMessage.join('').replace(/(\[ADXShell:End\].*)/m, '')), null);
             }
         }
     }
