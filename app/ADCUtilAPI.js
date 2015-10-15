@@ -249,14 +249,19 @@ ADC.prototype.checkFixtures = function checkFixtures(callback) {
             }
             return;
         }
-        wrench.copyDirRecursive(path.join(common.TEMPLATES_PATH, common.DEFAULT_TEMPLATE_NAME, common.FIXTIRES_DIR_PATH), fixturePath, {
-            forceDelete       : false,
-            excludeHiddenUnix : true,
-            preserveFiles     : true
-        }, function () {
-            if (typeof callback === 'function') {
-                callback();
-            }
+        var testPath =  path.join(fixturePath, '../');
+        var sourcePath = path.join(path.resolve(__dirname, "../"), common.TEMPLATES_PATH, common.DEFAULT_TEMPLATE_NAME, common.FIXTIRES_DIR_PATH);
+
+        fs.mkdir(testPath, function () {
+            wrench.copyDirRecursive(sourcePath, fixturePath, {
+                forceDelete       : false,
+                excludeHiddenUnix : true,
+                preserveFiles     : true
+            }, function () {
+                if (typeof callback === 'function') {
+                    callback();
+                }
+            });
         });
     });
 };

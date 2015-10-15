@@ -50,7 +50,8 @@ describe('ADCUtilAPI', function () {
             exists      : spyOn(fs, 'exists'),
             readdirSync : spyOn(fs, 'readdirSync'),
             readdir     : spyOn(fs, 'readdir'),
-            readFile    : spyOn(fs, 'readFile')
+            readFile    : spyOn(fs, 'readFile'),
+            mkdir       : spyOn(fs, 'mkdir')
         };
 
         adcValidator = require('../app/validator/ADCValidator.js');
@@ -299,10 +300,13 @@ describe('ADCUtilAPI', function () {
                 spyOn(common, 'dirExists').andCallFake(function (p, cb) {
                     cb(null, false);
                 });
+                spies.fs.mkdir.andCallFake(function (p, cb) {
+                    cb();
+                });
 
                 runSync(function (done) {
                     spies.wrench.copyDirRecursive.andCallFake(function (source, dest) {
-                        expect(source).toEqual(pathHelper.join(common.TEMPLATES_PATH, common.DEFAULT_TEMPLATE_NAME, common.FIXTIRES_DIR_PATH));
+                        expect(source).toEqual(pathHelper.join(pathHelper.resolve(__dirname, "../"), common.TEMPLATES_PATH, common.DEFAULT_TEMPLATE_NAME, common.FIXTIRES_DIR_PATH));
                         expect(dest).toEqual(pathHelper.join('adc/path', common.FIXTIRES_DIR_PATH));
                         done();
                     });
@@ -316,12 +320,15 @@ describe('ADCUtilAPI', function () {
                 spyOn(common, 'dirExists').andCallFake(function (p, cb) {
                     cb(null, false);
                 });
+                spies.fs.mkdir.andCallFake(function (p, cb) {
+                    cb();
+                });
+                spies.wrench.copyDirRecursive.andCallFake(function (source, dest, options, cb) {
+                    cb();
+                });
+
 
                 runSync(function (done) {
-                    spies.wrench.copyDirRecursive.andCallFake(function (source, dest, options, cb) {
-                        cb();
-                    });
-
                     var adc= new ADC('adc/path');
                     adc.checkFixtures(function () {
                         expect(true).toBe(true);
