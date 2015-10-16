@@ -17,7 +17,7 @@
     </author>
     <company>{{ADCAuthor.Company}}</company>
     <helpURL></helpURL>
-    <site>{{ADCAuthor.WebSite}}</site>
+    <site>{{ADCAuthor.Website}}</site>
     <categories>
       <category>General</category>
     </categories>

@@ -13,6 +13,10 @@ exports = module.exports;
 
 // Application name
 exports.APP_NAME = 'ADCUtil';
+
+// Preferences
+exports.PREFERENCES_FILE_NAME = 'preferences.json';
+
 // Common
 // File name of the config.xml
 exports.CONFIG_FILE_NAME = 'config.xml';
@@ -56,6 +60,7 @@ exports.adcIgnoreFilesRules = undefined;
 // Path of the templates directory
 exports.TEMPLATES_PATH = '/templates/adc/';
 exports.DEFAULT_TEMPLATE_NAME = 'blank';
+
 
 // Builder
 // Path to the bin directory of an ADC
@@ -140,7 +145,10 @@ exports.messages = {
         runningADCUnit   : 'Running ADC Unit tests',
         runningAutoUnit  : 'Running the auto-generated ADC Unit tests',
         validationFinishedIn       : "\r\nValidations finished in %d milliseconds",
-        validationReport : "\r\n%d/%d validations runs, %d success, %d warnings, %d failures"
+        validationReport : "\r\n%d/%d validations runs, %d success, %d warnings, %d failures",
+
+        // Preferences
+        noPreferences  : 'No preferences defined'
     }
 };
 

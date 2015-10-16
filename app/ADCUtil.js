@@ -14,8 +14,12 @@ program
     .option('-T, --no-test', 'skip the execution of ADC unit tests')
     .option('-X, --no-xml', 'skip the validation of the config.xml file')
     .option('-A, --no-autoTest', 'skip the execution of the auto-generated unit tests')
-    .option('-t, --template <name>', 'name of the template to use to generate the ADC');
-
+    .option('-t, --template <name>', 'name of the template to use to generate the ADC')
+    // Option for the config
+    .option('--authorName <name>', 'default name of the author')
+    .option('--authorEmail <email>', 'default email of the author')
+    .option('--authorCompany <name>', 'default company of the author')
+    .option('--authorWebsite <website>', 'default website of the author');
 
 program
     .command('generate <name>')
@@ -47,6 +51,36 @@ program
     .action(function showADC(path) {
         var adcShow = require('./show/ADCShow.js');
         adcShow.show(program, path);
+    });
+
+
+program
+    .command('config')
+    .description('get or set the global config/preferences')
+    .action(function () {
+        var adcPreferences = require('./preferences/ADCPreferences.js');
+        // No option to set, so only read
+        if (!program.authorName && !program.authorEmail && !program.authorCompany && !program.authorWebsite) {
+            adcPreferences.read();
+        } else {
+            var preferences = {
+                author : {}
+            };
+
+            if ('authorName' in program) {
+                preferences.author.name = program.authorName;
+            }
+            if ('authorEmail' in program) {
+                preferences.author.email = program.authorEmail;
+            }
+            if ('authorCompany' in program) {
+                preferences.author.company = program.authorCompany;
+            }
+            if ('authorWebsite' in program) {
+                preferences.author.website = program.authorWebsite;
+            }
+            adcPreferences.write(preferences);
+        }
     });
 
 program.parse(process.argv);

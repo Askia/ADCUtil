@@ -8,7 +8,7 @@ describe('ADCUtil', function () {
     });
 
     describe('cmd `validate`', function () {
-        it ('should call ADCValidator#validate when the program args contains `validate`', function () {
+        it('should call ADCValidator#validate when the program args contains `validate`', function () {
             process.argv = [
                 'node',
                 'app/ADCUtil.js',
@@ -105,7 +105,7 @@ describe('ADCUtil', function () {
     });
 
     describe('cmd `generate`', function () {
-        it ('should call the ADCGenerator#generate when the program args contains `generate`', function () {
+        it('should call the ADCGenerator#generate when the program args contains `generate`', function () {
             process.argv = [
                 'node',
                 'app/ADCUtil.js',
@@ -121,7 +121,7 @@ describe('ADCUtil', function () {
             expect(adcGenerator.generate).toHaveBeenCalled();
         });
 
-        it ('should call the ADCGenerator#generate with the output property in `program` argument', function () {
+        it('should call the ADCGenerator#generate with the output property in `program` argument', function () {
             process.argv = [
                 'node',
                 'app/ADCUtil.js',
@@ -143,7 +143,7 @@ describe('ADCUtil', function () {
             expect(output).toBe('outputpath');
         });
 
-        it ('should call the ADCGenerator#generate with the template property in `program` argument', function () {
+        it('should call the ADCGenerator#generate with the template property in `program` argument', function () {
             process.argv = [
                 'node',
                 'app/ADCUtil.js',
@@ -167,7 +167,7 @@ describe('ADCUtil', function () {
     });
 
     describe('cmd `build`', function () {
-        it ('should call ADCBuilder#build when the program args contains `build`', function () {
+        it('should call ADCBuilder#build when the program args contains `build`', function () {
             process.argv = [
                 'node',
                 'app/ADCUtil.js',
@@ -185,7 +185,7 @@ describe('ADCUtil', function () {
     });
 
     describe('cmd `show`', function () {
-        it ('should call ADCShow#show when the program args contains `show`', function () {
+        it('should call ADCShow#show when the program args contains `show`', function () {
             process.argv = [
                 'node',
                 'app/ADCUtil.js',
@@ -204,6 +204,71 @@ describe('ADCUtil', function () {
 
             expect(adcShow.show).toHaveBeenCalled();
         });
+    });
+
+    describe('cmd `config`', function () {
+        it('should call ADCPreferences#read when the program args contains `config` and nothing else', function () {
+            process.argv = [
+                'node',
+                'app/ADCUtil.js',
+                'config'
+            ];
+
+            var adcPreferences = require('../app/preferences/ADCPreferences.js');
+            spyOn(adcPreferences, 'read');
+
+            require("../app/ADCUtil.js");
+
+            expect(adcPreferences.read).toHaveBeenCalled();
+        });
+
+        ['--authorName', '--authorEmail', '--authorCompany', '--authorWebsite'].forEach(function (flag) {
+            it('should call ADCPreferences#write when the program args contains `config` and at least `' + flag + '`', function () {
+                process.argv = [
+                    'node',
+                    'app/ADCUtil.js',
+                    'config',
+                    flag,
+                    'AValue'
+                ];
+
+                var adcPreferences = require('../app/preferences/ADCPreferences.js');
+                spyOn(adcPreferences, 'write');
+                spyOn(adcPreferences, 'read');
+
+                require("../app/ADCUtil.js");
+
+                expect(adcPreferences.write).toHaveBeenCalled();
+                expect(adcPreferences.read).not.toHaveBeenCalled();
+            });
+
+            it('should call ADCPreferences#write with the right option when the program args contains `config` and at least `' + flag + '`', function () {
+                process.argv = [
+                    'node',
+                    'app/ADCUtil.js',
+                    'config',
+                    flag,
+                    'AValue'
+                ];
+
+                var adcPreferences = require('../app/preferences/ADCPreferences.js');
+                spyOn(adcPreferences, 'write');
+                spyOn(adcPreferences, 'read');
+
+                require("../app/ADCUtil.js");
+
+                adcPreferences.write.andCallFake(function (obj) {
+                    var expectation = {};
+                    expectation[flag] = 'AValue';
+                    expect(obj.author).toEqual(expectation);
+                });
+                expect(adcPreferences.write).toHaveBeenCalled();
+                expect(adcPreferences.read).not.toHaveBeenCalled();
+            });
+
+
+        });
+
     });
 
 });

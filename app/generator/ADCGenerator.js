@@ -2,6 +2,7 @@ var fs          = require('fs');
 var format      = require('util').format;
 var pathHelper  = require('path');
 var common      = require('../common/common.js');
+var preferences = require('../preferences/ADCPreferences.js');
 var wrench      = require('wrench');
 var uuid        = require('node-uuid');
 var errMsg      = common.messages.error;
@@ -42,6 +43,7 @@ function Generator() {
         company : '',
         webSite : ''
     };
+
 
     /**
      * Path of the template directory
@@ -125,7 +127,7 @@ Generator.prototype.writeMessage = function writeMessage(text) {
  * @param {String} [options.author.name=''] Author name
  * @param {String} [options.author.email=''] Author email
  * @param {String} [options.author.company=''] Author Company
- * @param {String} [options.author.webSite=''] Author web site
+ * @param {String} [options.author.website=''] Author web site
  * @param {String} [options.template="blank"] Name of the template to use
  * @param {Function} [callback]
  * @param {Error} [callback.err] Error
@@ -150,32 +152,35 @@ Generator.prototype.generate = function generate(name, options, callback) {
         return;
     }
 
-    this.adcName = name;
-    this.adcDescription = (options && options.description) || '';
-    this.adcAuthor = (options && options.author) || {};
-    this.adcAuthor.name = this.adcAuthor.name || '';
-    this.adcAuthor.email = this.adcAuthor.email || '';
-    this.adcAuthor.company = this.adcAuthor.company || '';
-    this.adcAuthor.webSite = this.adcAuthor.webSite || '';
-    
-    this.outputDirectory = (options && options.output) || process.cwd();
-    if (!this.outputDirectory) {
-        this.done(new Error(errMsg.missingOutputArgument));
-        return;
-    }
-
-    this.template = (options && options.template) || common.DEFAULT_TEMPLATE_NAME;
-    this.templateSrc = pathHelper.join(this.rootdir, common.TEMPLATES_PATH, this.template);
-
     var self = this;
-    common.getTemplatePath(this.template, function (err, src) {
-        if (err) {
-            return self.done(err);
-        }
-        self.templateSrc = src;
-        return self.sequence.resume();
-    });
+    preferences.read({silent : true}, function (preferences) {
+        var prefAuthor = (preferences && preferences.author) || {};
 
+        self.adcName = name;
+        self.adcDescription = (options && options.description) || '';
+        self.adcAuthor = (options && options.author) || {};
+        self.adcAuthor.name = self.adcAuthor.name || prefAuthor.name || '';
+        self.adcAuthor.email = self.adcAuthor.email || prefAuthor.email || '';
+        self.adcAuthor.company = self.adcAuthor.company || prefAuthor.company || '';
+        self.adcAuthor.website = self.adcAuthor.website || prefAuthor.website || '';
+
+        self.outputDirectory = (options && options.output) || process.cwd();
+        if (!self.outputDirectory) {
+            self.done(new Error(errMsg.missingOutputArgument));
+            return;
+        }
+
+        self.template = (options && options.template) || common.DEFAULT_TEMPLATE_NAME;
+        self.templateSrc = pathHelper.join(self.rootdir, common.TEMPLATES_PATH, self.template);
+
+        common.getTemplatePath(self.template, function (err, src) {
+            if (err) {
+                return self.done(err);
+            }
+            self.templateSrc = src;
+            return self.sequence.resume();
+        });
+    });
 };
 
 /**
@@ -232,6 +237,7 @@ Generator.prototype.done = function done(err) {
         }
     });
 };
+
 
 /**
  * Verify that the output directory
@@ -300,7 +306,7 @@ Generator.prototype.updateFiles = function updateFiles() {
             result = result.replace(/\{\{ADCAuthor.Name\}\}/gi, self.adcAuthor.name);
             result = result.replace(/\{\{ADCAuthor.Email\}\}/gi, self.adcAuthor.email);
             result = result.replace(/\{\{ADCAuthor.Company\}\}/gi, self.adcAuthor.company);
-            result = result.replace(/\{\{ADCAuthor.WebSite\}\}/gi, self.adcAuthor.webSite);
+            result = result.replace(/\{\{ADCAuthor.website\}\}/gi, self.adcAuthor.website);
             authorFullName = self.adcAuthor.name || '';
             if (self.adcAuthor.email) {
                 authorFullName += ' <' + self.adcAuthor.email + '>';

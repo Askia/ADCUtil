@@ -10,6 +10,7 @@ describe('ADCGenerator', function () {
         adcGenerator,
         Generator,
         generatorInstance,
+        adcPreferences,
         errMsg,
         successMsg;
 
@@ -66,6 +67,20 @@ describe('ADCGenerator', function () {
         spyOn(uuid, 'v4').andReturn('guid');
 
         spies.cwd = spyOn(process, 'cwd').andReturn('adc/path/dir');
+
+        adcPreferences  = require('../../app/preferences/ADCPreferences.js');
+
+        spies.readPreferences = spyOn(adcPreferences, 'read');
+        spies.readPreferences.andCallFake(function (opt, cb) {
+            cb({
+                author : {
+                    name : 'MyPrefName',
+                    email : 'MyPrefEmail',
+                    company : 'MyPrefCompany',
+                    website : 'MyWebsite'
+                }
+            });
+        });
     });
 
     describe('#generator', function () {
@@ -289,7 +304,7 @@ describe('ADCGenerator', function () {
                             name : 'MySelf',
                             email : 'myself@test.com',
                             company : 'My Company',
-                            webSite : 'http://my/web/site.com'
+                            website : 'http://my/web/site.com'
                         }
                     }, 'adcname');
                     expect(result).toBe(obj.replacement);
@@ -330,11 +345,51 @@ describe('ADCGenerator', function () {
                     replacement : 'My Company'
                 },
                 {
-                    pattern : '{{ADCAuthor.WebSite}}',
+                    pattern : '{{ADCAuthor.website}}',
                     replacement : 'http://my/web/site.com'
                 }
             ];
             replacement.forEach(testReplacement);
+
+
+            function testReplaceWithPreferences(obj) {
+                it("should replace the `" + obj.pattern + "` by the value from the preferences", function () {
+                    var result;
+                    spies.fs.readFile.andCallFake(function (path, option, callback) {
+                        callback(null, obj.pattern);
+                    });
+                    spies.fs.writeFile.andCallFake(function (path, content) {
+                        result = content;
+                    });
+                    spyOn(common, 'formatXmlDate').andReturn('2013-12-31');
+                    adcGenerator.generate({
+                        output : 'adc/path/dir',
+                        description : 'My description'
+                    }, 'adcname');
+                    expect(result).toBe(obj.replacement);
+                });
+            }
+
+            var preferencesReplacement = [
+                {
+                    pattern : '{{ADCAuthor.Name}}',
+                    replacement : 'MyPrefName'
+                },
+                {
+                    pattern : '{{ADCAuthor.Email}}',
+                    replacement : 'MyPrefEmail'
+                },
+                {
+                    pattern : '{{ADCAuthor.Company}}',
+                    replacement : 'MyPrefCompany'
+                },
+                {
+                    pattern : '{{ADCAuthor.website}}',
+                    replacement : 'MyWebsite'
+                }
+            ];
+
+            preferencesReplacement.forEach(testReplaceWithPreferences);
 
             it("should output an error when failing to rewrite the file", function () {
                 spies.fs.readFile.andCallFake(function (path, option, callback) {
