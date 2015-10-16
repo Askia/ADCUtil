@@ -152,9 +152,15 @@ Generator.prototype.generate = function generate(name, options, callback) {
         return;
     }
 
+    this.outputDirectory = (options && options.output) || process.cwd();
+    if (!this.outputDirectory) {
+        this.done(new Error(errMsg.missingOutputArgument));
+        return;
+    }
+
     var self = this;
-    preferences.read({silent : true}, function (preferences) {
-        var prefAuthor = (preferences && preferences.author) || {};
+    preferences.read({silent : true}, function (prefs) {
+        var prefAuthor = (prefs && prefs.author) || {};
 
         self.adcName = name;
         self.adcDescription = (options && options.description) || '';
@@ -163,12 +169,6 @@ Generator.prototype.generate = function generate(name, options, callback) {
         self.adcAuthor.email = self.adcAuthor.email || prefAuthor.email || '';
         self.adcAuthor.company = self.adcAuthor.company || prefAuthor.company || '';
         self.adcAuthor.website = self.adcAuthor.website || prefAuthor.website || '';
-
-        self.outputDirectory = (options && options.output) || process.cwd();
-        if (!self.outputDirectory) {
-            self.done(new Error(errMsg.missingOutputArgument));
-            return;
-        }
 
         self.template = (options && options.template) || common.DEFAULT_TEMPLATE_NAME;
         self.templateSrc = pathHelper.join(self.rootdir, common.TEMPLATES_PATH, self.template);

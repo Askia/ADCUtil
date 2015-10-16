@@ -169,9 +169,15 @@ Generator.prototype.generate = function generate(name, options, callback) {
         return;
     }
 
+    this.outputDirectory = (options &amp;&amp; options.output) || process.cwd();
+    if (!this.outputDirectory) {
+        this.done(new Error(errMsg.missingOutputArgument));
+        return;
+    }
+
     var self = this;
-    preferences.read({silent : true}, function (preferences) {
-        var prefAuthor = (preferences &amp;&amp; preferences.author) || {};
+    preferences.read({silent : true}, function (prefs) {
+        var prefAuthor = (prefs &amp;&amp; prefs.author) || {};
 
         self.adcName = name;
         self.adcDescription = (options &amp;&amp; options.description) || &#39;&#39;;
@@ -180,12 +186,6 @@ Generator.prototype.generate = function generate(name, options, callback) {
         self.adcAuthor.email = self.adcAuthor.email || prefAuthor.email || &#39;&#39;;
         self.adcAuthor.company = self.adcAuthor.company || prefAuthor.company || &#39;&#39;;
         self.adcAuthor.website = self.adcAuthor.website || prefAuthor.website || &#39;&#39;;
-
-        self.outputDirectory = (options &amp;&amp; options.output) || process.cwd();
-        if (!self.outputDirectory) {
-            self.done(new Error(errMsg.missingOutputArgument));
-            return;
-        }
 
         self.template = (options &amp;&amp; options.template) || common.DEFAULT_TEMPLATE_NAME;
         self.templateSrc = pathHelper.join(self.rootdir, common.TEMPLATES_PATH, self.template);

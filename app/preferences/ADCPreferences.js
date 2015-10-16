@@ -164,6 +164,8 @@ exports.preferences = Preferences.getInstance();
 /**
  * Read the user preferences and display it
  *
+ * @param {Object} [options]
+ * @param {Boolean} [options.silent=false] By pass the output
  * @param {Function} [callback] Callback
  * @param {Object|null} [callback.preferences]
  * @param {Object} [callback.preferences.author] Default ADC author
@@ -172,8 +174,8 @@ exports.preferences = Preferences.getInstance();
  * @param {String} [callback.preferences.author.company] Default Company of the ADC author
  * @param {String} [callback.preferences.author.webSite] Default WebSite of the ADC author
  */
-exports.read = function read(callback) {
-    exports.preferences.read(callback);
+exports.read = function read(options, callback) {
+    exports.preferences.read(options, callback);
 };
 
 
