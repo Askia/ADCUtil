@@ -16,10 +16,10 @@ program
     .option('-A, --no-autoTest', 'skip the execution of the auto-generated unit tests')
     .option('-t, --template <name>', 'name of the template to use to generate the ADC')
     // Option for the config
-    .option('--authorName <name>', 'default name of the author')
-    .option('--authorEmail <email>', 'default email of the author')
-    .option('--authorCompany <name>', 'default company of the author')
-    .option('--authorWebsite <website>', 'default website of the author');
+    .option('--authorName <name>', 'default name of the author to set in the config')
+    .option('--authorEmail <email>', 'default email of the author to set in the config')
+    .option('--authorCompany <name>', 'default company of the author to set in the config')
+    .option('--authorWebsite <website>', 'default website of the author to set in the config');
 
 program
     .command('generate <name>')
@@ -56,7 +56,7 @@ program
 
 program
     .command('config')
-    .description('get or set the global config/preferences')
+    .description('get or set the configuration (use the --authorXXX flags to set the config)')
     .action(function () {
         var adcPreferences = require('./preferences/ADCPreferences.js');
         // No option to set, so only read

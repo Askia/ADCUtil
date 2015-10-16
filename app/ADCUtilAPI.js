@@ -9,6 +9,8 @@ var Show         = require('./show/ADCShow.js').Show;
 var Generator    = require('./generator/ADCGenerator.js').Generator;
 var Configurator = require('./configurator/ADCConfigurator.js').Configurator;
 var InteractiveADXShell = require('./common/InteractiveADXShell.js').InteractiveADXShell;
+var preferences = require('./preferences/ADCPreferences.js').preferences;
+
 
 /**
  * Object used to generate, validate, show and build an ADC
@@ -320,6 +322,13 @@ ADC.generate = function generate(name, options, callback) {
 ADC.getTemplateList = function getTemplateList(callback) {
     common.getTemplateList(callback);
 };
+
+/**
+ * Instance of the object to manage the preferences
+ *
+ * @type {ADC.Preferences}
+ */
+ADC.preferences = preferences;
 
 
 // Make it public

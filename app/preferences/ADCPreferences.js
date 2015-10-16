@@ -6,7 +6,7 @@ var msg     = common.messages.message;
  * Manage the user preferences
  *
  * @class ADC.Preferences
- * @private
+ * @singleton
  */
 function Preferences(){}
 
@@ -156,6 +156,12 @@ Preferences.getInstance = function getInstance() {
 };
 
 /**
+ * Single instance of the preferences object
+ * @type {ADC.Preferences}
+ */
+exports.preferences = Preferences.getInstance();
+
+/**
  * Read the user preferences and display it
  *
  * @param {Function} [callback] Callback
@@ -167,7 +173,7 @@ Preferences.getInstance = function getInstance() {
  * @param {String} [callback.preferences.author.webSite] Default WebSite of the ADC author
  */
 exports.read = function read(callback) {
-    Preferences.getInstance().read(callback);
+    exports.preferences.read(callback);
 };
 
 
@@ -189,5 +195,6 @@ exports.read = function read(callback) {
  * @param {String} [callback.preferences.author.webSite] Default WebSite of the ADC author
  */
 exports.write = function write(preferences, callback) {
-    Preferences.getInstance().write(preferences, callback);
+    exports.preferences.write(preferences, callback);
 };
+

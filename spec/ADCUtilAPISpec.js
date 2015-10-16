@@ -16,6 +16,8 @@ describe('ADCUtilAPI', function () {
         Generator,
         adcConfigurator,
         Configurator,
+        adcPreferences,
+        preferences,
         spies = {},
         common;
 
@@ -74,6 +76,8 @@ describe('ADCUtilAPI', function () {
         Configurator = adcConfigurator.Configurator;
         spies.load = spyOn(Configurator.prototype, 'load');
 
+        adcPreferences = require('../app/preferences/ADCPreferences.js');
+        preferences = adcPreferences.preferences;
 
         // Court-circuit wrench
         spies.wrench = {
@@ -424,6 +428,11 @@ describe('ADCUtilAPI', function () {
            });
         });
 
+        describe('.preferences', function () {
+            it("should be an instance of the Preferences object", function () {
+                expect(ADC.preferences).toBe(preferences);
+            });
+        });
 
     });
 });

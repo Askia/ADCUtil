@@ -43,19 +43,24 @@ This application works through Windows PowerShell
     validate [<path>]      validate the uncompressed ADC structure
     build [<path>]         build the ADC file
     show [<path>]          show the output of the ADC
+    config                 get or set the configuration (use the --authorXXX flags to set the config)
 
     Options:
 
-    -h, --help               output usage information
-    -V, --version            output the version number
-    -o, --output <name>      name of the output to display or path to the output directory for the generation
-    -f, --fixture <name>     name of the fixture to use for the `show` command
-    -m, --masterPage <path>  path of the master page to use for the `show` command'
-    -p, --properties <props> ADC properties (in url query string format) to set for the `show` command'
-    -T, --no-test            skip the execution of ADC unit tests
-    -X, --no-xml             skip the validation of the config.xml file
-    -A, --no-autoTest        skip the execution of the auto-generated unit tests
-    -t, --template <name>    name of the template to use to generate the ADC
+    -h, --help                output usage information
+    -V, --version             output the version number
+    -o, --output <name>       name of the output to display or path to the output directory for the generation
+    -f, --fixture <name>      name of the fixture to use for the `show` command
+    -m, --masterPage <path>   path of the master page to use for the `show` command'
+    -p, --properties <props>  ADC properties (in url query string format) to set for the `show` command'
+    -T, --no-test             skip the execution of ADC unit tests
+    -X, --no-xml              skip the validation of the config.xml file
+    -A, --no-autoTest         skip the execution of the auto-generated unit tests
+    -t, --template <name>     name of the template to use to generate the ADC
+    --authorName <name>       default name of the author to set in the config
+    --authorEmail <email>     default email of the author to set in the config
+    --authorCompany <name>    default company of the author to set in the config
+    --authorWebsite <website> default website of the author to set in the config
     
 
 ## API Usage
