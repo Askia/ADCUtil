@@ -19,6 +19,7 @@
 var format      = require(&#39;util&#39;).format;
 var pathHelper  = require(&#39;path&#39;);
 var common      = require(&#39;../common/common.js&#39;);
+var preferences = require(&#39;../preferences/ADCPreferences.js&#39;);
 var wrench      = require(&#39;wrench&#39;);
 var uuid        = require(&#39;node-uuid&#39;);
 var errMsg      = common.messages.error;
@@ -59,6 +60,7 @@ function Generator() {
         company : &#39;&#39;,
         webSite : &#39;&#39;
     };
+
 
 <span id='ADC-Generator-property-templateSrc'>    /**
 </span>     * Path of the template directory
@@ -142,7 +144,7 @@ Generator.prototype.writeMessage = function writeMessage(text) {
  * @param {String} [options.author.name=&#39;&#39;] Author name
  * @param {String} [options.author.email=&#39;&#39;] Author email
  * @param {String} [options.author.company=&#39;&#39;] Author Company
- * @param {String} [options.author.webSite=&#39;&#39;] Author web site
+ * @param {String} [options.author.website=&#39;&#39;] Author web site
  * @param {String} [options.template=&quot;blank&quot;] Name of the template to use
  * @param {Function} [callback]
  * @param {Error} [callback.err] Error
@@ -167,32 +169,35 @@ Generator.prototype.generate = function generate(name, options, callback) {
         return;
     }
 
-    this.adcName = name;
-    this.adcDescription = (options &amp;&amp; options.description) || &#39;&#39;;
-    this.adcAuthor = (options &amp;&amp; options.author) || {};
-    this.adcAuthor.name = this.adcAuthor.name || &#39;&#39;;
-    this.adcAuthor.email = this.adcAuthor.email || &#39;&#39;;
-    this.adcAuthor.company = this.adcAuthor.company || &#39;&#39;;
-    this.adcAuthor.webSite = this.adcAuthor.webSite || &#39;&#39;;
-    
-    this.outputDirectory = (options &amp;&amp; options.output) || process.cwd();
-    if (!this.outputDirectory) {
-        this.done(new Error(errMsg.missingOutputArgument));
-        return;
-    }
-
-    this.template = (options &amp;&amp; options.template) || common.DEFAULT_TEMPLATE_NAME;
-    this.templateSrc = pathHelper.join(this.rootdir, common.TEMPLATES_PATH, this.template);
-
     var self = this;
-    common.getTemplatePath(this.template, function (err, src) {
-        if (err) {
-            return self.done(err);
-        }
-        self.templateSrc = src;
-        return self.sequence.resume();
-    });
+    preferences.read({silent : true}, function (preferences) {
+        var prefAuthor = (preferences &amp;&amp; preferences.author) || {};
 
+        self.adcName = name;
+        self.adcDescription = (options &amp;&amp; options.description) || &#39;&#39;;
+        self.adcAuthor = (options &amp;&amp; options.author) || {};
+        self.adcAuthor.name = self.adcAuthor.name || prefAuthor.name || &#39;&#39;;
+        self.adcAuthor.email = self.adcAuthor.email || prefAuthor.email || &#39;&#39;;
+        self.adcAuthor.company = self.adcAuthor.company || prefAuthor.company || &#39;&#39;;
+        self.adcAuthor.website = self.adcAuthor.website || prefAuthor.website || &#39;&#39;;
+
+        self.outputDirectory = (options &amp;&amp; options.output) || process.cwd();
+        if (!self.outputDirectory) {
+            self.done(new Error(errMsg.missingOutputArgument));
+            return;
+        }
+
+        self.template = (options &amp;&amp; options.template) || common.DEFAULT_TEMPLATE_NAME;
+        self.templateSrc = pathHelper.join(self.rootdir, common.TEMPLATES_PATH, self.template);
+
+        common.getTemplatePath(self.template, function (err, src) {
+            if (err) {
+                return self.done(err);
+            }
+            self.templateSrc = src;
+            return self.sequence.resume();
+        });
+    });
 };
 
 <span id='ADC-Generator-method-done'>/**
@@ -249,6 +254,7 @@ Generator.prototype.done = function done(err) {
         }
     });
 };
+
 
 <span id='ADC-Generator-method-verifyOutputDirExist'>/**
 </span> * Verify that the output directory
@@ -317,7 +323,7 @@ Generator.prototype.updateFiles = function updateFiles() {
             result = result.replace(/\{\{ADCAuthor.Name\}\}/gi, self.adcAuthor.name);
             result = result.replace(/\{\{ADCAuthor.Email\}\}/gi, self.adcAuthor.email);
             result = result.replace(/\{\{ADCAuthor.Company\}\}/gi, self.adcAuthor.company);
-            result = result.replace(/\{\{ADCAuthor.WebSite\}\}/gi, self.adcAuthor.webSite);
+            result = result.replace(/\{\{ADCAuthor.website\}\}/gi, self.adcAuthor.website);
             authorFullName = self.adcAuthor.name || &#39;&#39;;
             if (self.adcAuthor.email) {
                 authorFullName += &#39; &lt;&#39; + self.adcAuthor.email + &#39;&gt;&#39;;
