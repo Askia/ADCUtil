@@ -33,7 +33,8 @@ describe('ADCConfigurator', function () {
 
         // Court-circuit the access of the filesystem
         spies.fs = {
-            readFile    : spyOn(fs, 'readFile')
+            readFile    : spyOn(fs, 'readFile'),
+            writeFile   : spyOn(fs, 'writeFile')
         };
 
     });
@@ -2946,6 +2947,170 @@ describe('ADCConfigurator', function () {
                         done();
                     });
                 });
+            });
+        });
+    });
+
+    describe('#save', function () {
+        beforeEach(function () {
+            spies.dirExists.andCallFake(function (p, cb) {
+                cb(null, true);
+            });
+            spies.fs.readFile.andCallFake(function (p, cb) {
+                cb(null, '<control><info><name>the-name</name><guid>the-guid</guid>' +
+                    '<version>the-version</version><date>the-date</date><description><![CDATA[the-description]]></description>' +
+                    '<company>the-company</company><author>the-author</author><site>the-site</site>' +
+                    '<helpURL>the-helpURL</helpURL>' +
+                    '<categories><category>cat-1</category><category>cat-2</category></categories>' +
+                    '<style width="200" height="400" />' +
+                    '<constraints><constraint on="questions" single="true" multiple="true" open="false" />' +
+                    '<constraint on="controls" label="true" responseblock="true" />' +
+                    '<constraint on="responses" min="2" max="*" />' +
+                    '</constraints>' +
+                    '</info>' +
+                    '<outputs defaultOutput="main">' +
+                    '<output id="main">' +
+                    '<description><![CDATA[Main output]]></description>' +
+                    '<content fileName="main.css" type="css" mode="static" position="head" />' +
+                    '<content fileName="main.html" type="html" mode="dynamic" position="placeholder" />' +
+                    '<content fileName="main.js" type="javascript" mode="static" position="foot" />' +
+                    '</output>' +
+                    '<output id="second">' +
+                    '<description><![CDATA[Second output]]></description>' +
+                    '<condition><![CDATA[Browser.Support("javascript")]]></condition>' +
+                    '<content fileName="second.css" type="css" mode="static" position="head" />' +
+                    '<content fileName="second.html" type="html" mode="dynamic" position="placeholder" />' +
+                    '<content fileName="second.js" type="javascript" mode="static" position="foot" />' +
+                    '</output>' +
+                    '<output id="third" defaultGeneration="false" maxIterations="12">' +
+                    '<description><![CDATA[Third output]]></description>' +
+                    '<content fileName="third.css" type="css" mode="static" position="head" >' +
+                    ' <attribute name="rel">' +
+                    '<value>alternate</value>' +
+                    '</attribute>' +
+                    '<attribute name="media">' +
+                    '<value>print</value>' +
+                    '</attribute>' +
+                    '</content>' +
+                    '<content fileName="HTML5Shim.js" type="javascript" mode="static" position="head">' +
+                    '<yield>' +
+                    '<![CDATA[' +
+                    '<!--[if lte IE 9]>' +
+                    '<script type="text/javascript"  src="{%= CurrentADC.URLTo("static/HTML5Shim.js") %}" ></script>' +
+                    '<![endif]-->' +
+                    ']]>' +
+                    '</yield>' +
+                    '</content>'+
+                    '</output>' +
+                    '</outputs>' +
+                    '<properties>' +
+                    '<category id="general" name="General">' +
+                    '<property xsi:type="askiaProperty" id="askia-theme">' +
+                    '<options>' +
+                    '<option value="red-theme" text="Red" />' +
+                    '<option value="blue-theme" text="Blue" />' +
+                    '</options>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="renderingType" name="Rendering type" type="string">' +
+                    '<description>Type of rendering</description>' +
+                    '<value>classic</value>' +
+                    '<options>' +
+                    '<option value="classic" text="Classic"/>' +
+                    '<option value="image" text="Image"/>' +
+                    '</options>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="other" name="Open-ended question for semi-open" type="question" open="true" numeric="true">' +
+                    '<description>Additional open-ended question that could be use to emulate semi-open</description>' +
+                    '</property>' +
+                    '</category>' +
+                    '<category id="images" name="Rendering type images">' +
+                    '<property xsi:type="standardProperty" id="singleImage" name="Image for single question" type="file" fileExtension=".png, .gif, .jpg">' +
+                    '<description>Image of single question when the rendering type is image</description>' +
+                    '<value>Single.png</value>' +
+                    '<value theme="red-theme">SingleRed.png</value>' +
+                    '<value theme="blue-theme">SingleBlue.png</value>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="multipleImage" name="Image for multiple question" type="file" fileExtension=".png, .gif, .jpg">' +
+                    '<description>Image of multiple question when the rendering type is image</description>' +
+                    '<value>Multiple.png</value>' +
+                    '<value theme="red-theme">MultipleRed.png</value>' +
+                    '<value theme="blue-theme">MultipleBlue.png</value>' +
+                    '</property>' +
+                    '</category>' +
+                    '<category id="fake" name="Fake for test">' +
+                    '<property xsi:type="standardProperty" id="testNumber" name="TEST" type="number" min="12" max="100.5" decimal="3" mode="dynamic" visible="false" require="true">' +
+                    '<description>Test number properties</description>' +
+                    '<value>13</value>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="testColor" name="TEST" type="color" colorFormat="rgb">' +
+                    '<description>Test color properties</description>' +
+                    '<value>255,255,255</value>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="testQuestion" name="TEST" type="question" chapter="false" single="true" multiple="true" numeric="false" open="false" date="false">' +
+                    '<description>Test question properties</description>' +
+                    '<value></value>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="testFile" name="TEST" type="file" fileExtension=".test, .test2">' +
+                    '<description>Test file properties</description>' +
+                    '<value>file.test</value>' +
+                    '</property>' +
+                    '<property xsi:type="standardProperty" id="testString" name="TEST" type="string" pattern=".+@.+">' +
+                    '<description>Test string properties</description>' +
+                    '<value>test@test.com</value>' +
+                    '</property>' +
+                    '</category>' +
+                    '</properties>' +
+                    '</control>');
+            });
+        });
+
+        it("should transform the current configurator to XML and write it into the config file", function () {
+            runSync(function (done) {
+                var configurator = new ADCConfigurator("an/valid/path");
+                spyOn(configurator, 'toXml').andReturn('<thexml />');
+                spies.fs.writeFile.andCallFake(function (filePath, content, options) {
+                    expect(filePath).toBe(path.join('an/valid/path', common.CONFIG_FILE_NAME));
+                    expect(content).toBe('<thexml />');
+                    expect(options).toEqual({encoding : 'utf8'});
+                    done();
+                });
+                configurator.load(function () {
+                    configurator.save();
+                });
+            });
+
+        });
+
+        it("should reload the configurator when it was successfully saved", function () {
+            var configurator = new ADCConfigurator("an/valid/path");
+            spyOn(configurator, 'toXml').andReturn('<thexml />');
+            spies.fs.writeFile.andCallFake(function (filePath, content, options, cb) {
+                cb(null);
+            });
+            configurator.load(function () {
+                var spyLoad =  spyOn(configurator, 'load');
+                function theCallback() {}
+                configurator.save(theCallback);
+                expect(spyLoad).toHaveBeenCalledWith(theCallback);
+            });
+        });
+
+
+        it("should not reload the configurator when an error occurred while writing the the file", function () {
+            var configurator = new ADCConfigurator("an/valid/path");
+            var theError = new Error('An error');
+            var resultError;
+            spyOn(configurator, 'toXml').andReturn('<thexml />');
+            spies.fs.writeFile.andCallFake(function (filePath, content, options, cb) {
+                cb(theError);
+            });
+            configurator.load(function () {
+                var spyLoad =  spyOn(configurator, 'load');
+                configurator.save(function (err) {
+                    resultError  = err;
+                });
+                expect(spyLoad).not.toHaveBeenCalled();
+                expect(resultError).toBe(theError);
             });
         });
     });

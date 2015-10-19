@@ -1,6 +1,6 @@
 {
   "name": "adcutil",
-  "version": "1.1.0-beta.29",
+  "version": "1.1.0-beta.30",
   "description": "Utilities tools for Askia Design Control",
   "main": "./app/ADCUtilAPI.js",
   "dependencies": {

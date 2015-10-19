@@ -94,7 +94,7 @@ Configurator.prototype.load = function load(callback) {
             return;
         }
 
-        var filePath = path.join(self.path, 'config.xml');
+        var filePath = path.join(self.path, common.CONFIG_FILE_NAME);
 
         fs.readFile(filePath, function (err, data) {
             if (err) {
@@ -348,6 +348,26 @@ Configurator.prototype.fromXml = function fromXml(xml) {
     this.info = new ADCInfo(this);
     this.outputs = new ADCOutputs(this);
     this.properties = new ADCProperties(this);
+};
+
+/**
+ * Save the current configuration
+ *
+ * @param {Function} [callback]
+ * @param {Error} callback.err
+ */
+Configurator.prototype.save = function save(callback) {
+    var filePath = path.join(this.path, common.CONFIG_FILE_NAME);
+    var self = this;
+    fs.writeFile(filePath, this.toXml(), {encoding : 'utf8'}, function (err) {
+        if (!err) {
+            self.load(callback);
+        } else {
+            if (typeof callback === 'function') {
+                callback(err);
+            }
+        }
+    });
 };
 
 /**
