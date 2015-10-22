@@ -488,7 +488,7 @@ Sequence.prototype.nextIndex = function nextIndex() {
             return i;
         }
     }
-    return -1
+    return -1;
 };
 
 /**

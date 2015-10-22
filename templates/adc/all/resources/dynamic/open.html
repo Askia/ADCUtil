@@ -7,7 +7,7 @@ Dim attrList    = On(datalist.Count > 0, "list=\"" + inputName + "\"", "")
 Dim i
 
 Dim inputType  = CurrentADC.PropValue("opensubtype")
-Dim multiline  = (CurrentADC.PropValue("multiline") = "true") ' Convert to boolean
+Dim multiline  = (CurrentADC.PropValue("multiline") = "1") ' Convert to boolean
 
 Dim maxValue = CurrentQuestion.MaxValue
 Dim attrMax  = On(maxValue <> DK, "maxLength=\"" + maxValue + "\"", "")

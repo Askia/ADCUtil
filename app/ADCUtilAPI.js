@@ -333,4 +333,5 @@ ADC.preferences = preferences;
 
 // Make it public
 exports.ADC = ADC;
+exports.Configurator = Configurator;
 
