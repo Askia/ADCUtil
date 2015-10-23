@@ -582,6 +582,8 @@ Validator.prototype.validatePathArg = function validatePathArg() {
         var er;
         if (!exists) {
             er = newError(errMsg.noSuchFileOrDirectory, pathHelper.normalize(self.adcDirectoryPath));
+        } else {
+            self.writeSuccess(successMsg.pathValidate);
         }
         self.resume(er);
     });
@@ -766,6 +768,9 @@ Validator.prototype.initConfigXMLDoc = function initConfigXMLDoc() {
         data = data.replace(/^\uFEFF/, '');
         xml2js.parseString(data, function parseXML(err, result) {
             self.configXmlDoc = result;
+            if (!err) {
+                self.writeSuccess(successMsg.xmlInitialize);
+            }
             self.resume(err);
         });
     });
@@ -790,6 +795,7 @@ Validator.prototype.validateADCInfo = function validateADCInfo() {
     }
 
     this.adcName = nameEl;
+    this.writeSuccess(successMsg.xmlInfoValidate);
     this.resume(null);
 };
 
@@ -854,6 +860,7 @@ Validator.prototype.validateADCInfoConstraints = function validateADCInfoConstra
         return;
     }
 
+    this.writeSuccess(successMsg.xmlInfoConstraintsValidate);
     this.resume(null);
 };
 
@@ -1091,7 +1098,7 @@ Validator.prototype.validateADCProperties = function validateADCProperties() {
         this.report.warnings++;
         this.writeWarning(warnMsg.noProperties);
     }
-
+    this.writeSuccess(successMsg.xmlPropertiesValidate);
     this.resume(null);
 };
 

@@ -127,10 +127,15 @@ exports.messages = {
     },
     success : {
         // Validator
-        directoryStructureValidate : "ADC directory structure validated",
-        fileExtensionValidate      : "File extension validated",
+        pathValidate               : "ADC path validation done",
+        directoryStructureValidate : "ADC directory structure validation done",
+        fileExtensionValidate      : "File extension validation done",
         xsdValidate                : "XSD validation done",
-        xmlOutputsValidate         : "XMLNode `outputs` section validated",
+        xmlInitialize              : "Config.xml parsing done",
+        xmlInfoValidate            : "Config#info validation done",
+        xmlInfoConstraintsValidate : "Config#info#constraints validation done",
+        xmlOutputsValidate         : "Config#outputs validation done",
+        xmlPropertiesValidate      : "Config#properties validation done",
         adcUnitSucceed             : "ADC Unit tests succeeded",
 
         // Generator
