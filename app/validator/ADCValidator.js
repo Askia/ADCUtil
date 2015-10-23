@@ -396,17 +396,17 @@ Validator.prototype.validate = function validate(options, callback) {
         }
 
         // --no-autoTest
-        if (!options.autoTest) {
+        if (options.autoTest === false) { // Check bool value not falsy
             this.removeOnSequence(['runAutoTests']);
         }
 
         // --no-test
-        if (!options.test) {
+        if (options.test === false) { // Check bool value not falsy
             this.removeOnSequence(['runADCUnitTests']);
         }
 
         // --no-xml
-        if (!options.xml) {
+        if (options.xml === false) { // Check bool value not falsy
             this.removeOnSequence([
                 'validateXMLAgainstXSD',
                 'initConfigXMLDoc',
