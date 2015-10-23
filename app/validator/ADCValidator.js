@@ -457,7 +457,14 @@ Validator.prototype.done  = function done(err) {
 
     // Write the summary
     this.writeMessage(msg.validationFinishedIn, executionTime);
-    message = util.format(msg.validationReport, report.runs, report.total, report.success, report.warnings, report.errors);
+    message = util.format(msg.validationReport,
+        report.runs,
+        report.total,
+        report.success,
+        report.warnings,
+        report.errors,
+        report.total - report.runs);
+
     if (report.errors) {
         this.writeError(message);
     } else if (report.warnings) {

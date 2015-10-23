@@ -145,7 +145,7 @@ exports.messages = {
         runningADCUnit   : 'Running ADC Unit tests',
         runningAutoUnit  : 'Running the auto-generated ADC Unit tests',
         validationFinishedIn       : "\r\nValidations finished in %d milliseconds",
-        validationReport : "\r\n%d/%d validations runs, %d success, %d warnings, %d failures",
+        validationReport : "\r\n%d/%d validations runs, %d success, %d warnings, %d failures, %d skipped",
 
         // Preferences
         noPreferences  : 'No preferences defined'
