@@ -330,6 +330,12 @@ function Validator(adcDirPath) {
      * Config xml document in json format
      */
     this.configXmlDoc  = null;
+
+    /**
+     * Logger to override with an object
+     * @type {{writeMessage : function, writeSuccess : function, writeWarning: function, writeError : function}}
+     */
+    this.logger = null;
 }
 
 /**
@@ -348,6 +354,11 @@ Validator.prototype.constructor = Validator;
  * @param {Boolean} [options.autoTest=true] Run auto unit tests
  * @param {Boolean} [options.xml=true] Validate the config.xml file
  * @param {InteractiveADXShell} [options.adxShell] Interactive ADXShell process
+ * @param {Object} [options.logger] Logger
+ * @param {Function} [options.writeMessage] Function where regular messages will be print
+ * @param {Function} [options.writeSuccess] Function where success messages will be print
+ * @param {Function} [options.writeWarning] Function where warning messages will be print
+ * @param {Function} [options.writeError] Function where error messages will be print
  * @param {Function} [callback] Callback function
  * @param {Error} [callback.err] Error
  * @param {Object} [callback.report] Validation report
@@ -378,6 +389,11 @@ Validator.prototype.validate = function validate(options, callback) {
 
     // Validate according to the options
     if (options) {
+
+        // Set the logger
+        if (options.logger) {
+            this.logger = options.logger;
+        }
 
         // --no-autoTest
         if (!options.autoTest) {
@@ -490,35 +506,51 @@ Validator.prototype.resume = function resume(err) {
 };
 
 /**
- * Write an error output in the console
+ * Write an error output in the console or in the logger
  * @param {String} text Text to write in the console
  */
 Validator.prototype.writeError = function writeError(text) {
-    common.writeError.apply(common, arguments);
+    if (this.logger && typeof this.logger.writeError === 'function') {
+        this.logger.writeError.apply(this.logger, arguments);
+    } else {
+        common.writeError.apply(common, arguments);
+    }
 };
 
 /**
- * Write a warning output in the console
+ * Write a warning output in the console or in the logger
  * @param {String} text Text to write in the console
  */
 Validator.prototype.writeWarning = function writeWarning(text) {
-    common.writeWarning.apply(common, arguments);
+    if (this.logger && typeof this.logger.writeWarning === 'function') {
+        this.logger.writeWarning.apply(this.logger, arguments);
+    } else {
+        common.writeWarning.apply(common, arguments);
+    }
 };
 
 /**
- * Write a success output in the console
+ * Write a success output in the console or in the logger
  * @param {String} text Text to write in the console
  */
 Validator.prototype.writeSuccess = function writeSuccess(text) {
-    common.writeSuccess.apply(common, arguments);
+    if (this.logger && typeof this.logger.writeSuccess === 'function') {
+        this.logger.writeSuccess.apply(this.logger, arguments);
+    } else {
+        common.writeSuccess.apply(common, arguments);
+    }
 };
 
 /**
- * Write an arbitrary message in the console without specific prefix
+ * Write an arbitrary message in the console  or in the logger without specific prefix or in the  logger
  * @param {String} text Text to write in the console
  */
 Validator.prototype.writeMessage = function writeMessage(text) {
-    common.writeMessage.apply(common, arguments);
+    if (this.logger && typeof this.logger.writeMessage === 'function') {
+        this.logger.writeMessage.apply(this.logger, arguments);
+    } else {
+        common.writeMessage.apply(common, arguments);
+    }
 };
 
 

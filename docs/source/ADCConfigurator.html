@@ -111,7 +111,7 @@ Configurator.prototype.load = function load(callback) {
             return;
         }
 
-        var filePath = path.join(self.path, &#39;config.xml&#39;);
+        var filePath = path.join(self.path, common.CONFIG_FILE_NAME);
 
         fs.readFile(filePath, function (err, data) {
             if (err) {
@@ -365,6 +365,26 @@ Configurator.prototype.fromXml = function fromXml(xml) {
     this.info = new ADCInfo(this);
     this.outputs = new ADCOutputs(this);
     this.properties = new ADCProperties(this);
+};
+
+<span id='ADC-Configurator-method-save'>/**
+</span> * Save the current configuration
+ *
+ * @param {Function} [callback]
+ * @param {Error} callback.err
+ */
+Configurator.prototype.save = function save(callback) {
+    var filePath = path.join(this.path, common.CONFIG_FILE_NAME);
+    var self = this;
+    fs.writeFile(filePath, this.toXml(), {encoding : &#39;utf8&#39;}, function (err) {
+        if (!err) {
+            self.load(callback);
+        } else {
+            if (typeof callback === &#39;function&#39;) {
+                callback(err);
+            }
+        }
+    });
 };
 
 <span id='ADC-Configurator-Info'>/**

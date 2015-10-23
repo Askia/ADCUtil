@@ -47,10 +47,10 @@ describe('ADCValidator', function () {
         msg         = common.messages.message;
 
         // Court-circuit the validation outputs
-        spies.writeError   = spyOn(common, 'writeError');
-        spies.writeWarning = spyOn(common, 'writeWarning');
-        spies.writeSuccess = spyOn(common, 'writeSuccess');
-        spies.writeMessage = spyOn(common, 'writeMessage');
+        spyOn(common, 'writeError');
+        spyOn(common, 'writeWarning');
+        spyOn(common, 'writeSuccess');
+        spyOn(common, 'writeMessage');
 
         // Court-circuit the access of the filesystem
         spies.fs = {
@@ -101,6 +101,13 @@ describe('ADCValidator', function () {
     }
 
     describe('#validate', function () {
+
+        beforeEach(function () {
+            spyOn(Validator.prototype, 'writeError');
+            spyOn(Validator.prototype, 'writeWarning');
+            spyOn(Validator.prototype, 'writeSuccess');
+            spyOn(Validator.prototype, 'writeMessage');
+        });
 
         it("should call each function in the ADCValidator.validators.sequence", function () {
             var seqLen, callCount = 0;
@@ -165,7 +172,7 @@ describe('ADCValidator', function () {
 
             adcValidator.validate(null, 'adc/path/dir');
 
-            expect(common.writeError).toHaveBeenCalledWith("An error occurred");
+            expect(Validator.prototype.writeError).toHaveBeenCalledWith("An error occurred");
         });
 
         it("should run the unit tests when called with the `program#test=true`", function () {
@@ -278,7 +285,7 @@ describe('ADCValidator', function () {
                 this.validators.sequence = [];
             };
             adcValidator.validate(null, '/adc/path/dir');
-            expect(common.writeMessage).toHaveBeenCalledWith(msg.validationFinishedIn, 0);
+            expect(Validator.prototype.writeMessage).toHaveBeenCalledWith(msg.validationFinishedIn, 0);
         });
 
         it("should display a report in red with the number of success, warnings and failures when at least one error", function () {
@@ -291,7 +298,7 @@ describe('ADCValidator', function () {
             };
 
             adcValidator.validate(null, '/adc/path/dir');
-            expect(common.writeMessage).toHaveBeenCalledWith(clc.red.bold(format(msg.validationReport,6, 0, 1, 2, 3)));
+            expect(Validator.prototype.writeMessage).toHaveBeenCalledWith(clc.red.bold(format(msg.validationReport,6, 0, 1, 2, 3)));
         });
 
         it("should display a report in yellow with the number of success, warnings and failures when at least one warning", function () {
@@ -304,7 +311,7 @@ describe('ADCValidator', function () {
             };
 
             adcValidator.validate(null, '/adc/path/dir');
-            expect(common.writeMessage).toHaveBeenCalledWith(clc.yellowBright(format(msg.validationReport, 6, 0, 1, 2, 0)));
+            expect(Validator.prototype.writeMessage).toHaveBeenCalledWith(clc.yellowBright(format(msg.validationReport, 6, 0, 1, 2, 0)));
         });
 
         it("should display a report in green with the number of success, warnings and failures when no warning and error", function () {
@@ -317,7 +324,22 @@ describe('ADCValidator', function () {
             };
 
             adcValidator.validate(null, '/adc/path/dir');
-            expect(common.writeMessage).toHaveBeenCalledWith(clc.greenBright(format(msg.validationReport,6, 0, 1, 0, 0)));
+            expect(Validator.prototype.writeMessage).toHaveBeenCalledWith(clc.greenBright(format(msg.validationReport,6, 0, 1, 0, 0)));
+        });
+
+        it("should set the #logger when it's defined in the options arg", function () {
+            var instance;
+            spies.validateHook = function () {
+                this.validators.sequence = [];
+                instance = this;
+            };
+            var logger = {
+                key : "val"
+            };
+            adcValidator.validate({
+                logger : logger
+            }, '/adc/path/dir');
+            expect(instance.logger).toBe(logger);
         });
     });
 
@@ -325,6 +347,10 @@ describe('ADCValidator', function () {
         beforeEach(function () {
             // Modify the sequence of the validation to only call the validatePathArg method
             spies.sequence = ['validatePathArg'];
+            spyOn(Validator.prototype, 'writeError');
+            spyOn(Validator.prototype, 'writeWarning');
+            spyOn(Validator.prototype, 'writeSuccess');
+            spyOn(Validator.prototype, 'writeMessage');
         });
 
         it("should output an error when the path specified doesn't exist", function () {
@@ -333,7 +359,7 @@ describe('ADCValidator', function () {
             });
 
             adcValidator.validate(null, '/adc/path/dir');
-            expect(common.writeError).toHaveBeenCalledWith(format(errMsg.noSuchFileOrDirectory, "\\adc\\path\\dir"));
+            expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.noSuchFileOrDirectory, "\\adc\\path\\dir"));
         });
 
         it("should not output an error when the path specified exist", function () {
@@ -343,7 +369,7 @@ describe('ADCValidator', function () {
 
             adcValidator.validate(null, '/adc/path/dir');
 
-            expect(common.writeError).not.toHaveBeenCalled();
+            expect(Validator.prototype.writeError).not.toHaveBeenCalled();
         });
 
         it("should use the current directory when the path is not specified", function () {
@@ -362,6 +388,10 @@ describe('ADCValidator', function () {
         beforeEach(function () {
             // Modify the sequence of the validation to only call the validateADCDirectoryStructure method
             spies.sequence = ['validateADCDirectoryStructure'];
+            spyOn(Validator.prototype, 'writeError');
+            spyOn(Validator.prototype, 'writeWarning');
+            spyOn(Validator.prototype, 'writeSuccess');
+            spyOn(Validator.prototype, 'writeMessage');
         });
 
         it("should output an error when the config.xml file doesn't exist", function () {
@@ -371,7 +401,7 @@ describe('ADCValidator', function () {
 
             adcValidator.validate(null, '/adc/path/dir');
 
-            expect(common.writeError).toHaveBeenCalledWith(errMsg.noConfigFile);
+            expect(Validator.prototype.writeError).toHaveBeenCalledWith(errMsg.noConfigFile);
         });
 
         it("should not output an error when the config.xml file exist", function () {
@@ -381,7 +411,7 @@ describe('ADCValidator', function () {
 
             adcValidator.validate(null, '/adc/path/dir');
 
-            expect(common.writeError).not.toHaveBeenCalled();
+            expect(Validator.prototype.writeError).not.toHaveBeenCalled();
         });
 
         it("should output a success message when the config.xml file exist", function () {
@@ -391,7 +421,7 @@ describe('ADCValidator', function () {
 
             adcValidator.validate(null, '/adc/path/dir');
 
-            expect(common.writeSuccess).toHaveBeenCalled();
+            expect(Validator.prototype.writeSuccess).toHaveBeenCalled();
         });
 
         it("should search the `resources` directory", function () {
@@ -517,6 +547,10 @@ describe('ADCValidator', function () {
         beforeEach(function () {
             // Modify the sequence of the validation to only call the validateFileExtensions method
             spies.sequence =  ['validateFileExtensions'];
+            spyOn(Validator.prototype, 'writeError');
+            spyOn(Validator.prototype, 'writeWarning');
+            spyOn(Validator.prototype, 'writeSuccess');
+            spyOn(Validator.prototype, 'writeMessage');
         });
 
         var directories = ['dynamic', 'static', 'share'];
@@ -534,7 +568,7 @@ describe('ADCValidator', function () {
 
                     adcValidator.validate(null, '/adc/path/dir');
 
-                    expect(common.writeError).toHaveBeenCalledWith(format(errMsg.fileExtensionForbidden, ".exe"));
+                    expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.fileExtensionForbidden, ".exe"));
                 });
         }
 
@@ -550,7 +584,7 @@ describe('ADCValidator', function () {
 
                 adcValidator.validate(null, '/adc/path/dir');
 
-                expect(common.writeError).not.toHaveBeenCalled();
+                expect(Validator.prototype.writeError).not.toHaveBeenCalled();
             });
             it('should not output a warning when found in `' + directoryName + '` directory', function () {
                     (directoryName = directoryName === 'static' ? 'statics' : directoryName);
@@ -563,7 +597,7 @@ describe('ADCValidator', function () {
 
                     adcValidator.validate(null, '/adc/path/dir');
 
-                    expect(common.writeWarning).not.toHaveBeenCalled();
+                    expect(Validator.prototype.writeWarning).not.toHaveBeenCalled();
                 });
         }
 
@@ -579,7 +613,7 @@ describe('ADCValidator', function () {
 
                 adcValidator.validate(null, '/adc/path/dir');
 
-                expect(common.writeWarning).toHaveBeenCalledWith(warnMsg.untrustExtension, 'unknownextension.unknown');
+                expect(Validator.prototype.writeWarning).toHaveBeenCalledWith(warnMsg.untrustExtension, 'unknownextension.unknown');
             });
         }
 
@@ -609,11 +643,11 @@ describe('ADCValidator', function () {
             })
             it('should not output an error', function () {
                 adcValidator.validate(null, '/adc/path/dir');
-                expect(common.writeError).not.toHaveBeenCalled();
+                expect(Validator.prototype.writeError).not.toHaveBeenCalled();
             });
             it('should output a success message', function () {
                 adcValidator.validate(null, '/adc/path/dir');
-                expect(common.writeSuccess).toHaveBeenCalledWith(successMsg.fileExtensionValidate);
+                expect(Validator.prototype.writeSuccess).toHaveBeenCalledWith(successMsg.fileExtensionValidate);
             });
         });
 
@@ -634,7 +668,7 @@ describe('ADCValidator', function () {
 
                 adcValidator.validate(null, '/adc/path/dir');
 
-                expect(common.writeError).toHaveBeenCalled();
+                expect(Validator.prototype.writeError).toHaveBeenCalled();
             });
         });
 
@@ -644,6 +678,10 @@ describe('ADCValidator', function () {
         beforeEach(function () {
             // Modify the sequence of the validation to only call the validateXMLAgainstXSD method
             spies.sequence = ['validateXMLAgainstXSD'];
+            spyOn(Validator.prototype, 'writeError');
+            spyOn(Validator.prototype, 'writeWarning');
+            spyOn(Validator.prototype, 'writeSuccess');
+            spyOn(Validator.prototype, 'writeMessage');
         });
 
         it('should run the xmllint process with the config.xsd and the config.xml file', function () {
@@ -663,7 +701,7 @@ describe('ADCValidator', function () {
             });
             adcValidator.validate(null, '/adc/path/dir');
 
-            expect(common.writeError).toHaveBeenCalled();
+            expect(Validator.prototype.writeError).toHaveBeenCalled();
         });
 
         it("should not output an error when the xmllint process doesn't failed", function () {
@@ -673,7 +711,7 @@ describe('ADCValidator', function () {
             });
             adcValidator.validate(null, '/adc/path/dir');
 
-            expect(common.writeError).not.toHaveBeenCalled();
+            expect(Validator.prototype.writeError).not.toHaveBeenCalled();
         });
 
         it("should output a success when the xmllint process doesn't failed", function () {
@@ -683,7 +721,7 @@ describe('ADCValidator', function () {
             });
             adcValidator.validate(null, '/adc/path/dir');
 
-            expect(common.writeSuccess).toHaveBeenCalledWith(successMsg.xsdValidate);
+            expect(Validator.prototype.writeSuccess).toHaveBeenCalledWith(successMsg.xsdValidate);
         });
     });
 
@@ -691,6 +729,10 @@ describe('ADCValidator', function () {
         beforeEach(function () {
             // Modify the sequence of the validation to only call the initConfigXMLDoc method
             spies.sequence = ['initConfigXMLDoc'];
+            spyOn(Validator.prototype, 'writeError');
+            spyOn(Validator.prototype, 'writeWarning');
+            spyOn(Validator.prototype, 'writeSuccess');
+            spyOn(Validator.prototype, 'writeMessage');
         });
 
         it("should output an error when the config file could not be read", function () {
@@ -700,7 +742,7 @@ describe('ADCValidator', function () {
 
             adcValidator.validate(null, '/adc/path/dir');
 
-            expect(common.writeError).toHaveBeenCalled();
+            expect(Validator.prototype.writeError).toHaveBeenCalled();
         });
 
         it("should not output an error when the config file could be read", function () {
@@ -710,7 +752,7 @@ describe('ADCValidator', function () {
 
             adcValidator.validate(null, '/adc/path/dir');
 
-            expect(common.writeError).not.toHaveBeenCalled();
+            expect(Validator.prototype.writeError).not.toHaveBeenCalled();
         });
 
         it("should correctly initialize the config.xml document", function () {
@@ -740,6 +782,10 @@ describe('ADCValidator', function () {
         beforeEach(function () {
             // Modify the sequence of the validation to only call the validateADCInfo method
             spies.sequence = ['validateADCInfo'];
+            spyOn(Validator.prototype, 'writeError');
+            spyOn(Validator.prototype, 'writeWarning');
+            spyOn(Validator.prototype, 'writeSuccess');
+            spyOn(Validator.prototype, 'writeMessage');
         });
 
         it("should output an error when the info doesn't exist", function () {
@@ -750,7 +796,7 @@ describe('ADCValidator', function () {
             };
             adcValidator.validate(null, '/adc/path/dir');
 
-            expect(common.writeError).toHaveBeenCalledWith(errMsg.missingInfoNode);
+            expect(Validator.prototype.writeError).toHaveBeenCalledWith(errMsg.missingInfoNode);
         });
 
         it("should output an error when the info/name doesn't exist", function () {
@@ -763,7 +809,7 @@ describe('ADCValidator', function () {
             };
             adcValidator.validate(null, '/adc/path/dir');
 
-            expect(common.writeError).toHaveBeenCalledWith(errMsg.missingOrEmptyNameNode);
+            expect(Validator.prototype.writeError).toHaveBeenCalledWith(errMsg.missingOrEmptyNameNode);
         });
 
         it("should output an error when the info/name is empty", function () {
@@ -780,7 +826,7 @@ describe('ADCValidator', function () {
             };
             adcValidator.validate(null, '/adc/path/dir');
 
-            expect(common.writeError).toHaveBeenCalledWith(errMsg.missingOrEmptyNameNode);
+            expect(Validator.prototype.writeError).toHaveBeenCalledWith(errMsg.missingOrEmptyNameNode);
         });
 
         it("should not output an error when the info/name is valid", function () {
@@ -800,7 +846,7 @@ describe('ADCValidator', function () {
 
             adcValidator.validate(null, '/adc/path/dir');
 
-            expect(common.writeError).not.toHaveBeenCalled();
+            expect(Validator.prototype.writeError).not.toHaveBeenCalled();
         });
 
         it("should initialize the adcName property with the name of the ADC", function () {
@@ -829,6 +875,10 @@ describe('ADCValidator', function () {
         beforeEach(function () {
            // Modify the sequence of the validation to only call the validateADCInfoConstraints method
            spies.sequence = ['validateADCInfoConstraints'];
+            spyOn(Validator.prototype, 'writeError');
+            spyOn(Validator.prototype, 'writeWarning');
+            spyOn(Validator.prototype, 'writeSuccess');
+            spyOn(Validator.prototype, 'writeMessage');
         });
 
         var elements = ['questions', 'responses', 'controls'],
@@ -931,7 +981,7 @@ describe('ADCValidator', function () {
 
                 adcValidator.validate(null, '/adc/path/dir');
 
-                expect(common.writeError).toHaveBeenCalledWith(format(errMsg.duplicateConstraints, element));
+                expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.duplicateConstraints, element));
             });
         }
 
@@ -964,7 +1014,7 @@ describe('ADCValidator', function () {
                     this.configXmlDoc.control.info[0].constraints[0].constraint[0].$[fakeAttr[oppositeElement]] = 1;
                 };
                 adcValidator.validate(null, '/adc/path/dir');
-                expect(common.writeError).toHaveBeenCalledWith(format(errMsg.requireConstraintOn, element));
+                expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.requireConstraintOn, element));
             });
         }
         ['questions', 'controls'].forEach(testRequireConstraint);
@@ -999,7 +1049,7 @@ describe('ADCValidator', function () {
             };
 
             adcValidator.validate(null, '/adc/path/dir');
-            expect(common.writeError).not.toHaveBeenCalled();
+            expect(Validator.prototype.writeError).not.toHaveBeenCalled();
         });
 
         function testConstraintAttribute(element) {
@@ -1033,9 +1083,9 @@ describe('ADCValidator', function () {
                         };
                         adcValidator.validate(null, '/adc/path/dir');
                         if (attribute.on === element) {
-                            expect(common.writeError).not.toHaveBeenCalledWith(format(errMsg.invalidConstraintAttribute, element, attribute.name));
+                            expect(Validator.prototype.writeError).not.toHaveBeenCalledWith(format(errMsg.invalidConstraintAttribute, element, attribute.name));
                         } else {
-                            expect(common.writeError).toHaveBeenCalledWith(format(errMsg.invalidConstraintAttribute, element, attribute.name));
+                            expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.invalidConstraintAttribute, element, attribute.name));
                         }
                     });
                 });
@@ -1063,7 +1113,7 @@ describe('ADCValidator', function () {
                         };
                     };
                     adcValidator.validate(null, '/adc/path/dir');
-                    expect(common.writeError).toHaveBeenCalledWith(format(errMsg.noRuleOnConstraint, element));
+                    expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.noRuleOnConstraint, element));
                 });
 
                 if (element !== 'responses') {
@@ -1093,7 +1143,7 @@ describe('ADCValidator', function () {
                         };
 
                         adcValidator.validate(null, '/adc/path/dir');
-                        expect(common.writeError).toHaveBeenCalledWith(format(errMsg.noRuleOnConstraint, element));
+                        expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.noRuleOnConstraint, element));
                     });
                 }
 
@@ -1108,6 +1158,10 @@ describe('ADCValidator', function () {
         beforeEach(function () {
             // Modify the sequence of the validation to only call the validateADCOutputs method
             spies.sequence = ['validateADCOutputs'];
+            spyOn(Validator.prototype, 'writeError');
+            spyOn(Validator.prototype, 'writeWarning');
+            spyOn(Validator.prototype, 'writeSuccess');
+            spyOn(Validator.prototype, 'writeMessage');
         });
 
         it('should output a warning when duplicate conditions', function () {
@@ -1144,7 +1198,7 @@ describe('ADCValidator', function () {
 
             adcValidator.validate(null, '/adc/path/dir');
 
-            expect(common.writeWarning).toHaveBeenCalledWith(warnMsg.duplicateOutputCondition, "first", "second");
+            expect(Validator.prototype.writeWarning).toHaveBeenCalledWith(warnMsg.duplicateOutputCondition, "first", "second");
         });
 
         it('should not output an error when one condition is empty', function () {
@@ -1168,7 +1222,7 @@ describe('ADCValidator', function () {
             };
             adcValidator.validate(null, '/adc/path/dir');
 
-            expect(common.writeError).not.toHaveBeenCalled();
+            expect(Validator.prototype.writeError).not.toHaveBeenCalled();
         });
 
         it('should output an error when at least two conditions are empty', function () {
@@ -1201,7 +1255,7 @@ describe('ADCValidator', function () {
             };
             adcValidator.validate(null, '/adc/path/dir');
 
-            expect(common.writeError).toHaveBeenCalledWith(format(errMsg.tooManyEmptyCondition, "first, second"));
+            expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.tooManyEmptyCondition, "first, second"));
         });
 
         it('should output a warning when only one `output` node is use with no defaultGeneration and when it uses dynamic javascript', function (){
@@ -1241,7 +1295,7 @@ describe('ADCValidator', function () {
 
             adcValidator.validate(null, '/adc/path/dir');
 
-            expect(common.writeWarning).toHaveBeenCalledWith(warnMsg.noHTMLFallBack);
+            expect(Validator.prototype.writeWarning).toHaveBeenCalledWith(warnMsg.noHTMLFallBack);
         });
 
         it('should output a success when no error found', function () {
@@ -1265,7 +1319,7 @@ describe('ADCValidator', function () {
             };
 
             adcValidator.validate(null, '/adc/path/dir');
-            expect(common.writeSuccess).toHaveBeenCalledWith(successMsg.xmlOutputsValidate);
+            expect(Validator.prototype.writeSuccess).toHaveBeenCalledWith(successMsg.xmlOutputsValidate);
         });
 
         describe("#validateADCContents", function () {
@@ -1294,7 +1348,7 @@ describe('ADCValidator', function () {
                 };
 
                 adcValidator.validate(null, '/adc/path/dir');
-                expect(common.writeError).toHaveBeenCalledWith(errMsg.noResourcesDirectory);
+                expect(Validator.prototype.writeError).toHaveBeenCalledWith(errMsg.noResourcesDirectory);
             });
 
             describe('@defaultGeneration=false', function () {
@@ -1364,11 +1418,11 @@ describe('ADCValidator', function () {
                         delete this.configXmlDoc.control.outputs[0].output[0].content;
                     });
                     adcValidator.validate(null, '/adc/path/dir');
-                    expect(common.writeError).toHaveBeenCalledWith(format(errMsg.dynamicFileRequire, "empty"));
+                    expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.dynamicFileRequire, "empty"));
                 });
                 it("should output an error when there is no dynamic html or javascript content", function () {
                     adcValidator.validate(null, '/adc/path/dir');
-                    expect(common.writeError).toHaveBeenCalledWith(format(errMsg.dynamicFileRequire, "empty"));
+                    expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.dynamicFileRequire, "empty"));
                 });
                 it("should output an error when there is a dynamic html content but with position=none", function () {
                     extraHook(function () {
@@ -1376,21 +1430,21 @@ describe('ADCValidator', function () {
                         htmlContent.$.position = 'none';
                     });
                     adcValidator.validate(null, '/adc/path/dir');
-                    expect(common.writeError).toHaveBeenCalledWith(format(errMsg.dynamicFileRequire, "empty"));
+                    expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.dynamicFileRequire, "empty"));
                 });
                 it("should not output an error when there is a dynamic html content", function () {
                     extraHook(function () {
                         htmlContent.$.mode = 'dynamic';
                     });
                     adcValidator.validate(null, '/adc/path/dir');
-                    expect(common.writeError).not.toHaveBeenCalledWith(format(errMsg.dynamicFileRequire, "empty"));
+                    expect(Validator.prototype.writeError).not.toHaveBeenCalledWith(format(errMsg.dynamicFileRequire, "empty"));
                 });
                 it("should not output an error when there is a dynamic javascript content", function () {
                     extraHook(function () {
                         jsContent.$.mode = 'dynamic';
                     });
                     adcValidator.validate(null, '/adc/path/dir');
-                    expect(common.writeError).not.toHaveBeenCalledWith(format(errMsg.dynamicFileRequire, "empty"));
+                    expect(Validator.prototype.writeError).not.toHaveBeenCalledWith(format(errMsg.dynamicFileRequire, "empty"));
                 });
                 it("should  output an error when there is a dynamic javascript content but with position=none", function () {
                     extraHook(function () {
@@ -1398,7 +1452,7 @@ describe('ADCValidator', function () {
                         jsContent.$.position = 'none';
                     });
                     adcValidator.validate(null, '/adc/path/dir');
-                    expect(common.writeError).toHaveBeenCalledWith(format(errMsg.dynamicFileRequire, "empty"));
+                    expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.dynamicFileRequire, "empty"));
                 });
             });
 
@@ -1437,7 +1491,7 @@ describe('ADCValidator', function () {
 
                     adcValidator.validate(null, '/adc/path/dir');
 
-                    expect(common.writeWarning).toHaveBeenCalledWith(warnMsg.javascriptUseWithoutBrowserCheck, "empty");
+                    expect(Validator.prototype.writeWarning).toHaveBeenCalledWith(warnMsg.javascriptUseWithoutBrowserCheck, "empty");
                 });
 
                 it("should not output a warning when using a javascript content with a check of the browser.support(javascript) in the condition", function () {
@@ -1476,7 +1530,7 @@ describe('ADCValidator', function () {
                     };
                     adcValidator.validate(null, '/adc/path/dir');
 
-                    expect(common.writeWarning).not.toHaveBeenCalledWith(warnMsg.javascriptUseWithoutBrowserCheck, "empty");
+                    expect(Validator.prototype.writeWarning).not.toHaveBeenCalledWith(warnMsg.javascriptUseWithoutBrowserCheck, "empty");
                 });
 
                 it("should not output a warning when using a javascript content with no check of the browser.support(javascript) but with defaultGeneration=true", function () {
@@ -1513,7 +1567,7 @@ describe('ADCValidator', function () {
                     };
                     adcValidator.validate(null, '/adc/path/dir');
 
-                    expect(common.writeWarning).not.toHaveBeenCalledWith(warnMsg.javascriptUseWithoutBrowserCheck, "empty");
+                    expect(Validator.prototype.writeWarning).not.toHaveBeenCalledWith(warnMsg.javascriptUseWithoutBrowserCheck, "empty");
                 });
 
                 it("should output a warning when using a flash content with no check of the browser.support(flash) in the condition", function () {
@@ -1560,7 +1614,7 @@ describe('ADCValidator', function () {
 
                     adcValidator.validate(null, '/adc/path/dir');
 
-                    expect(common.writeWarning).toHaveBeenCalledWith(warnMsg.flashUseWithoutBrowserCheck, "empty");
+                    expect(Validator.prototype.writeWarning).toHaveBeenCalledWith(warnMsg.flashUseWithoutBrowserCheck, "empty");
                 });
 
                 it("should not output a warning when using a flash content with a check of the browser.support(flash) in the condition", function () {
@@ -1610,7 +1664,7 @@ describe('ADCValidator', function () {
 
                     adcValidator.validate(null, '/adc/path/dir');
 
-                    expect(common.writeWarning).not.toHaveBeenCalledWith(warnMsg.flashUseWithoutBrowserCheck, "empty");
+                    expect(Validator.prototype.writeWarning).not.toHaveBeenCalledWith(warnMsg.flashUseWithoutBrowserCheck, "empty");
                 });
 
                 it("should not output a warning when using a flash content with with no check of the browser.support(flash) but with defaultGeneration=true", function () {
@@ -1658,7 +1712,7 @@ describe('ADCValidator', function () {
 
                     adcValidator.validate(null, '/adc/path/dir');
 
-                    expect(common.writeWarning).not.toHaveBeenCalledWith(warnMsg.flashUseWithoutBrowserCheck, "empty");
+                    expect(Validator.prototype.writeWarning).not.toHaveBeenCalledWith(warnMsg.flashUseWithoutBrowserCheck, "empty");
                 });
 
             });
@@ -1710,7 +1764,7 @@ describe('ADCValidator', function () {
 
                     adcValidator.validate(null, '/adc/path/dir');
 
-                    expect(common.writeWarning).toHaveBeenCalledWith(warnMsg.attributeNodeAndYieldNode, "empty", 'test.js');
+                    expect(Validator.prototype.writeWarning).toHaveBeenCalledWith(warnMsg.attributeNodeAndYieldNode, "empty", 'test.js');
                 });
 
                 describe('binary content', function () {
@@ -1753,7 +1807,7 @@ describe('ADCValidator', function () {
 
                     it("should output an error when binary content doesn't have a yield or position=none", function () {
                         adcValidator.validate(null, '/adc/path/dir');
-                        expect(common.writeError).toHaveBeenCalledWith(format(errMsg.yieldRequireForBinary, "empty", 'test.js'));
+                        expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.yieldRequireForBinary, "empty", 'test.js'));
                     });
 
                     it("should not output an error when binary content have a yield", function () {
@@ -1761,7 +1815,7 @@ describe('ADCValidator', function () {
                             content.yield = ['test'];
                         });
                         adcValidator.validate(null, '/adc/path/dir');
-                        expect(common.writeError).not.toHaveBeenCalledWith(format(errMsg.yieldRequireForBinary, "empty", 'test.js'));
+                        expect(Validator.prototype.writeError).not.toHaveBeenCalledWith(format(errMsg.yieldRequireForBinary, "empty", 'test.js'));
                     });
 
                     it("should not output an error when binary content have a position=none", function () {
@@ -1769,7 +1823,7 @@ describe('ADCValidator', function () {
                             content.$.position = 'none';
                         });
                         adcValidator.validate(null, '/adc/path/dir');
-                        expect(common.writeError).not.toHaveBeenCalledWith(format(errMsg.yieldRequireForBinary, "empty", 'test.js'));
+                        expect(Validator.prototype.writeError).not.toHaveBeenCalledWith(format(errMsg.yieldRequireForBinary, "empty", 'test.js'));
                     });
                 });
 
@@ -1815,7 +1869,7 @@ describe('ADCValidator', function () {
                                 instance.dirResources[key].isExist = false;
                             });
                             adcValidator.validate(null, '/adc/path/dir');
-                            expect(common.writeError).toHaveBeenCalledWith(format(errMsg.cannotFindDirectory, mode));
+                            expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.cannotFindDirectory, mode));
                         });
 
                         it("should output an error when the file associated doesn't exist", function () {
@@ -1823,7 +1877,7 @@ describe('ADCValidator', function () {
                                 instance.dirResources[key].isExist = true;
                             });
                             adcValidator.validate(null, '/adc/path/dir');
-                            expect(common.writeError).toHaveBeenCalledWith(format(errMsg.cannotFindFileInDirectory, "empty", "test.html", mode));
+                            expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.cannotFindFileInDirectory, "empty", "test.html", mode));
                         });
 
                         function testDynamicBinary(type) {
@@ -1834,7 +1888,7 @@ describe('ADCValidator', function () {
                                     instance.dirResources[key]['test.html'] = 'test.html';
                                 });
                                 adcValidator.validate(null, '/adc/path/dir');
-                                expect(common.writeError).toHaveBeenCalledWith(format(errMsg.typeCouldNotBeDynamic, "empty", type , "test.html"));
+                                expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.typeCouldNotBeDynamic, "empty", type , "test.html"));
                             });
                         }
 
@@ -1846,7 +1900,7 @@ describe('ADCValidator', function () {
                                     instance.dirResources[key]['test.html'] = 'test.html';
                                 });
                                 adcValidator.validate(null, '/adc/path/dir');
-                                expect(common.writeError).not.toHaveBeenCalledWith(format(errMsg.typeCouldNotBeDynamic, "empty", type , "test.html"));
+                                expect(Validator.prototype.writeError).not.toHaveBeenCalledWith(format(errMsg.typeCouldNotBeDynamic, "empty", type , "test.html"));
                             });
                         }
 
@@ -1906,7 +1960,7 @@ describe('ADCValidator', function () {
 
                     it("should not output an error when there is no attributes node", function () {
                         adcValidator.validate(null, '/adc/path/dir');
-                        expect(common.writeError).not.toHaveBeenCalled();
+                        expect(Validator.prototype.writeError).not.toHaveBeenCalled();
                     });
 
                     it("should output an error when there is duplicate attribute node with the same name", function () {
@@ -1925,7 +1979,7 @@ describe('ADCValidator', function () {
                             ];
                         });
                         adcValidator.validate(null, '/adc/path/dir');
-                        expect(common.writeError).toHaveBeenCalledWith(format(errMsg.duplicateAttributeNode, 'empty', 'test', 'test.js'));
+                        expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.duplicateAttributeNode, 'empty', 'test', 'test.js'));
                     });
 
                     function testIgnoredFile(type) {
@@ -1937,7 +1991,7 @@ describe('ADCValidator', function () {
                                 ];
                             });
                             adcValidator.validate(null, 'adc/path/dir');
-                            expect(common.writeWarning).toHaveBeenCalledWith(warnMsg.attributeNodeWillBeIgnored, "empty", type, "test.js");
+                            expect(Validator.prototype.writeWarning).toHaveBeenCalledWith(warnMsg.attributeNodeWillBeIgnored, "empty", type, "test.js");
                         });
                     }
 
@@ -1952,7 +2006,7 @@ describe('ADCValidator', function () {
                                 ];
                             });
                             adcValidator.validate(null, 'adc/path/dir');
-                            expect(common.writeWarning).toHaveBeenCalledWith(warnMsg.attributeNodeAndDynamicContent, "empty", "test.js");
+                            expect(Validator.prototype.writeWarning).toHaveBeenCalledWith(warnMsg.attributeNodeAndDynamicContent, "empty", "test.js");
                         });
                     });
 
@@ -1973,7 +2027,7 @@ describe('ADCValidator', function () {
                             });
 
                            adcValidator.validate(null, 'adc/path/dir');
-                           expect(common.writeError).toHaveBeenCalledWith(format(errMsg.attributeNotOverridable, "empty", attrName, "test.js"));
+                           expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(errMsg.attributeNotOverridable, "empty", attrName, "test.js"));
                         });
                     }
 
@@ -2015,6 +2069,10 @@ describe('ADCValidator', function () {
         beforeEach(function () {
             // Modify the sequence of the validation to only call the validateADCProperties method
             spies.sequence = ['validateADCProperties'];
+            spyOn(Validator.prototype, 'writeError');
+            spyOn(Validator.prototype, 'writeWarning');
+            spyOn(Validator.prototype, 'writeSuccess');
+            spyOn(Validator.prototype, 'writeMessage');
         });
 
         it("should output a warning when no property", function () {
@@ -2031,7 +2089,7 @@ describe('ADCValidator', function () {
 
             adcValidator.validate(null, '/adc/path/dir');
 
-            expect(common.writeWarning).toHaveBeenCalledWith(warnMsg.noProperties);
+            expect(Validator.prototype.writeWarning).toHaveBeenCalledWith(warnMsg.noProperties);
         });
 
         it("should not output a warning when there is at least one property", function () {
@@ -2048,7 +2106,7 @@ describe('ADCValidator', function () {
             };
             adcValidator.validate(null, '/adc/path/dir');
 
-            expect(common.writeWarning).not.toHaveBeenCalledWith(warnMsg.noProperties);
+            expect(Validator.prototype.writeWarning).not.toHaveBeenCalledWith(warnMsg.noProperties);
         });
 
         it("should not output a warning when there is at least one property inside category", function () {
@@ -2069,7 +2127,7 @@ describe('ADCValidator', function () {
             };
             adcValidator.validate(null, '/adc/path/dir');
 
-            expect(common.writeWarning).not.toHaveBeenCalledWith(warnMsg.noProperties);
+            expect(Validator.prototype.writeWarning).not.toHaveBeenCalledWith(warnMsg.noProperties);
         });
 
 
@@ -2091,6 +2149,10 @@ describe('ADCValidator', function () {
 
             InteractiveADXShell  =  require('../../app/common/InteractiveADXShell.js').InteractiveADXShell;
             spyInteractiveExec = spyOn(InteractiveADXShell.prototype, 'exec');
+            spyOn(Validator.prototype, 'writeError');
+            spyOn(Validator.prototype, 'writeWarning');
+            spyOn(Validator.prototype, 'writeSuccess');
+            spyOn(Validator.prototype, 'writeMessage');
         });
 
 
@@ -2116,7 +2178,7 @@ describe('ADCValidator', function () {
             });
             adcValidator.validate(null, '/adc/path/dir');
 
-            expect(common.writeWarning).toHaveBeenCalledWith('\r\nFake validation error');
+            expect(Validator.prototype.writeWarning).toHaveBeenCalledWith('\r\nFake validation error');
         });
 
         it('should output the stdout of the ADXShell process', function () {
@@ -2128,7 +2190,7 @@ describe('ADCValidator', function () {
             });
             adcValidator.validate(null, '/adc/path/dir');
 
-            expect(common.writeMessage).toHaveBeenCalledWith('Fake stdout');
+            expect(Validator.prototype.writeMessage).toHaveBeenCalledWith('Fake stdout');
         });
 
         it("should output a success when the ADXShell process doesn't failed", function () {
@@ -2140,7 +2202,7 @@ describe('ADCValidator', function () {
             });
             adcValidator.validate(null, '/adc/path/dir');
 
-            expect(common.writeSuccess).toHaveBeenCalledWith(successMsg.adcUnitSucceed);
+            expect(Validator.prototype.writeSuccess).toHaveBeenCalledWith(successMsg.adcUnitSucceed);
         });
 
         it("should run the ADXShell process using the InteractiveADXShell when it's defined in the options", function () {
@@ -2172,6 +2234,11 @@ describe('ADCValidator', function () {
             childProc = require('child_process');
             spyOn(process, 'cwd').andReturn('');
             spyExec = spyOn(childProc, 'execFile');
+
+            spyOn(Validator.prototype, 'writeError');
+            spyOn(Validator.prototype, 'writeWarning');
+            spyOn(Validator.prototype, 'writeSuccess');
+            spyOn(Validator.prototype, 'writeMessage');
         });
 
         it('should verify that the `tests/units` directory exists', function () {
@@ -2194,7 +2261,7 @@ describe('ADCValidator', function () {
             });
 
             adcValidator.validate(null, '/adc/path/dir');
-            expect(common.writeWarning).not.toHaveBeenCalled();
+            expect(Validator.prototype.writeWarning).not.toHaveBeenCalled();
         });
 
         it('should run the ADXShell process with the path of the ADC directory in arguments', function () {
@@ -2219,7 +2286,7 @@ describe('ADCValidator', function () {
             });
             adcValidator.validate(null, '/adc/path/dir');
 
-            expect(common.writeWarning).toHaveBeenCalledWith('\r\nFake validation error');
+            expect(Validator.prototype.writeWarning).toHaveBeenCalledWith('\r\nFake validation error');
         });
 
         it('should output the stdout of the ADXShell process', function () {
@@ -2231,7 +2298,7 @@ describe('ADCValidator', function () {
             });
             adcValidator.validate(null, '/adc/path/dir');
 
-            expect(common.writeMessage).toHaveBeenCalledWith('Fake stdout');
+            expect(Validator.prototype.writeMessage).toHaveBeenCalledWith('Fake stdout');
         });
 
         it("should output a success when the ADXShell process doesn't failed", function () {
@@ -2243,9 +2310,49 @@ describe('ADCValidator', function () {
             });
             adcValidator.validate(null, '/adc/path/dir');
 
-            expect(common.writeSuccess).toHaveBeenCalledWith(successMsg.adcUnitSucceed);
+            expect(Validator.prototype.writeSuccess).toHaveBeenCalledWith(successMsg.adcUnitSucceed);
         });
     });
+
+    function testLogger(method) {
+        describe('#'  + method, function () {
+            beforeEach(function () {
+                spies.validateHook = function () {
+                    this.validators.sequence = [];
+                };
+            });
+            it('should call the `common.' + method + '` when no #logger is defined', function () {
+                var validatorInstance = new Validator('test');
+                validatorInstance[method]('a message', 'arg 1', 'arg 2');
+                expect(common[method]).toHaveBeenCalledWith('a message', 'arg 1', 'arg 2');
+            });
+            it('should call the `common.' + method + '` when the #logger is defined but without the ' + method + ' method.', function () {
+                var validatorInstance = new Validator('test');
+                validatorInstance.logger = {};
+                validatorInstance[method]('a message', 'arg 1', 'arg 2');
+                expect(common[method]).toHaveBeenCalledWith('a message', 'arg 1', 'arg 2');
+            });
+            it('should not call the `common.' + method + '` when the #logger is defined with the ' + method + ' method.', function () {
+                var validatorInstance = new Validator('test');
+                validatorInstance.logger = {};
+                validatorInstance.logger[method] = function () {};
+                validatorInstance[method]('a message', 'arg 1', 'arg 2');
+                expect(common[method]).not.toHaveBeenCalled();
+            });
+
+            it('should call the `logger.' + method + '` when it\'s defined', function () {
+                var validatorInstance = new Validator('test');
+                validatorInstance.logger = {};
+                validatorInstance.logger[method] = function () {};
+                var spy = spyOn(validatorInstance.logger, method);
+                validatorInstance[method]('a message', 'arg 1', 'arg 2');
+                expect(spy).toHaveBeenCalledWith('a message', 'arg 1', 'arg 2');
+            });
+
+        });
+    }
+
+    ['writeMessage', 'writeSuccess', 'writeWarning', 'writeError'].forEach(testLogger);
 
     describe("API `callback`", function () {
         it("should be called when defined without `options` arg", function () {

@@ -44,6 +44,8 @@ describe('ADCBuilder', function () {
         // Court-circuit the validation outputs
         spies.writeError   = spyOn(common, 'writeError');
         spies.writeSuccess = spyOn(common, 'writeSuccess');
+        spies.writeMessage = spyOn(common, 'writeMessage');
+        spies.writeWarning = spyOn(common, 'writeWarning');
         spies.dirExists    = spyOn(common, 'dirExists');
 
         // Court-circuit the creation of the zip object
@@ -98,8 +100,35 @@ describe('ADCBuilder', function () {
             spies.validateHook.andCallFake(function (options, callback) {
                 callback(new Error("Fake error"));
             });
+            var spy = spyOn(Builder.prototype, 'writeError');
             adcBuilder.build();
-            expect(common.writeError).toHaveBeenCalledWith(errMsg.validationFailed);
+            expect(spy).toHaveBeenCalledWith(errMsg.validationFailed);
+        });
+
+        it("should set the #logger when it's defined in the options arg", function () {
+            var builderInstance = new Builder('test');
+            var logger = {
+                key : "val"
+            };
+            builderInstance.build({
+                logger : logger
+            });
+            expect(builderInstance.logger).toBe(logger);
+        });
+
+        it("should pass the #logger to the validator when it's defined in the options arg", function () {
+            var builderInstance = new Builder('test');
+            var p;
+            spies.validateHook.andCallFake(function (options) {
+                p = options;
+            });
+            var logger = {
+                key : "val"
+            };
+            builderInstance.build({
+                logger : logger
+            });
+            expect(p.logger).toBe(logger);
         });
 
         describe("create `bin` directory", function () {
@@ -131,8 +160,9 @@ describe('ADCBuilder', function () {
                     callback(null, false);
                 });
                 spies.fs.mkdirSync.andReturn(new Error("Fake error"));
+                var spy = spyOn(Builder.prototype, 'writeError');
                 adcBuilder.build();
-                expect(common.writeError).toHaveBeenCalledWith("Fake error");
+                expect(spy).toHaveBeenCalledWith("Fake error");
             });
         });
 
@@ -378,8 +408,9 @@ describe('ADCBuilder', function () {
                     };
                     callback(null, this.report);
                 });
+                var spy = spyOn(Builder.prototype, 'writeSuccess');
                 adcBuilder.build(null, 'adc/path/dir');
-                expect(common.writeSuccess).toHaveBeenCalledWith(successMsg.buildSucceed, 'adc\\path\\dir\\bin\\myadc.adc');
+                expect(spy).toHaveBeenCalledWith(successMsg.buildSucceed, 'adc\\path\\dir\\bin\\myadc.adc');
             });
 
             it("should output a with warning when the build succeed with warning", function () {
@@ -391,8 +422,9 @@ describe('ADCBuilder', function () {
                     };
                     callback(null, this.report);
                 });
+                var spy = spyOn(Builder.prototype, 'writeSuccess');
                 adcBuilder.build(null, 'adc/path/dir');
-                expect(common.writeSuccess).toHaveBeenCalledWith(successMsg.buildSucceedWithWarning, 1, 'adc\\path\\dir\\bin\\myadc.adc');
+                expect(spy).toHaveBeenCalledWith(successMsg.buildSucceedWithWarning, 1, 'adc\\path\\dir\\bin\\myadc.adc');
             });
         });
 
@@ -506,5 +538,40 @@ describe('ADCBuilder', function () {
         });
 
     });
+
+    function testLogger(method) {
+        describe('#'  + method, function () {
+            it('should call the `common.' + method + '` when no #logger is defined', function () {
+                var builderInstance = new Builder('test');
+                builderInstance[method]('a message', 'arg 1', 'arg 2');
+                expect(common[method]).toHaveBeenCalledWith('a message', 'arg 1', 'arg 2');
+            });
+            it('should call the `common.' + method + '` when the #logger is defined but without the ' + method + ' method.', function () {
+                var builderInstance = new Builder('test');
+                builderInstance.logger = {};
+                builderInstance[method]('a message', 'arg 1', 'arg 2');
+                expect(common[method]).toHaveBeenCalledWith('a message', 'arg 1', 'arg 2');
+            });
+            it('should not call the `common.' + method + '` when the #logger is defined with the ' + method + ' method.', function () {
+                var builderInstance = new Builder('test');
+                builderInstance.logger = {};
+                builderInstance.logger[method] = function () {};
+                builderInstance[method]('a message', 'arg 1', 'arg 2');
+                expect(common[method]).not.toHaveBeenCalled();
+            });
+
+            it('should call the `logger.' + method + '` when it\'s defined', function () {
+                var builderInstance = new Builder('test');
+                builderInstance.logger = {};
+                builderInstance.logger[method] = function () {};
+                var spy = spyOn(builderInstance.logger, method);
+                builderInstance[method]('a message', 'arg 1', 'arg 2');
+                expect(spy).toHaveBeenCalledWith('a message', 'arg 1', 'arg 2');
+            });
+
+        });
+    }
+
+    ['writeMessage', 'writeSuccess', 'writeWarning', 'writeError'].forEach(testLogger);
 });
 
