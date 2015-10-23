@@ -746,7 +746,6 @@ Validator.prototype.validateXMLAgainstXSD = function validateXMLAgainstXSD() {
 
     exec(commandLine, function callback(err) {
         if (!err) {
-            self.report.success++;
             self.writeSuccess(successMsg.xsdValidate);
         }
         self.resume(err);
