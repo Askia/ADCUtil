@@ -288,7 +288,7 @@ describe('ADCValidator', function () {
             expect(Validator.prototype.writeMessage).toHaveBeenCalledWith(msg.validationFinishedIn, 0);
         });
 
-        it("should display a report in red with the number of success, warnings and failures when at least one error", function () {
+        it("should display a report using #writeError with the number of success, warnings and failures when at least one error", function () {
             spies.validateHook = function () {
                 this.validators.sequence = [];
                 this.report.runs      = 6;
@@ -298,10 +298,10 @@ describe('ADCValidator', function () {
             };
 
             adcValidator.validate(null, '/adc/path/dir');
-            expect(Validator.prototype.writeMessage).toHaveBeenCalledWith(clc.red.bold(format(msg.validationReport,6, 0, 1, 2, 3)));
+            expect(Validator.prototype.writeError).toHaveBeenCalledWith(format(msg.validationReport,6, 0, 1, 2, 3));
         });
 
-        it("should display a report in yellow with the number of success, warnings and failures when at least one warning", function () {
+        it("should display a report in #writeWarning with the number of success, warnings and failures when at least one warning", function () {
             spies.validateHook = function () {
                 this.validators.sequence = [];
                 this.report.runs      = 6;
@@ -311,10 +311,10 @@ describe('ADCValidator', function () {
             };
 
             adcValidator.validate(null, '/adc/path/dir');
-            expect(Validator.prototype.writeMessage).toHaveBeenCalledWith(clc.yellowBright(format(msg.validationReport, 6, 0, 1, 2, 0)));
+            expect(Validator.prototype.writeWarning).toHaveBeenCalledWith(format(msg.validationReport, 6, 0, 1, 2, 0));
         });
 
-        it("should display a report in green with the number of success, warnings and failures when no warning and error", function () {
+        it("should display a report in #writeSuccess with the number of success, warnings and failures when no warning and error", function () {
             spies.validateHook = function () {
                 this.validators.sequence = [];
                 this.report.runs      = 6;
@@ -324,7 +324,7 @@ describe('ADCValidator', function () {
             };
 
             adcValidator.validate(null, '/adc/path/dir');
-            expect(Validator.prototype.writeMessage).toHaveBeenCalledWith(clc.greenBright(format(msg.validationReport,6, 0, 1, 0, 0)));
+            expect(Validator.prototype.writeSuccess).toHaveBeenCalledWith(format(msg.validationReport,6, 0, 1, 0, 0));
         });
 
         it("should set the #logger when it's defined in the options arg", function () {

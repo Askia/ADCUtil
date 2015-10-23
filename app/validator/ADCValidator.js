@@ -449,8 +449,7 @@ Validator.prototype.done  = function done(err) {
     this.report.endTime = new Date().getTime();
     var executionTime = this.report.endTime - this.report.startTime,
         report        = this.report,
-        clc           = require('cli-color'),
-        color         = report.errors ? clc.red.bold : ((report.warnings) ? clc.yellowBright : clc.greenBright);
+        message;
 
     if (err) {
         this.writeError(err.message);
@@ -458,7 +457,14 @@ Validator.prototype.done  = function done(err) {
 
     // Write the summary
     this.writeMessage(msg.validationFinishedIn, executionTime);
-    this.writeMessage(color(util.format(msg.validationReport, report.runs, report.total, report.success, report.warnings, report.errors)));
+    message = util.format(msg.validationReport, report.runs, report.total, report.success, report.warnings, report.errors);
+    if (report.errors) {
+        this.writeError(message);
+    } else if (report.warnings) {
+        this.writeWarning(message);
+    } else {
+        this.writeSuccess(message);
+    }
 
     if (typeof this.validationCallback === 'function') {
         this.validationCallback(err, this.report);
@@ -552,7 +558,6 @@ Validator.prototype.writeMessage = function writeMessage(text) {
         common.writeMessage.apply(common, arguments);
     }
 };
-
 
 
 /**
@@ -1126,7 +1131,6 @@ Validator.prototype.runTests = function runTests(args, message) {
     });
 };
 
-
 /**
  * Run the ADC unit tests auto-generated
  */
@@ -1140,7 +1144,6 @@ Validator.prototype.runAutoTests = function runAutoTests() {
 Validator.prototype.runADCUnitTests  = function runADCUnitTests() {
     this.runTests([this.adcDirectoryPath], msg.runningADCUnit);
 };
-
 
 // Export the Validator object
 exports.Validator = Validator;
