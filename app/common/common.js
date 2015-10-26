@@ -142,8 +142,8 @@ exports.messages = {
         adcStructureGenerated : "Project structure\r\n\r\n%s\r\n\r\nADC `%s` was successfully generated in `%s`\r\n",
 
         // Builder
-        buildSucceed           : "ADC file was successfully generated.\r\nOutput: %s",
-        buildSucceedWithWarning: "ADC file was successfully generated with %d warnings.\r\nOutput: %s"
+        buildSucceed           : "ADC file was successfully generated.\r\nOutput: file:///%s",
+        buildSucceedWithWarning: "ADC file was successfully generated with %d warnings.\r\nOutput: file:///%s"
     },
     message : {
         // Validator
