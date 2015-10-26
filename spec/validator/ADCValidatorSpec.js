@@ -690,7 +690,7 @@ describe('ADCValidator', function () {
         it('should run the xmllint process with the config.xsd and the config.xml file', function () {
             var childProc = require('child_process');
             spyOn(childProc, 'exec').andCallFake(function (command) {
-                expect(command).toBe('\\root\\lib\\libxml\\xmllint.exe --noout --schema \\root\\schema\\config.xsd \\adc\\path\\dir\\config.xml');
+                expect(command).toBe('"\\root\\lib\\libxml\\xmllint.exe" --noout --schema "\\root\\schema\\config.xsd" "\\adc\\path\\dir\\config.xml"');
             });
             adcValidator.validate(null, '/adc/path/dir');
 

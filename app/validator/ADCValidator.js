@@ -742,7 +742,7 @@ Validator.prototype.validateXMLAgainstXSD = function validateXMLAgainstXSD() {
 
         self = this,
 
-        commandLine = xmlLintPath + ' --noout --schema ' + xmlSchemaPath + ' ' + xmlPath;
+        commandLine = '"' + xmlLintPath + '" --noout --schema "' + xmlSchemaPath + '" "' + xmlPath + '"';
 
     exec(commandLine, function callback(err) {
         if (!err) {
