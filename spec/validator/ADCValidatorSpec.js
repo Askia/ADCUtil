@@ -927,6 +927,10 @@ describe('ADCValidator', function () {
                 on   : 'controls'
             },
             {
+                name : 'checkbox',
+                on : 'controls'
+            },
+            {
                 name : 'textbox',
                 on   : 'controls'
             },

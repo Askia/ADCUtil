@@ -235,7 +235,7 @@ var contentSealAttr = {
 var constraintAttributeRules = {
     questions : ['chapter', 'single', 'multiple', 'open', 'numeric', 'date', 'requireParentLoop'],
     responses : ['min', 'max'],
-    controls  : ['label', 'textbox', 'listbox', 'radiobutton', 'responseblock']
+    controls  : ['label', 'textbox', 'checkbox', 'listbox', 'radiobutton', 'responseblock']
 };
 
 /*
