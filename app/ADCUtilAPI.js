@@ -293,7 +293,7 @@ ADC.prototype.checkFixtures = function checkFixtures(callback) {
  * @param {String} [options.author.name=''] Author name
  * @param {String} [options.author.email=''] Author email
  * @param {String} [options.author.company=''] Author Company
- * @param {String} [options.author.webSite=''] Author web site
+ * @param {String} [options.author.website=''] Author web site
  * @param {String} [options.output=process.cwd()] Path of the output director
  * @param {String} [options.template="blank"] Name of the template to use
  * @param {Function} [callback]

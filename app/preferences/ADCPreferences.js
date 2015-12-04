@@ -108,7 +108,7 @@ Preferences.prototype.read = function read(options, callback) {
  * @param {String} [callback.preferences.author.name] Default Name of the ADC author
  * @param {String} [callback.preferences.author.email] Default Email of the ADC author
  * @param {String} [callback.preferences.author.company] Default Company of the ADC author
- * @param {String} [callback.preferences.author.webSite] Default WebSite of the ADC author
+ * @param {String} [callback.preferences.author.website] Default Website of the ADC author
  */
 Preferences.prototype.write = function write(preferences, callback) {
     if (!preferences || !preferences.author) {
@@ -172,7 +172,7 @@ exports.preferences = Preferences.getInstance();
  * @param {String} [callback.preferences.author.name] Default Name of the ADC author
  * @param {String} [callback.preferences.author.email] Default Email of the ADC author
  * @param {String} [callback.preferences.author.company] Default Company of the ADC author
- * @param {String} [callback.preferences.author.webSite] Default WebSite of the ADC author
+ * @param {String} [callback.preferences.author.website] Default Website of the ADC author
  */
 exports.read = function read(options, callback) {
     exports.preferences.read(options, callback);
