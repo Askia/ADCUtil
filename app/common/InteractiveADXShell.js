@@ -34,7 +34,8 @@ InteractiveADXShell.prototype.constructor = InteractiveADXShell;
 InteractiveADXShell.prototype.exec = function exec(command, callback) {
     var self = this;
     var message = [],
-        errorMessage = [];
+        errorMessage = [],
+        errTimeout;
 
     if (!self._process) {
         var root =  path.resolve(__dirname, "../../");
@@ -76,6 +77,12 @@ InteractiveADXShell.prototype.exec = function exec(command, callback) {
         var str = data.toString();
         if (!/^\[ADXShell:End\]/m.test(str)) {
             errorMessage.push(str);
+            // If an hard error the message end is never throw,
+            // wait half a sec and send the message anyway
+            clearTimeout(errTimeout);
+            errTimeout = setTimeout(function () {
+                onError('[ADXShell:End]');
+            }, 500);
         } else {
             // Remove the end of the message
             str = str.replace(/(\r?\n\[ADXShell:End\].*)/m, '');
