@@ -697,7 +697,7 @@ ADCInfo.prototype.style = function style(data) {
     var xmldoc = this.configurator.xmldoc;
     var el = xmldoc.find(&quot;info/style&quot;);
     var result = {}, w, h;
-    if (data !== undefined) {
+    if (data !== undefined &amp;&amp; el) {
         if (data.width !== undefined) {
             el.set(&quot;width&quot;, data.width);
         }

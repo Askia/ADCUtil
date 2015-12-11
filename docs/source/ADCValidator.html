@@ -252,7 +252,7 @@ var contentSealAttr = {
 var constraintAttributeRules = {
     questions : [&#39;chapter&#39;, &#39;single&#39;, &#39;multiple&#39;, &#39;open&#39;, &#39;numeric&#39;, &#39;date&#39;, &#39;requireParentLoop&#39;],
     responses : [&#39;min&#39;, &#39;max&#39;],
-    controls  : [&#39;label&#39;, &#39;textbox&#39;, &#39;listbox&#39;, &#39;radiobutton&#39;, &#39;responseblock&#39;]
+    controls  : [&#39;label&#39;, &#39;textbox&#39;, &#39;checkbox&#39;, &#39;listbox&#39;, &#39;radiobutton&#39;, &#39;responseblock&#39;]
 };
 
 /*
@@ -413,17 +413,17 @@ Validator.prototype.validate = function validate(options, callback) {
         }
 
         // --no-autoTest
-        if (!options.autoTest) {
+        if (options.autoTest === false) { // Check bool value not falsy
             this.removeOnSequence([&#39;runAutoTests&#39;]);
         }
 
         // --no-test
-        if (!options.test) {
+        if (options.test === false) { // Check bool value not falsy
             this.removeOnSequence([&#39;runADCUnitTests&#39;]);
         }
 
         // --no-xml
-        if (!options.xml) {
+        if (options.xml === false) { // Check bool value not falsy
             this.removeOnSequence([
                 &#39;validateXMLAgainstXSD&#39;,
                 &#39;initConfigXMLDoc&#39;,
@@ -466,8 +466,7 @@ Validator.prototype.done  = function done(err) {
     this.report.endTime = new Date().getTime();
     var executionTime = this.report.endTime - this.report.startTime,
         report        = this.report,
-        clc           = require(&#39;cli-color&#39;),
-        color         = report.errors ? clc.red.bold : ((report.warnings) ? clc.yellowBright : clc.greenBright);
+        message;
 
     if (err) {
         this.writeError(err.message);
@@ -475,7 +474,21 @@ Validator.prototype.done  = function done(err) {
 
     // Write the summary
     this.writeMessage(msg.validationFinishedIn, executionTime);
-    this.writeMessage(color(util.format(msg.validationReport, report.runs, report.total, report.success, report.warnings, report.errors)));
+    message = util.format(msg.validationReport,
+        report.runs,
+        report.total,
+        report.success,
+        report.warnings,
+        report.errors,
+        report.total - report.runs);
+
+    if (report.errors) {
+        this.writeError(message);
+    } else if (report.warnings) {
+        this.writeWarning(message);
+    } else {
+        this.writeSuccess(message);
+    }
 
     if (typeof this.validationCallback === &#39;function&#39;) {
         this.validationCallback(err, this.report);
@@ -571,7 +584,6 @@ Validator.prototype.writeMessage = function writeMessage(text) {
 };
 
 
-
 <span id='ADC-Validator-method-validatePathArg'>/**
 </span>* Validate that the `path` argument is correct
 */
@@ -587,6 +599,8 @@ Validator.prototype.validatePathArg = function validatePathArg() {
         var er;
         if (!exists) {
             er = newError(errMsg.noSuchFileOrDirectory, pathHelper.normalize(self.adcDirectoryPath));
+        } else {
+            self.writeSuccess(successMsg.pathValidate);
         }
         self.resume(er);
     });
@@ -745,11 +759,10 @@ Validator.prototype.validateXMLAgainstXSD = function validateXMLAgainstXSD() {
 
         self = this,
 
-        commandLine = xmlLintPath + &#39; --noout --schema &#39; + xmlSchemaPath + &#39; &#39; + xmlPath;
+        commandLine = &#39;&quot;&#39; + xmlLintPath + &#39;&quot; --noout --schema &quot;&#39; + xmlSchemaPath + &#39;&quot; &quot;&#39; + xmlPath + &#39;&quot;&#39;;
 
     exec(commandLine, function callback(err) {
         if (!err) {
-            self.report.success++;
             self.writeSuccess(successMsg.xsdValidate);
         }
         self.resume(err);
@@ -771,6 +784,9 @@ Validator.prototype.initConfigXMLDoc = function initConfigXMLDoc() {
         data = data.replace(/^\uFEFF/, &#39;&#39;);
         xml2js.parseString(data, function parseXML(err, result) {
             self.configXmlDoc = result;
+            if (!err) {
+                self.writeSuccess(successMsg.xmlInitialize);
+            }
             self.resume(err);
         });
     });
@@ -795,6 +811,7 @@ Validator.prototype.validateADCInfo = function validateADCInfo() {
     }
 
     this.adcName = nameEl;
+    this.writeSuccess(successMsg.xmlInfoValidate);
     this.resume(null);
 };
 
@@ -859,6 +876,7 @@ Validator.prototype.validateADCInfoConstraints = function validateADCInfoConstra
         return;
     }
 
+    this.writeSuccess(successMsg.xmlInfoConstraintsValidate);
     this.resume(null);
 };
 
@@ -1096,7 +1114,7 @@ Validator.prototype.validateADCProperties = function validateADCProperties() {
         this.report.warnings++;
         this.writeWarning(warnMsg.noProperties);
     }
-
+    this.writeSuccess(successMsg.xmlPropertiesValidate);
     this.resume(null);
 };
 
@@ -1138,11 +1156,14 @@ Validator.prototype.runTests = function runTests(args, message) {
                 env   : process.env
             }, execCallback);
         } else {
-            self._adxShell.exec(&#39;test &#39; + args.join(&#39; &#39;), execCallback);
+            var escapedArgs = [];
+            for (var i = 0,  l = args.length; i &lt; l; i += 1) {
+                escapedArgs.push(&#39;&quot;&#39; + args[i] + &#39;&quot;&#39;);
+            }
+            self._adxShell.exec(&#39;test &#39; + escapedArgs.join(&#39; &#39;), execCallback);
         }
     });
 };
-
 
 <span id='ADC-Validator-method-runAutoTests'>/**
 </span> * Run the ADC unit tests auto-generated
@@ -1157,7 +1178,6 @@ Validator.prototype.runAutoTests = function runAutoTests() {
 Validator.prototype.runADCUnitTests  = function runADCUnitTests() {
     this.runTests([this.adcDirectoryPath], msg.runningADCUnit);
 };
-
 
 // Export the Validator object
 exports.Validator = Validator;

@@ -60,6 +60,7 @@ describe('ADCValidator', function () {
             readFile    : spyOn(fs, 'readFile')
         };
 
+
         // Add matchers
         this.addMatchers({
             /**
@@ -2226,7 +2227,7 @@ describe('ADCValidator', function () {
                 xml      : false,
                 adxShell : new InteractiveADXShell()
             }, 'adc/path/dir');
-            expect(mockCommand).toBe('test --auto adc\\path\\dir');
+            expect(mockCommand).toBe('test "--auto" "adc\\path\\dir"');
         });
     });
 

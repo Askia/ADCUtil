@@ -70,7 +70,7 @@ describe('ADCShow', function () {
 
             spyExec.andCallFake(function (file, args) {
                 expect(file).toBe('.\\ADXShell.exe');
-                expect(args).toEqual(['show', '-output:something', '-fixture:single.xml', '\\adc\\path\\dir']);
+                expect(args).toEqual(['show', '"-output:something"', '"-fixture:single.xml"', '"\\adc\\path\\dir"']);
             });
             adcShow.show({
                 output : 'something',
@@ -88,7 +88,7 @@ describe('ADCShow', function () {
 
             spyExec.andCallFake(function (file, args) {
                 expect(file).toBe('.\\ADXShell.exe');
-                expect(args).toEqual(['show', '-output:something', '-fixture:single.xml', '-masterPage:mp.html', '\\adc\\path\\dir']);
+                expect(args).toEqual(['show', '"-output:something"', '"-fixture:single.xml"', '"-masterPage:mp.html"', '"\\adc\\path\\dir"']);
             });
             adcShow.show({
                 output : 'something',
@@ -107,7 +107,7 @@ describe('ADCShow', function () {
 
             spyExec.andCallFake(function (file, args) {
                 expect(file).toBe('.\\ADXShell.exe');
-                expect(args).toEqual(['show', '-output:something', '-fixture:single.xml', '-masterPage:mp.html', '-properties:prop1=value1&prop2=value2&prop%203=value%2C%223', '\\adc\\path\\dir']);
+                expect(args).toEqual(['show', '"-output:something"', '"-fixture:single.xml"', '"-masterPage:mp.html"', '"-properties:prop1=value1&prop2=value2&prop%203=value%2C%223"', '"\\adc\\path\\dir"']);
             });
             adcShow.show({
                 output : 'something',
@@ -133,7 +133,7 @@ describe('ADCShow', function () {
                 properties : 'prop1=value1&prop2=value2&prop%203=value%2C%223',
                 adxShell : new InteractiveADXShell()
             }, '/adc/path/dir');
-            expect(mockCommand).toBe('show -output:something -fixture:single.xml -masterPage:mp.html -properties:prop1=value1&prop2=value2&prop%203=value%2C%223 \\adc\\path\\dir');
+            expect(mockCommand).toBe('show "-output:something" "-fixture:single.xml" "-masterPage:mp.html" "-properties:prop1=value1&prop2=value2&prop%203=value%2C%223" "\\adc\\path\\dir"');
         });
 
         describe("API `callback`", function () {

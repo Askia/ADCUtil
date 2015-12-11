@@ -37,7 +37,7 @@ exports.SCHEMA_CONFIG   = 'config.xsd';
 // Name of the schema to validate the unit test file
 exports.SCHEMA_TEST_UNIT   = 'UnitTests.xsd';
 // Path to the directory of the ADCUnit program
-exports.ADC_UNIT_DIR_PATH   = '/lib/adxshell/';
+exports.ADC_UNIT_DIR_PATH   = '/lib/adxshell_' + ((process.arch === 'x64') ? 'x64' : 'x86') + '/';
 // ADCUnit.exe
 exports.ADC_UNIT_PROCESS_NAME = 'ADXShell.exe';
 // Name of the `resources` directory

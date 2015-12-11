@@ -101,17 +101,17 @@ Show.prototype.show = function show(options, callback) {
     var execFile = require('child_process').execFile,
         args     = [
             'show',
-            '-output:' + options.output,
-            '-fixture:' + options.fixture
+            '"-output:' + options.output + '"',
+            '"-fixture:' + options.fixture + '"'
         ];
 
     if (options.masterPage) {
-        args.push('-masterPage:' + pathHelper.resolve(options.masterPage));
+        args.push('"-masterPage:' + pathHelper.resolve(options.masterPage) + '"');
     }
     if (options.properties) {
-        args.push('-properties:' + options.properties);
+        args.push('"-properties:' + options.properties + '"');
     }
-    args.push(this.adcDirectoryPath);
+    args.push('"' + this.adcDirectoryPath + '"');
 
     var self = this;
     function execCallback(err, stdout, stderr) {

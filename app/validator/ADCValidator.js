@@ -1139,7 +1139,11 @@ Validator.prototype.runTests = function runTests(args, message) {
                 env   : process.env
             }, execCallback);
         } else {
-            self._adxShell.exec('test ' + args.join(' '), execCallback);
+            var escapedArgs = [];
+            for (var i = 0,  l = args.length; i < l; i += 1) {
+                escapedArgs.push('"' + args[i] + '"');
+            }
+            self._adxShell.exec('test ' + escapedArgs.join(' '), execCallback);
         }
     });
 };

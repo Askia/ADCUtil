@@ -118,17 +118,17 @@ Show.prototype.show = function show(options, callback) {
     var execFile = require(&#39;child_process&#39;).execFile,
         args     = [
             &#39;show&#39;,
-            &#39;-output:&#39; + options.output,
-            &#39;-fixture:&#39; + options.fixture
+            &#39;&quot;-output:&#39; + options.output + &#39;&quot;&#39;,
+            &#39;&quot;-fixture:&#39; + options.fixture + &#39;&quot;&#39;
         ];
 
     if (options.masterPage) {
-        args.push(&#39;-masterPage:&#39; + pathHelper.resolve(options.masterPage));
+        args.push(&#39;&quot;-masterPage:&#39; + pathHelper.resolve(options.masterPage) + &#39;&quot;&#39;);
     }
     if (options.properties) {
-        args.push(&#39;-properties:&#39; + options.properties);
+        args.push(&#39;&quot;-properties:&#39; + options.properties + &#39;&quot;&#39;);
     }
-    args.push(this.adcDirectoryPath);
+    args.push(&#39;&quot;&#39; + this.adcDirectoryPath + &#39;&quot;&#39;);
 
     var self = this;
     function execCallback(err, stdout, stderr) {

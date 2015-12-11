@@ -1,3 +1,48 @@
+/*
+ * Those tests are done before all others, otherwise it breaks!!!
+ * Please keep it there
+ */
+describe('common.ADC_UNIT_DIR_PATH', function () {
+    it('should be `/lib/adxshell_x86/` when the environment is a 32bit machine', function () {
+        // process.arch is read-only use the propertyDescriptor to override it's value
+        var descriptor = Object.getOwnPropertyDescriptor(process, 'arch');
+        Object.defineProperty(process, 'arch', {
+            value : 'ia32',
+            configurable : true,
+            enumerable : true
+        });
+        var commonKey = require.resolve('../../app/common/common.js');
+        delete require.cache[commonKey];
+
+        var common = require('../../app/common/common.js');
+        expect(common.ADC_UNIT_DIR_PATH).toEqual('/lib/adxshell_x86/');
+        // Restore the original value
+        Object.defineProperty(process, 'arch', descriptor);
+    });
+    it('should be `/lib/adxshell_x64/` when the environment is a 64bit machine', function () {
+        // process.arch is read-only use the propertyDescriptor to override it's value
+        var descriptor = Object.getOwnPropertyDescriptor(process, 'arch');
+        Object.defineProperty(process, 'arch', {
+            value : 'x64',
+            configurable : true,
+            enumerable : true
+        });
+        var commonKey = require.resolve('../../app/common/common.js');
+        delete require.cache[commonKey];
+
+        Object.defineProperty(process, 'arch', {
+            value : 'x64',
+            configurable : true,
+            enumerable : true
+        });
+        var common = require('../../app/common/common.js');
+        expect(common.ADC_UNIT_DIR_PATH).toEqual('/lib/adxshell_x64/');
+        // Restore the original value
+        Object.defineProperty(process, 'arch', descriptor);
+    });
+});
+
+return;
 describe('common', function () {
 
     var fs              = require('fs'),

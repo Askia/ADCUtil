@@ -1,6 +1,6 @@
 {
   "name": "adcutil",
-  "version": "1.1.0-beta.42",
+  "version": "1.1.0-beta.43",
   "description": "Utilities tools for Askia Design Control",
   "main": "./app/ADCUtilAPI.js",
   "dependencies": {
@@ -25,8 +25,7 @@
     "jasmine-node": "^1.14.5"
   },
   "scripts": {
-    "test": "jasmine-node spec/",
-    "postinstall" : "node ./setup.js"
+    "test": "jasmine-node spec/"
   },
   "keywords": [
     "Askia",
