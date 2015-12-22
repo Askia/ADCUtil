@@ -650,8 +650,26 @@ ADCInfo.prototype.set = function set(data) {
      */
     ADCInfo.prototype[propName] = function (data) {
         var xmldoc = this.configurator.xmldoc;
-        var el = xmldoc.find("info/" + propName);
-        if (data !== undefined) {
+        var elInfo = xmldoc.find('info');
+        var isSetter = data !== undefined;
+
+        // No root info
+        if (!elInfo && isSetter) {
+            elInfo = subElement(xmldoc.getroot(), 'info');
+        } else if (!elInfo && !isSetter) {
+            return '';
+        }
+
+        var el = elInfo.find(propName);
+
+        // No element
+        if (!el && isSetter) {
+            el = subElement(elInfo, propName);
+        } else if (!el && !isSetter) {
+            return '';
+        }
+
+        if (isSetter) {
             el.text = data;
         }
         return el.text;
@@ -678,9 +696,25 @@ ADCInfo.prototype.set = function set(data) {
  */
 ADCInfo.prototype.style = function style(data) {
     var xmldoc = this.configurator.xmldoc;
-    var el = xmldoc.find("info/style");
+    var elInfo = xmldoc.find("info");
+    var isSetter = (data !== undefined);
+
+    if (!elInfo && isSetter) {
+        elInfo = subElement(xmldoc.getroot(), "info");
+    } else if (!elInfo && !isSetter) {
+        return { width : 0,height : 0 };
+    }
+
+
+    var el = elInfo.find("style");
+    if (!el && isSetter) {
+        el = subElement(elInfo, "style");
+    } else if (!el && !isSetter) {
+        return {width : 0, height : 0};
+    }
+
     var result = {}, w, h;
-    if (data !== undefined && el) {
+    if (isSetter) {
         if (data.width !== undefined) {
             el.set("width", data.width);
         }
@@ -688,8 +722,8 @@ ADCInfo.prototype.style = function style(data) {
             el.set("height", data.height);
         }
     }
-    w = (el && el.get("width")) || "0";
-    h = (el && el.get("height")) || "0";
+    w = el.get("width") || "0";
+    h = el.get("height") || "0";
 
     result.width = parseInt(w, 10);
     result.height = parseInt(h, 10);
@@ -712,9 +746,27 @@ ADCInfo.prototype.style = function style(data) {
  */
 ADCInfo.prototype.categories = function categories(data) {
     var xmldoc = this.configurator.xmldoc;
-    var el = xmldoc.find("info/categories");
+    var elInfo = xmldoc.find('info');
+    var isSetter = Array.isArray(data);
+
+    // No root info
+    if (!elInfo && isSetter) {
+        elInfo = subElement(xmldoc.getroot(), 'info');
+    } else if (!elInfo && !isSetter) {
+        return [];
+    }
+
+    var el = elInfo.find("categories");
+
+    // No categories
+    if (!el && isSetter) {
+        el = subElement(elInfo, 'categories');
+    } else if (!el && !isSetter) {
+        return [];
+    }
+
     var result = [];
-    if (Array.isArray(data)) {
+    if (isSetter) {
         el.delSlice(0, el.len());
         data.forEach(function (text) {
             var cat = subElement(el, 'category');
@@ -756,8 +808,26 @@ ADCInfo.prototype.categories = function categories(data) {
  */
 ADCInfo.prototype.constraints = function constraints(data) {
     var xmldoc = this.configurator.xmldoc;
-    var el = xmldoc.find("info/constraints");
+    var elInfo = xmldoc.find("info");
+
+    // No root info
+    if (!elInfo && data) {
+        elInfo = subElement(xmldoc.getroot(), 'info')
+    } else if (!elInfo && !data) {
+        return {};
+    }
+
+    var el = elInfo.find("constraints");
+
+    // No constraints
+    if (!el && data) {
+        el = subElement(elInfo, 'constraints');
+    } else if (!el && !data) {
+        return {};
+    }
+
     var result = {};
+
     if (data) {
         Object.keys(data).forEach(function (on) {
             if (on !== 'questions' &&  on !== 'responses' &&  on !== 'controls') {
@@ -963,6 +1033,9 @@ ADCOutputs.prototype.constructor = ADCOutputs;
 ADCOutputs.prototype.defaultOutput = function defaultOutput(data) {
     var xmldoc = this.configurator.xmldoc;
     var el = xmldoc.find("outputs");
+    if (!el) {
+        el = subElement(xmldoc.getroot(), 'outputs');
+    }
     if (data && typeof data === 'string') {
         el.set('defaultOutput', data);
     }
@@ -1194,6 +1267,10 @@ ADCOutputs.prototype.set = function set(data) {
 
     if (!data) {
         return;
+    }
+
+    if (!el) {
+        el = subElement(xmldoc.getroot(), 'outputs');
     }
 
     if (data.defaultOutput) {
@@ -1601,6 +1678,10 @@ ADCProperties.prototype.set = function set(data) {
 
     if (!data || !data.categories || !Array.isArray(data.categories)) {
         return;
+    }
+
+    if (!el) {
+        el = subElement(xmldoc.getroot(), 'properties');
     }
     el.delSlice(0, el.len());
     data.categories.forEach(function (category) {

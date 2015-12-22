@@ -1608,6 +1608,77 @@ describe('ADCConfigurator', function () {
                     });
                 });
             });
+
+            it("should create the ADC information when it's not defined in the xml", function () {
+                spies.fs.readFile.andCallFake(function (p, cb) {
+                    cb(null, '<control></control>');
+                });
+                runSync(function (done) {
+                    var configurator = new ADCConfigurator("an/valid/path");
+                    configurator.load(function () {
+                        configurator.info.set({
+                            name : "new-name",
+                            guid : "new-guid",
+                            version : "new-version",
+                            date : "new-date",
+                            description : "new-description",
+                            company : "new-company",
+                            author : "new-author",
+                            site : "new-site",
+                            helpURL : "new-helpURL",
+                            categories : ["new-cat-1", "new-cat-2", "new-cat-3"],
+                            style : {
+                                width : 300,
+                                height : 500
+                            },
+                            constraints : {
+                                questions : {
+                                    single : false,
+                                    numeric : true
+                                },
+                                controls : {
+                                    label :false,
+                                    checkbox : true
+                                },
+                                responses : {
+                                    min : 10
+                                }
+                            }
+                        });
+                        var result = configurator.info.get();
+                        expect(result ).toEqual({
+                            name : "new-name",
+                            guid : "new-guid",
+                            version : "new-version",
+                            date : "new-date",
+                            description : "new-description",
+                            company : "new-company",
+                            author : "new-author",
+                            site : "new-site",
+                            helpURL : "new-helpURL",
+                            categories : ["new-cat-1", "new-cat-2", "new-cat-3"],
+                            style : {
+                                width : 300,
+                                height : 500
+                            },
+                            constraints : {
+                                questions : {
+                                    single : false,
+                                    numeric : true
+                                },
+                                controls : {
+                                    label : false,
+                                    checkbox : true
+                                },
+                                responses : {
+                                    min : 10
+                                }
+                            }
+                        });
+                        done();
+                    });
+                });
+            });
         });
 
         ["name", "guid", "version", "date", "description", "company", "author", "site", "helpURL"].forEach(function (propName) {
@@ -1637,6 +1708,23 @@ describe('ADCConfigurator', function () {
                         });
                     });
                 });
+
+                it("should create the node when it's not defined in the xml", function () {
+                    spies.fs.readFile.andCallFake(function (p, cb) {
+                        cb(null, '<control></control>');
+                    });
+                    runSync(function (done) {
+                        var configurator = new ADCConfigurator("an/valid/path");
+                        configurator.load(function () {
+                            configurator.info[propName]('new-' + propName);
+                            var result = configurator.info[propName]();
+                            expect(result ).toEqual('new-' + propName);
+                            done();
+                        });
+                    });
+                });
+
+
             });
 
         });
@@ -1975,6 +2063,32 @@ describe('ADCConfigurator', function () {
                     });
                 });
             });
+
+            it("should create the ADC outputs when it's not defined in the xml", function () {
+                spies.fs.readFile.andCallFake(function (p, cb) {
+                    cb(null, '<control><info><name>the-name</name><guid>the-guid</guid>' +
+                        '<version>the-version</version><date>the-date</date><description><![CDATA[the-description]]></description>' +
+                        '<company>the-company</company><author>the-author</author><site>the-site</site>' +
+                        '<helpURL>the-helpURL</helpURL>' +
+                        '<categories><category>cat-1</category><category>cat-2</category></categories>' +
+                        '<style width="200" height="400" />' +
+                        '<constraints><constraint on="questions" single="true" multiple="true" open="false" />' +
+                        '<constraint on="controls" label="true" responseblock="true" />' +
+                        '<constraint on="responses" min="2" max="*" />' +
+                        '</constraints>' +
+                        '</info>' +
+                        '</control>');
+                });
+                runSync(function (done) {
+                    var configurator = new ADCConfigurator("an/valid/path");
+                    configurator.load(function () {
+                        configurator.outputs.defaultOutput('second');
+                        var result = configurator.outputs.defaultOutput();
+                        expect(result ).toEqual('second');
+                        done();
+                    });
+                });
+            });
         });
 
         describe('#get', function () {
@@ -2100,6 +2214,201 @@ describe('ADCConfigurator', function () {
         describe("#set", function () {
             it("should set the ADC outputs with plain object", function () {
 
+                runSync(function (done) {
+                    var configurator = new ADCConfigurator("an/valid/path");
+                    configurator.load(function () {
+                        configurator.outputs.set({
+                            defaultOutput : "new-second",
+                            outputs : [
+                                {
+                                    id : "new-main",
+                                    description : "New Main output",
+                                    contents : [
+                                        {
+                                            fileName : 'new-main.css',
+                                            type : 'css',
+                                            mode : 'dynamic',
+                                            position : 'none'
+                                        },
+                                        {
+                                            fileName : 'new-main.html',
+                                            type : 'html',
+                                            mode : 'dynamic',
+                                            position : 'placeholder'
+                                        },
+                                        {
+                                            fileName : 'new-main.js',
+                                            type : 'javascript',
+                                            mode : 'static',
+                                            position: 'foot'
+                                        }
+                                    ]
+                                },
+                                {
+                                    id : "new-second",
+                                    description : "New Second output",
+                                    condition : "Browser.Support(\"javascript\") and true",
+                                    contents : [
+                                        {
+                                            fileName : 'new-second.css',
+                                            type : 'css',
+                                            mode : 'static',
+                                            position : 'head'
+                                        },
+                                        {
+                                            fileName : 'new-second.html',
+                                            type : 'html',
+                                            mode : 'dynamic',
+                                            position : 'placeholder'
+                                        },
+                                        {
+                                            fileName : 'new-second.js',
+                                            type : 'javascript',
+                                            mode : 'static',
+                                            position : 'foot'
+                                        }
+                                    ]
+                                },
+                                {
+                                    id : "new-third",
+                                    description : "New Third output",
+                                    maxIterations : 50,
+                                    defaultGeneration : true,
+                                    contents : [
+                                        {
+                                            fileName : "new-third.css",
+                                            type  : "css",
+                                            mode : "static",
+                                            position : "head",
+                                            attributes : [
+                                                {
+                                                    name : "new-rel",
+                                                    value : "new-alternate"
+                                                },
+                                                {
+                                                    name : "new-media",
+                                                    value : "new-print"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            fileName : 'new-HTML5Shim.js',
+                                            type : 'javascript',
+                                            mode : 'static',
+                                            position : 'head',
+                                            yieldValue :'<!--New-->\n<!--[if lte IE 9]><script type="text/javascript"  src="{%= CurrentADC.URLTo("static/HTML5Shim.js") %}" ></script><![endif]-->'
+                                        }
+                                    ]
+                                }
+                            ]
+                        });
+                        var result = configurator.outputs.get();
+                        expect(result ).toEqual({
+                            defaultOutput : "new-second",
+                            outputs : [
+                                {
+                                    id : "new-main",
+                                    description : "New Main output",
+                                    contents : [
+                                        {
+                                            fileName : 'new-main.css',
+                                            type : 'css',
+                                            mode : 'dynamic',
+                                            position : 'none'
+                                        },
+                                        {
+                                            fileName : 'new-main.html',
+                                            type : 'html',
+                                            mode : 'dynamic',
+                                            position : 'placeholder'
+                                        },
+                                        {
+                                            fileName : 'new-main.js',
+                                            type : 'javascript',
+                                            mode : 'static',
+                                            position: 'foot'
+                                        }
+                                    ]
+                                },
+                                {
+                                    id : "new-second",
+                                    description : "New Second output",
+                                    condition : "Browser.Support(\"javascript\") and true",
+                                    contents : [
+                                        {
+                                            fileName : 'new-second.css',
+                                            type : 'css',
+                                            mode : 'static',
+                                            position : 'head'
+                                        },
+                                        {
+                                            fileName : 'new-second.html',
+                                            type : 'html',
+                                            mode : 'dynamic',
+                                            position : 'placeholder'
+                                        },
+                                        {
+                                            fileName : 'new-second.js',
+                                            type : 'javascript',
+                                            mode : 'static',
+                                            position : 'foot'
+                                        }
+                                    ]
+                                },
+                                {
+                                    id : "new-third",
+                                    description : "New Third output",
+                                    maxIterations : 50,
+                                    defaultGeneration : true,
+                                    contents : [
+                                        {
+                                            fileName : "new-third.css",
+                                            type  : "css",
+                                            mode : "static",
+                                            position : "head",
+                                            attributes : [
+                                                {
+                                                    name : "new-rel",
+                                                    value : "new-alternate"
+                                                },
+                                                {
+                                                    name : "new-media",
+                                                    value : "new-print"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            fileName : 'new-HTML5Shim.js',
+                                            type : 'javascript',
+                                            mode : 'static',
+                                            position : 'head',
+                                            yieldValue :'<!--New-->\n<!--[if lte IE 9]><script type="text/javascript"  src="{%= CurrentADC.URLTo("static/HTML5Shim.js") %}" ></script><![endif]-->'
+                                        }
+                                    ]
+                                }
+                            ]
+                        });
+
+                        done();
+                    });
+                });
+            });
+
+            it("should create the ADC outputs if it's not defined in the xml", function () {
+                spies.fs.readFile.andCallFake(function (p, cb) {
+                    cb(null, '<control><info><name>the-name</name><guid>the-guid</guid>' +
+                        '<version>the-version</version><date>the-date</date><description><![CDATA[the-description]]></description>' +
+                        '<company>the-company</company><author>the-author</author><site>the-site</site>' +
+                        '<helpURL>the-helpURL</helpURL>' +
+                        '<categories><category>cat-1</category><category>cat-2</category></categories>' +
+                        '<style width="200" height="400" />' +
+                        '<constraints><constraint on="questions" single="true" multiple="true" open="false" />' +
+                        '<constraint on="controls" label="true" responseblock="true" />' +
+                        '<constraint on="responses" min="2" max="*" />' +
+                        '</constraints>' +
+                        '</info>' +
+                        '</control>');
+                });
                 runSync(function (done) {
                     var configurator = new ADCConfigurator("an/valid/path");
                     configurator.load(function () {
@@ -2600,6 +2909,336 @@ describe('ADCConfigurator', function () {
         describe("#set", function () {
             it("should set the ADC properties with plain object", function () {
 
+                runSync(function (done) {
+                    var configurator = new ADCConfigurator("an/valid/path");
+                    configurator.load(function () {
+                        configurator.properties.set({
+                            categories : [{
+                                id: "new-general",
+                                name: "New General",
+                                properties: [
+                                    {
+                                        xsiType: "askiaProperty",
+                                        id: "new-askia-theme",
+                                        options: [
+                                            {
+                                                value: "new-red-theme",
+                                                text: "New Red"
+                                            },
+                                            {
+                                                value: "new-blue-theme",
+                                                text: "New Blue"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        id: "newRenderingType",
+                                        name: "New rendering type",
+                                        type: "string",
+                                        description: "New Type of rendering",
+                                        value: "new-classic",
+                                        options: [
+                                            {
+                                                value: "new-classic",
+                                                text: "New Classic"
+                                            },
+                                            {
+                                                value: "new-image",
+                                                text: "New Image"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        id: "new-other",
+                                        name: "Open-ended question for semi-open",
+                                        type: "question",
+                                        single : true,
+                                        multiple : true,
+                                        numeric : false,
+                                        open : false,
+                                        description: "Additional open-ended question that could be use to emulate semi-open"
+                                    }
+                                ]
+                            },
+                                {
+                                    id : "images",
+                                    name : "Rendering type images",
+                                    properties : [
+                                        {
+                                            id : "singleImage",
+                                            name : "Image for single question",
+                                            type : "file",
+                                            fileExtension : ".png, .gif, .jpg",
+                                            description : "Image of single question when the rendering type is image",
+                                            value : "Single.png",
+                                            valueTheme : {
+                                                "new-red-theme" : "SingleRed.png",
+                                                "new-blue-theme" : "SingleBlue.png"
+                                            }
+                                        },
+                                        {
+                                            id : "multipleImage",
+                                            name : "Image for multiple question",
+                                            type : "file",
+                                            fileExtension : ".png, .gif, .jpg",
+                                            description : "Image of multiple question when the rendering type is image",
+                                            value : "Multiple.png",
+                                            valueTheme : {
+                                                "red-theme" : "MultipleRed.png",
+                                                "blue-theme" : "MultipleBlue.png"
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    id : "newFake",
+                                    name : "New Fake for test",
+                                    properties : [
+                                        {
+                                            id : "testNumber",
+                                            name : "Number value",
+                                            type : "number",
+                                            mode : "static",
+                                            visible : true,
+                                            require : false,
+                                            min  :25,
+                                            max : 200,
+                                            decimal : 1,
+                                            description : "New Test number properties",
+                                            value : "26"
+                                        },
+                                        {
+                                            id : "testColor",
+                                            name : "Color value",
+                                            type : "color",
+                                            colorFormat  :"rgba",
+                                            description : "Test color properties",
+                                            value : "255,255,255,.9"
+                                        },
+                                        {
+                                            id : "testQuestion",
+                                            name : "Question value",
+                                            type : "question",
+                                            chapter : true,
+                                            single : false,
+                                            multiple : false,
+                                            numeric : true,
+                                            open : true,
+                                            date : true,
+                                            description : "Test question properties",
+                                            value : "CurrentQuestion"
+                                        },
+                                        {
+                                            id : "testFile",
+                                            name : "File value",
+                                            type : "file",
+                                            fileExtension : ".doc, .docx",
+                                            description : "Test file properties",
+                                            value : "file.docs"
+                                        },
+                                        {
+                                            id : "testString",
+                                            name : "String value",
+                                            type : "string",
+                                            pattern : "\w@\w",
+                                            description : "Test string properties",
+                                            value : "foo@bar.com"
+                                        }
+                                    ]
+                                }]
+                        });
+                        var result = configurator.properties.get();
+                        expect(result ).toEqual({
+                            categories : [{
+                                id: "new-general",
+                                name: "New General",
+                                properties: [
+                                    {
+                                        xsiType: "askiaProperty",
+                                        id: "new-askia-theme",
+                                        options: [
+                                            {
+                                                value: "new-red-theme",
+                                                text: "New Red"
+                                            },
+                                            {
+                                                value: "new-blue-theme",
+                                                text: "New Blue"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        id: "newRenderingType",
+                                        name: "New rendering type",
+                                        type: "string",
+                                        description: "New Type of rendering",
+                                        value: "new-classic",
+                                        options: [
+                                            {
+                                                value: "new-classic",
+                                                text: "New Classic"
+                                            },
+                                            {
+                                                value: "new-image",
+                                                text: "New Image"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        id: "new-other",
+                                        name: "Open-ended question for semi-open",
+                                        type: "question",
+                                        single : true,
+                                        multiple : true,
+                                        numeric : false,
+                                        open : false,
+                                        description: "Additional open-ended question that could be use to emulate semi-open"
+                                    }
+                                ]
+                            },
+                                {
+                                    id : "images",
+                                    name : "Rendering type images",
+                                    properties : [
+                                        {
+                                            id : "singleImage",
+                                            name : "Image for single question",
+                                            type : "file",
+                                            fileExtension : ".png, .gif, .jpg",
+                                            description : "Image of single question when the rendering type is image",
+                                            value : "Single.png",
+                                            valueTheme : {
+                                                "new-red-theme" : "SingleRed.png",
+                                                "new-blue-theme" : "SingleBlue.png"
+                                            }
+                                        },
+                                        {
+                                            id : "multipleImage",
+                                            name : "Image for multiple question",
+                                            type : "file",
+                                            fileExtension : ".png, .gif, .jpg",
+                                            description : "Image of multiple question when the rendering type is image",
+                                            value : "Multiple.png",
+                                            valueTheme : {
+                                                "red-theme" : "MultipleRed.png",
+                                                "blue-theme" : "MultipleBlue.png"
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    id : "newFake",
+                                    name : "New Fake for test",
+                                    properties : [
+                                        {
+                                            id : "testNumber",
+                                            name : "Number value",
+                                            type : "number",
+                                            mode : "static",
+                                            visible : true,
+                                            require : false,
+                                            min  :25,
+                                            max : 200,
+                                            decimal : 1,
+                                            description : "New Test number properties",
+                                            value : "26"
+                                        },
+                                        {
+                                            id : "testColor",
+                                            name : "Color value",
+                                            type : "color",
+                                            colorFormat  :"rgba",
+                                            description : "Test color properties",
+                                            value : "255,255,255,.9"
+                                        },
+                                        {
+                                            id : "testQuestion",
+                                            name : "Question value",
+                                            type : "question",
+                                            chapter : true,
+                                            single : false,
+                                            multiple : false,
+                                            numeric : true,
+                                            open : true,
+                                            date : true,
+                                            description : "Test question properties",
+                                            value : "CurrentQuestion"
+                                        },
+                                        {
+                                            id : "testFile",
+                                            name : "File value",
+                                            type : "file",
+                                            fileExtension : ".doc, .docx",
+                                            description : "Test file properties",
+                                            value : "file.docs"
+                                        },
+                                        {
+                                            id : "testString",
+                                            name : "String value",
+                                            type : "string",
+                                            pattern : "\w@\w",
+                                            description : "Test string properties",
+                                            value : "foo@bar.com"
+                                        }
+                                    ]
+                                }]
+                        });
+
+                        done();
+                    });
+                });
+            });
+
+            it("should create ADC properties if it's not defined in the xml", function () {
+                spies.fs.readFile.andCallFake(function (p, cb) {
+                    cb(null, '<control><info><name>the-name</name><guid>the-guid</guid>' +
+                        '<version>the-version</version><date>the-date</date><description><![CDATA[the-description]]></description>' +
+                        '<company>the-company</company><author>the-author</author><site>the-site</site>' +
+                        '<helpURL>the-helpURL</helpURL>' +
+                        '<categories><category>cat-1</category><category>cat-2</category></categories>' +
+                        '<style width="200" height="400" />' +
+                        '<constraints><constraint on="questions" single="true" multiple="true" open="false" />' +
+                        '<constraint on="controls" label="true" responseblock="true" />' +
+                        '<constraint on="responses" min="2" max="*" />' +
+                        '</constraints>' +
+                        '</info>' +
+                        '<outputs defaultOutput="main">' +
+                        '<output id="main">' +
+                        '<description><![CDATA[Main output]]></description>' +
+                        '<content fileName="main.css" type="css" mode="static" position="head" />' +
+                        '<content fileName="main.html" type="html" mode="dynamic" position="placeholder" />' +
+                        '<content fileName="main.js" type="javascript" mode="static" position="foot" />' +
+                        '</output>' +
+                        '<output id="second">' +
+                        '<description><![CDATA[Second output]]></description>' +
+                        '<condition><![CDATA[Browser.Support("javascript")]]></condition>' +
+                        '<content fileName="second.css" type="css" mode="static" position="head" />' +
+                        '<content fileName="second.html" type="html" mode="dynamic" position="placeholder" />' +
+                        '<content fileName="second.js" type="javascript" mode="static" position="foot" />' +
+                        '</output>' +
+                        '<output id="third" defaultGeneration="false" maxIterations="12">' +
+                        '<description><![CDATA[Third output]]></description>' +
+                        '<content fileName="third.css" type="css" mode="static" position="head" >' +
+                        ' <attribute name="rel">' +
+                        '<value>alternate</value>' +
+                        '</attribute>' +
+                        '<attribute name="media">' +
+                        '<value>print</value>' +
+                        '</attribute>' +
+                        '</content>' +
+                        '<content fileName="HTML5Shim.js" type="javascript" mode="static" position="head">' +
+                        '<yield>' +
+                        '<![CDATA[' +
+                        '<!--[if lte IE 9]>' +
+                        '<script type="text/javascript"  src="{%= CurrentADC.URLTo("static/HTML5Shim.js") %}" ></script>' +
+                        '<![endif]-->' +
+                        ']]>' +
+                        '</yield>' +
+                        '</content>'+
+                        '</output>' +
+                        '</outputs>' +
+                        '</control>');
+                });
                 runSync(function (done) {
                     var configurator = new ADCConfigurator("an/valid/path");
                     configurator.load(function () {
