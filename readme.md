@@ -186,7 +186,7 @@ Then enter the following command:
 
 That should produce an output like:
 
-![build (Example output)](ADCUtilBuid.png "build (Example output)")
+![build (Example output)](ADCUtilBuild.png "build (Example output)")
 
 The `build` command will first validate the ADC like the "validate command":#validate did (it will enforce the XML validation). 
 If the validation fails, the build will stop otherwise it will compress all necessary files into a zip file with the *.adc extension.
