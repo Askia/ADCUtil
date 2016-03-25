@@ -1,8 +1,8 @@
 {
-  "name": "adcutil",
-  "version": "1.1.1",
-  "description": "Utilities tools for Askia Design Control",
-  "main": "./app/ADCUtilAPI.js",
+  "name": "adxutil",
+  "version": "2.0.0",
+  "description": "Utilities tools for Askia Design eXtension",
+  "main": "./app/ADXUtilAPI.js",
   "dependencies": {
     "cli-color": "^0.2.2",
     "commander": "^1.1.1",
@@ -13,11 +13,11 @@
     "xml2js": "^0.2.7"
   },
   "bin": {
-    "ADCUtil": "./app/ADCUtil.js"
+    "ADXUtil": "./app/ADXUtil.js"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/AskiaADX/ADCUtil.git"
+    "url": "https://github.com/AskiaADX/ADXUtil.git"
   },
   "devDependencies": {
     "gulp": "^3.9.0",
@@ -33,7 +33,7 @@
     "Control",
     "Extension",
     "ADC",
-    "ADT",
+    "ADP",
     "ADX"
   ],
   "author": "Mamadou Sy <mamadou@askia.com>",

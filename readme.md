@@ -1,21 +1,23 @@
-# ADCUtil
+# ADXUtil
 
-This utilities is use to facilitate the creation and the packaging of and ADC project.
+*WIP (WORK IN PROGRESS)*
 
-It contains validators and allow to display outputs of the ADC using the ADCEngine. 
+This utilities is use to facilitate the creation and the packaging of ADX project (ADP and ADC).
 
-ADCUtil is a CLI tools (Command Line Interface) but it also provide an API for NodeJS project. 
+It contains validators and allow to display outputs of the ADX using the ADXEngine. 
+
+ADXUtil is a CLI tools (Command Line Interface) but it also provide an API for NodeJS project. 
 
 ## Setup
 
 Install NodeJs: https://nodejs.org/download/
 
-Then install the npm package adcutil:
+Then install the npm package adxutil:
  
-    npm install -g adcutil
+    npm install -g adxutil
 
 
-## Run unit tests of ADCUtil
+## Run unit tests of ADXUtil
 
 Install jasmine-node for unit tests
 
@@ -35,15 +37,15 @@ or
 This application works through Windows PowerShell
 
 
-    adcutil [options] [command]
+    adxutil [options] [command]
 
     Commands:
 
-    generate <name>        generate a new ADC structure
-    validate [<path>]      validate the uncompressed ADC structure
-    build [<path>]         build the ADC file
-    show [<path>]          show the output of the ADC
-    config                 get or set the configuration (use the --authorXXX flags to set the config)
+    generate <type> <name>        generate a new ADP or ADC structure (type is `adc` or `adp`)
+    validate [<path>]             validate the uncompressed ADX structure
+    build [<path>]                build the ADX file
+    show [<path>]                 show the output of the ADX
+    config                        get or set the configuration (use the --authorXXX flags to set the config)
 
     Options:
 
@@ -52,11 +54,11 @@ This application works through Windows PowerShell
     -o, --output <name>       name of the output to display or path to the output directory for the generation
     -f, --fixture <name>      name of the fixture to use for the `show` command
     -m, --masterPage <path>   path of the master page to use for the `show` command'
-    -p, --properties <props>  ADC properties (in url query string format) to set for the `show` command'
-    -T, --no-test             skip the execution of ADC unit tests
+    -p, --properties <props>  ADX properties (in url query string format) to set for the `show` command'
+    -T, --no-test             skip the execution of ADX unit tests
     -X, --no-xml              skip the validation of the config.xml file
     -A, --no-autoTest         skip the execution of the auto-generated unit tests
-    -t, --template <name>     name of the template to use to generate the ADC
+    -t, --template <name>     name of the template to use to generate the ADX
     --authorName <name>       default name of the author to set in the config
     --authorEmail <email>     default email of the author to set in the config
     --authorCompany <name>    default company of the author to set in the config
@@ -65,26 +67,34 @@ This application works through Windows PowerShell
 ### Generate
 
 Start `Windows PowerShell` (`Start > All programs > Accessories > Windows PowerShell > Windows PowerShell`). 
-Target the root directory where you want to generate the ADC (or use the *-o* or *--output* option).
+Target the root directory where you want to generate the ADP or ADC (or use the *-o* or *--output* option).
 
-    cd C:\Users\user_name\Documents\ADCProjects\
+    cd C:\Users\user_name\Documents\ADXProjects\
 
 Then enter the following command:
 
-    ADCUtil generate my_adc_name
+    ADXUtil generate adc my_adc_name
 
+Or 
+
+    ADXUtil generate adp my_adp_name
+    
 That should produce an output like:
 
 ![generate (Example output)](ADCUtilGenerate.png "generate (Example output)")
 
 
-To generate the ADC structure, ADCUtil uses templates stored under the `/ADCUtil/templates/adc/`. 
-By default, it use the `default` template (/ADCUtil/templates/adc/default/).
+To generate the ADX structure, ADCUtil uses templates stored under the `/ADXUtil/templates/`. 
+By default, it use the `default` template (/ADXUtil/templates/adp/default/) or (/ADXUtil/templates/adc/default/).
 
-That means that you can predefine many more templates and store them in the `/ADCUtil/templates/adc/` folder. 
-Then you only need to specify the name of the template folder you want to use to generate your ADC:
+That means that you can predefine many more templates and store them in the `/ADXUtil/templates/` folder. 
+Then you only need to specify the name of the template folder you want to use to generate your ADX:
 
-    ADCUtil --template my_template_name generate my_adc_name
+    ADXUtil --template my_adc_template_name generate adc my_adc_name
+    
+Or
+    
+    ADXUtil --template my_adp_template_name generate adp my_adp_name
 
 #### List of possible error messages
 
@@ -93,19 +103,19 @@ Then you only need to specify the name of the template folder you want to use to
     "The @name@ parameter is required"
     "The --output path is required"
     "The directory @%s@ already exists."
-    "Incorrect ADC name. The name of the ADC should only contains letters, digits, spaces, @_,-,.@ characters"
+    "Incorrect ADX name. The name of the ADX should only contains letters, digits, spaces, @_,-,.@ characters"
     "Cannot found the @%s@ template"
 
 ### Validate
 
 Start `Windows PowerShell` (`Start > All programs > Accessories > Windows PowerShell > Windows PowerShell`). 
-Target your ADC directory (or indicates the path of your ADC after the `validate` command).
+Target your ADX directory (or indicates the path of your ADX after the `validate` command).
 
-    cd C:\Users\user_name\Documents\ADCProjects\my_adc_name
+    cd C:\Users\user_name\Documents\ADXProjects\my_adx_name
 
 Then enter the following command:
 
-    ADCUtil validate
+    ADXUtil validate
 
 That should produce an output like:
 
@@ -120,11 +130,11 @@ The validation will check:
 * The config.xml using the XSD schema
 * The logical in the config.xml
 ** The name information
-** The constraints nodes (at least one control or question must be specified)
+** The constraints nodes (at least one control or question must be specified for an ADC)
 ** The outputs, output, content and attribute nodes
 ** The properties nodes
 
-It will also run the auto-generated unit tests and all unit tests of the ADC using the @ADXShell@ tool. 
+It will also run the auto-generated unit tests and all unit tests of the ADX using the @ADXShell@ tool. 
 You can skip some validations using the following options in the command line:
 
 * -T, --no-test 
@@ -171,27 +181,27 @@ To skip the validation of the config.xml file
     "Output: `%s`. It's recommended to test the `Browser.Support(\"Flash\")` in the condition node, before using `flash` content."
     "It's recommended to have at least one fallback with HTML only"
     "It's recommended to define at least one properties"
-    "It's recommended to unit test your ADC project"
+    "It's recommended to unit test your ADX project"
 
 ### Build
 
 Start `Windows PowerShell` (`Start > All programs > Accessories > Windows PowerShell > Windows PowerShell`). 
 Target your ADC directory (or indicate the path of your ADC after the `build` command).
 
-    cd C:\Users\user_name\Documents\ADCProjects\my_adc_name
+    cd C:\Users\user_name\Documents\ADXProjects\my_adx_name
 
 Then enter the following command:
 
-    ADCUtil build
+    ADXUtil build
 
 That should produce an output like:
 
 ![build (Example output)](ADCUtilBuild.png "build (Example output)")
 
-The `build` command will first validate the ADC like the "validate command":#validate did (it will enforce the XML validation). 
-If the validation fails, the build will stop otherwise it will compress all necessary files into a zip file with the *.adc extension.
+The `build` command will first validate the ADX like the "validate command":#validate did (it will enforce the XML validation). 
+If the validation fails, the build will stop otherwise it will compress all necessary files into a zip file with the *.adc or *.adp extension.
 
-The file will be generated under the ADC directory in the `\bin\` folder.
+The file will be generated under the ADX directory in the `\bin\` folder.
 
 #### List of possible error messages
 
@@ -203,19 +213,20 @@ The file will be generated under the ADC directory in the `\bin\` folder.
 ### Show
 
 Start @Windows PowerShell@ (@Start > All programs > Accessories > Windows PowerShell > Windows PowerShell@). 
-Target your ADC directory (or indicate the path of your ADC after the @show@ command).
+Target your ADX directory (or indicate the path of your ADX after the @show@ command).
 
-    cd C:\Users\user_name\Documents\ADCProjects\my_adc_name
+    cd C:\Users\user_name\Documents\ADXProjects\my_adx_name
 
 Then enter the following command:
 
-    ADCUtil show --output MyADCOutputName --fixture TheFixtureFileName.xml
+    ADXUtil show --output MyADXOutputName --fixture TheFixtureFileName.xml
 
 OR
 
-    ADCUtil show -o MyADCOutputName -f TheFixtureFileName.xml
+    ADXUtil show -o MyADXOutputName -f TheFixtureFileName.xml
+    
 
-That should show the result of the `MyADCOutputName` with the specified fixture.
+That should show the result of the `MyADXOutputName` with the specified fixture.
 
 #### List of possible error messages
 
@@ -229,31 +240,31 @@ That should show the result of the `MyADCOutputName` with the specified fixture.
 
 Please find the [full API documentation here](http://www.askia.com/Downloads/dev/docs/ADCUtil/index.html)
 
-Example of usage of existing ADC
+Example of usage of existing ADX
 
-    var ADC = require('adcutil').ADC;
+    var ADX = require('adxutil').ADX;
     
-    var myAdc = new ADC('path/to/adc/dir');
+    var myAdx = new ADX('path/to/adx/dir');
         
-    // Validate an ADC
-    myAdc.validate({test : false, autoTest : false}, function (err, report) {
-        // Callback when the ADC structure has been validated
+    // Validate an ADX
+    myAdx.validate({test : false, autoTest : false}, function (err, report) {
+        // Callback when the ADX structure has been validated
     });
     
-    // Show the output of an ADC
-    myAdc.show({ output : 'fallback', fixture : 'single.xml'  },  function (err, output) {
-        // Callback with the output of the ADC
+    // Show the output of an ADX
+    myAdx.show({ output : 'fallback', fixture : 'single.xml'  },  function (err, output) {
+        // Callback with the output of the ADX
     });
     
-    // Build the ADC (package it)
-    myAdc.build({test : false, autoTest : false}, function (err, path, report) {
-        // Callback when the ADC has been built 
+    // Build the ADX (package it)
+    myAdx.build({test : false, autoTest : false}, function (err, path, report) {
+        // Callback when the ADX has been built 
     });
     
 
-Generate and use the new ADC instance
+Generate and use the new ADX instance
     
-    ADC.generate('myNewADC', {output : '/path/of/parent/dir', template : 'blank'}, function (err, adc) {
+    ADX.generate('myNewADC', {type : 'adc', output : '/path/of/parent/dir', template : 'blank'}, function (err, adc) {
         console.log(adc.path);
         adc.load(function (err) {
             if (err) {
@@ -264,3 +275,16 @@ Generate and use the new ADC instance
         });
     });
     
+    
+OR
+
+    ADX.generate('myNewADP', {type : 'adp', output : '/path/of/parent/dir', template : 'default'}, function (err, adp) {
+        console.log(adp.path);
+        adp.load(function (err) {
+            if (err) {
+                console.log(err);
+                return;
+            }
+            console.log(adp.configurator.info.get());
+        });
+    });
