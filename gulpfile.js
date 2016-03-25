@@ -31,12 +31,12 @@ gulp.task('document', ['clean:docs'], function (cb) {
     var args = [
         '--title=ADCUtil',
         '--output=' + DEST_DOCS,
-        SRC + 'builder/ADXBuilder.js',
-        SRC + 'configurator/ADXConfigurator.js',
-        SRC + 'generator/ADXGenerator.js',
-        SRC + 'show/ADXShow.js',
-        SRC + 'validator/ADXValidator.js',
-        SRC + 'ADXUtilAPI.js'
+        SRC + 'builder/ADCBuilder.js',
+        SRC + 'configurator/ADCConfigurator.js',
+        SRC + 'generator/ADCGenerator.js',
+        SRC + 'show/ADCShow.js',
+        SRC + 'validator/ADCValidator.js',
+        SRC + 'ADCUtilAPI.js'
     ];
 
     var execFile = require('child_process').execFile;
