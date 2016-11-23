@@ -550,7 +550,7 @@ ADCInfo.prototype.set = function set(data) {
      *       adcInfo.guid();
      *
      *       // Set the guid of the ADC
-     *       var uuid = require('node-uuid'');
+     *       var uuid = require('uuid'');
      *       adcInfo.guid(uuid.v4());
      *
      * @method guid
